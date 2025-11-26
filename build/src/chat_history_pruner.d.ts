@@ -1,0 +1,45 @@
+/**
+ * Chat History Pruner Module
+ * Removes generated images and optionally prompt tags from chat history before sending to LLM
+ */
+/**
+ * Prunes generated images from chat history
+ * Only removes <img> tags that immediately follow prompt tags in assistant messages
+ * Preserves user-uploaded images and all user messages unchanged
+ *
+ * IMPORTANT: This function modifies the chat array messages in-place by updating their content.
+ * It's designed to work with the CHAT_COMPLETION_PROMPT_READY event, which should provide
+ * a chat array that is safe to modify before sending to the LLM.
+ *
+ * @param chat - Array of chat messages to process (messages will be modified in-place)
+ * @param patterns - Optional array of regex pattern strings to use for detection
+ * @returns Modified chat array (same reference as input)
+ */
+export declare function pruneGeneratedImages(chat: Array<{
+    role: string;
+    content: string;
+}>, patterns?: string[]): Array<{
+    role: string;
+    content: string;
+}>;
+/**
+ * Prunes BOTH generated images AND prompt tags from chat history
+ * Used when LLM-based prompt generation mode is enabled to keep chat history clean
+ *
+ * This prevents prompt tags from influencing future LLM responses while still
+ * preserving them in the actual message HTML for feature compatibility.
+ *
+ * IMPORTANT: This function modifies the chat array messages in-place by updating their content.
+ * It's designed to work with the CHAT_COMPLETION_PROMPT_READY event.
+ *
+ * @param chat - Array of chat messages to process (messages will be modified in-place)
+ * @param patterns - Optional array of regex pattern strings to use for detection
+ * @returns Modified chat array (same reference as input)
+ */
+export declare function pruneGeneratedImagesAndPrompts(chat: Array<{
+    role: string;
+    content: string;
+}>, patterns?: string[]): Array<{
+    role: string;
+    content: string;
+}>;
