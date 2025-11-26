@@ -1,0 +1,2361 @@
+/* Clickable AI-generated images */
+.mes_text img[title^='AI generated image'] {
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+/* Smooth width transition for AI-generated images */
+.auto-illustrator-img {
+  transition: width 0.2s ease-in-out;
+}
+
+.mes_text img[title^='AI generated image']:hover {
+  opacity: 0.85;
+  transform: scale(1.02);
+  box-shadow: 0 0 15px rgba(155, 89, 182, 0.6);
+}
+
+/* Image generation progress widget */
+.ai-img-progress-widget-global {
+  /* Use sticky positioning within #sheld for reliable visibility */
+  position: sticky;
+  bottom: 2rem;
+  /* Use margin auto for centering instead of left+transform with sticky */
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0.5rem;
+  z-index: 100;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  width: min(900px, 95%);
+  max-width: 900px;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.95) 0%,
+    rgba(20, 20, 30, 0.95) 100%
+  );
+  border: 1.5px solid rgba(155, 89, 182, 0.6);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 2px 4px rgba(155, 89, 182, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed widget state (FAB button) */
+.ai-img-progress-widget-global.collapsed {
+  width: auto !important;
+  height: auto !important;
+  padding: 8px;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+  border: none;
+  overflow: visible;
+  pointer-events: none; /* Don't block clicks when collapsed */
+}
+
+/* Progress FAB button */
+.ai-img-progress-fab {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    #10b981,
+    #059669
+  );
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow:
+    0 4px 14px rgba(16, 185, 129, 0.4),
+    0 1px 6px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto; /* Ensure FAB can receive clicks */
+}
+
+.ai-img-progress-fab:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: linear-gradient(
+    135deg,
+    #34d399,
+    #10b981
+  );
+  box-shadow:
+    0 8px 20px rgba(16, 185, 129, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.ai-img-progress-fab:active {
+  transform: scale(1.05) translateY(0);
+}
+
+/* Progress FAB spinner */
+.ai-img-progress-fab-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spinner-rotate 1s linear infinite;
+}
+
+/* Progress FAB badge */
+.ai-img-progress-fab-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 9px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Expanded widget state */
+.ai-img-progress-widget-global.expanded {
+  min-height: 350px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Widget header with spinner and title */
+.ai-img-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-img-progress-spinner {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #9b59b6;
+  border-right-color: #9b59b6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(155, 89, 182, 0.5));
+}
+
+.ai-img-progress-checkmark {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #2ecc71;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(46, 204, 113, 0.5));
+}
+
+.ai-img-progress-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  flex: 1;
+}
+
+.ai-img-progress-close {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.ai-img-progress-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.ai-img-progress-close:active {
+  transform: scale(0.95);
+}
+
+/* Collapse widget button */
+.ai-img-progress-collapse {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 0.5rem;
+}
+
+.ai-img-progress-collapse:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ai-img-progress-collapse:active {
+  transform: scale(0.95);
+}
+
+/* Collapsed widget header (compact single bar) */
+.ai-img-progress-header-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0.25rem;
+  border-radius: 8px;
+  margin: -0.25rem;
+}
+
+.ai-img-progress-header-collapsed:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ai-img-progress-summary-text {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.ai-img-progress-expand-toggle {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.ai-img-progress-expand-toggle:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.ai-img-progress-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.ai-img-progress-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Individual message container */
+.ai-img-progress-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s;
+}
+
+/* Compact message (single line) */
+.ai-img-progress-message.compact {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+}
+
+.ai-img-progress-message.compact:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Message header (shared between compact and expanded) */
+.ai-img-progress-message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Compact message header elements */
+.message-checkmark {
+  color: #2ecc71;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.message-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.message-summary {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message-image-count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Message expand/collapse toggles */
+.ai-img-progress-message-expand-toggle,
+.ai-img-progress-message-collapse-toggle {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  margin-left: auto;
+}
+
+.ai-img-progress-message-expand-toggle:hover,
+.ai-img-progress-message-collapse-toggle:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.ai-img-progress-message-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  flex: 1;
+}
+
+/* Status badges container */
+.ai-img-progress-status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Individual status badge */
+.ai-img-progress-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: transform 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.ai-img-progress-badge:hover {
+  transform: scale(1.05);
+}
+
+.ai-img-progress-badge-icon {
+  font-size: 0.9rem;
+}
+
+/* Progress bar */
+.ai-img-progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  position: relative;
+}
+
+.ai-img-progress-bar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #9b59b6 0%,
+    #bb79d6 50%,
+    #9b59b6 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: shimmer 2s linear infinite;
+  box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+}
+
+/* Success/failure/pending badge variants */
+.ai-img-progress-badge.success {
+  background: rgba(129, 199, 132, 0.15);
+  border: 1px solid rgba(129, 199, 132, 0.4);
+  color: #81c784;
+}
+
+.ai-img-progress-badge.failed {
+  background: rgba(229, 115, 115, 0.15);
+  border: 1px solid rgba(229, 115, 115, 0.4);
+  color: #e57373;
+}
+
+.ai-img-progress-badge.pending {
+  background: rgba(255, 183, 77, 0.15);
+  border: 1px solid rgba(255, 183, 77, 0.4);
+  color: #ffb74d;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Thumbnail gallery for streaming image preview */
+.ai-img-progress-gallery {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ai-img-progress-gallery-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.ai-img-progress-thumbnails {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+  padding: 0.25rem;
+  margin: -0.25rem;
+}
+
+.ai-img-progress-thumbnail {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s,
+    opacity 0.3s;
+  border: 2px solid rgba(155, 89, 182, 0.6);
+  flex-shrink: 0;
+  animation: thumbnailSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.ai-img-progress-thumbnail:hover {
+  transform: scale(1.15) translateY(-4px);
+  box-shadow:
+    0 8px 24px rgba(155, 89, 182, 0.6),
+    0 0 0 3px rgba(155, 89, 182, 0.3);
+  border-color: rgba(155, 89, 182, 1);
+  z-index: 10;
+}
+
+.ai-img-progress-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+
+.ai-img-progress-thumbnail:hover img {
+  transform: scale(1.1);
+}
+
+/* Thumbnail index badge */
+.ai-img-progress-thumbnail-index {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Loading state for thumbnails */
+.ai-img-progress-thumbnail.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  animation: thumbnailLoading 1.5s infinite;
+}
+
+.ai-img-progress-gallery-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+@keyframes thumbnailSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes thumbnailLoading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Image modal for full-size viewing */
+.ai-img-modal-open {
+  overflow: hidden;
+}
+
+.ai-img-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.ai-img-modal-container {
+  position: relative;
+  max-width: 95vw;
+  /* Give container a definite height that accounts for backdrop padding (2rem top + 2rem bottom) */
+  height: calc(100vh - 4rem);
+  max-height: 95vh; /* upper bound as safety */
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  overflow: hidden;
+}
+
+/* Close button */
+.ai-img-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.ai-img-modal-close:hover {
+  background: rgba(229, 115, 115, 0.8);
+  border-color: rgba(229, 115, 115, 1);
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* Modal content */
+.ai-img-modal-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Navigation buttons */
+.ai-img-modal-nav {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1.5px solid rgba(155, 89, 182, 0.5);
+  color: #ffffff;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.ai-img-modal-nav:hover:not(:disabled) {
+  background: rgba(155, 89, 182, 0.8);
+  border-color: rgba(155, 89, 182, 1);
+  transform: scale(1.1);
+}
+
+.ai-img-modal-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ai-img-modal-nav.prev {
+  transform: scaleX(-1);
+}
+
+.ai-img-modal-nav.prev:hover:not(:disabled) {
+  transform: scaleX(-1) scale(1.1);
+}
+
+/* Image container */
+.ai-img-modal-image-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: calc(95vw - 140px);
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Fill available vertical space provided by .ai-img-modal-content */
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.ai-img-modal-image {
+  /* Use max constraints instead of fixed 100% to allow dynamic resizing */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  image-orientation: from-image;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  cursor: zoom-in;
+  will-change: transform;
+  transition: none; /* Will be controlled by JS for smooth animations */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* When rotated 90 or 270 degrees, dimensions are set by JavaScript */
+.ai-img-modal-image.rotated-90-270 {
+  /* JavaScript will set explicit maxWidth and maxHeight based on
+     the actual container dimensions (not viewport units which include
+     browser chrome and may cause cutoff on mobile) */
+  /* Placeholder to avoid empty ruleset */
+  position: relative;
+}
+
+/* Add smooth transition class for zoom animations */
+.ai-img-modal-image.zooming {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ai-img-modal-image.zoomed {
+  cursor: grab;
+}
+
+.ai-img-modal-image.zoomed.dragging {
+  cursor: grabbing;
+}
+
+/* Image loading state */
+.ai-img-modal-image.loading {
+  opacity: 0.5;
+  filter: blur(10px);
+}
+
+/* Zoom indicator */
+.ai-img-zoom-indicator {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  z-index: 10;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Image info bar */
+.ai-img-modal-info {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  backdrop-filter: blur(16px);
+  max-height: 35vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.ai-img-modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-img-modal-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-img-modal-meta-label {
+  font-weight: 600;
+  color: rgba(155, 89, 182, 0.9);
+}
+
+.ai-img-modal-prompt {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid rgba(155, 89, 182, 0.7);
+  max-height: 25vh;
+  overflow-y: auto;
+}
+
+/* Modal actions */
+.ai-img-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.ai-img-modal-action-btn {
+  background: rgba(155, 89, 182, 0.2);
+  border: 1px solid rgba(155, 89, 182, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-img-modal-action-btn i {
+  font-size: 0.9rem;
+  width: 1rem;
+  text-align: center;
+}
+
+.ai-img-modal-action-btn:hover {
+  background: rgba(155, 89, 182, 0.4);
+  border-color: rgba(155, 89, 182, 0.8);
+  transform: translateY(-2px);
+}
+
+/* Toast notifications */
+.ai-img-modal-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  z-index: 10003;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ai-img-modal-toast.show {
+  opacity: 1;
+}
+
+.ai-img-modal-toast-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ai-img-modal-toast-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Fullscreen mode styles - backdrop is now the fullscreen element */
+.ai-img-modal-backdrop:-webkit-full-screen,
+.ai-img-modal-backdrop:-moz-full-screen,
+.ai-img-modal-backdrop:-ms-fullscreen,
+.ai-img-modal-backdrop:fullscreen {
+  padding: 0;
+  background: rgba(0, 0, 0, 1);
+  align-items: stretch; /* Stretch container to fill instead of centering */
+}
+
+/* Ensure container fills backdrop when backdrop is fullscreen */
+.ai-img-modal-backdrop:-webkit-full-screen .ai-img-modal-container,
+.ai-img-modal-backdrop:-moz-full-screen .ai-img-modal-container,
+.ai-img-modal-backdrop:-ms-fullscreen .ai-img-modal-container,
+.ai-img-modal-backdrop:fullscreen .ai-img-modal-container {
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Hide ALL UI elements in fullscreen for truly immersive image-only viewing */
+/* Use a class-based approach instead of :fullscreen pseudo-class for better compatibility */
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-info,
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-nav,
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-close,
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-swipe-hint,
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-tap-indicator,
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-zoom-indicator {
+  display: none !important;
+}
+
+/* In fullscreen, remove ALL spacing and ensure full viewport usage */
+.ai-img-modal-backdrop.ai-img-fullscreen-active,
+.ai-img-modal-backdrop:-webkit-full-screen,
+.ai-img-modal-backdrop:-moz-full-screen,
+.ai-img-modal-backdrop:-ms-fullscreen,
+.ai-img-modal-backdrop:fullscreen {
+  padding: 0 !important;
+  margin: 0 !important;
+  align-items: center !important; /* Center image vertically */
+  justify-content: center !important; /* Center image horizontally */
+}
+
+.ai-img-modal-container.ai-img-fullscreen-active,
+.ai-img-modal-backdrop:-webkit-full-screen .ai-img-modal-container,
+.ai-img-modal-backdrop:-moz-full-screen .ai-img-modal-container,
+.ai-img-modal-backdrop:-ms-fullscreen .ai-img-modal-container,
+.ai-img-modal-backdrop:fullscreen .ai-img-modal-container {
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-content,
+.ai-img-modal-backdrop:-webkit-full-screen .ai-img-modal-content,
+.ai-img-modal-backdrop:-moz-full-screen .ai-img-modal-content,
+.ai-img-modal-backdrop:-ms-fullscreen .ai-img-modal-content,
+.ai-img-modal-backdrop:fullscreen .ai-img-modal-content {
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-image-container,
+.ai-img-modal-backdrop:-webkit-full-screen .ai-img-modal-image-container,
+.ai-img-modal-backdrop:-moz-full-screen .ai-img-modal-image-container,
+.ai-img-modal-backdrop:-ms-fullscreen .ai-img-modal-image-container,
+.ai-img-modal-backdrop:fullscreen .ai-img-modal-image-container {
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: 100vw !important;
+  width: 100vw !important;
+}
+
+/* Ensure image itself has no spacing in fullscreen */
+.ai-img-modal-container.ai-img-fullscreen-active .ai-img-modal-image,
+.ai-img-modal-backdrop:-webkit-full-screen .ai-img-modal-image,
+.ai-img-modal-backdrop:-moz-full-screen .ai-img-modal-image,
+.ai-img-modal-backdrop:-ms-fullscreen .ai-img-modal-image,
+.ai-img-modal-backdrop:fullscreen .ai-img-modal-image {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Desktop-specific styles - hide mobile UI elements */
+@media (min-width: 769px) {
+  .ai-img-modal-swipe-hint {
+    display: none !important;
+  }
+
+  .ai-img-modal-tap-indicator {
+    display: none !important;
+  }
+}
+
+/* Mobile-specific toast positioning */
+@media (max-width: 768px) {
+  .ai-img-modal-toast {
+    /* Position at top of screen with safe area consideration */
+    top: calc(env(safe-area-inset-top, 0px) + 60px);
+    left: 50%;
+    transform: translateX(-50%);
+    /* Ensure toast fits on small screens */
+    max-width: calc(100vw - 2rem);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mobile optimizations for progress widget */
+@media (max-width: 768px) {
+  .ai-img-progress-widget-global {
+    font-size: 0.85rem;
+    padding: 0.85rem 1rem;
+    bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    min-width: unset;
+    max-width: 98%;
+  }
+
+  .ai-img-progress-header {
+    padding-bottom: 0.5rem;
+  }
+
+  .ai-img-progress-spinner {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+  }
+
+  .ai-img-progress-title {
+    font-size: 0.9rem;
+  }
+
+  .ai-img-progress-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .ai-img-progress-thumbnail {
+    width: 80px;
+    height: 80px;
+  }
+
+  .ai-img-progress-thumbnail:hover {
+    transform: scale(1.1) translateY(-2px);
+  }
+
+  .ai-img-modal-backdrop {
+    padding: 0.25rem;
+    padding-top: 3rem; /* Space for fixed close button */
+    padding-bottom: 0.5rem;
+    /* Ensure it takes full viewport - use dvh for mobile browser chrome */
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overflow-anchor: none; /* Prevent auto-scroll when content expands */
+  }
+
+  .ai-img-modal-container {
+    max-height: calc(100vh - 3.5rem);
+    max-height: calc(100dvh - 3.5rem);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ai-img-modal-content {
+    /* Allow content to grow and shrink */
+    flex: 1 1 auto;
+    min-height: 0; /* Important for flex children with overflow */
+    overflow: hidden;
+  }
+
+  .ai-img-modal-close {
+    /* Fixed positioning for always-visible close button */
+    position: fixed;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 40px;
+    height: 40px;
+    z-index: 10002;
+    /* Ensure it's above everything */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  .ai-img-modal-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ai-img-modal-nav {
+    /* Hide navigation buttons on mobile - use swipe gestures instead */
+    display: none;
+  }
+
+  .ai-img-modal-image-container {
+    max-width: 100%;
+    width: 100%;
+    /* Reduced to leave room for info bar with action buttons */
+    max-height: 65vh;
+    max-height: 65dvh;
+    min-height: 40vh;
+    min-height: 40dvh;
+    /* Ensure container takes full allocated height */
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Swipe hint indicator on mobile (now a DOM element instead of pseudo-element) */
+  .ai-img-modal-swipe-hint {
+    display: none !important; /* Hidden - tap navigation is now available */
+  }
+
+  .ai-img-modal-image {
+    /* Ensure image uses full container height */
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-orientation: from-image;
+  }
+
+  .ai-img-modal-info {
+    position: sticky;
+    bottom: 0;
+    padding: 0.75rem 0.85rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    font-size: 0.8rem;
+    /* Compact by default when prompt is hidden */
+    max-height: 15vh;
+    max-height: 15dvh;
+    overflow: visible;
+    overscroll-behavior: contain;
+    flex-shrink: 0;
+    transition: max-height 0.3s ease-out;
+    will-change: max-height;
+    cursor: pointer;
+  }
+
+  /* Expand when showing prompt */
+  .ai-img-modal-info.expanded {
+    max-height: 30vh;
+    max-height: 30dvh;
+    overflow: hidden;
+  }
+
+  .ai-img-modal-meta {
+    font-size: 0.75rem;
+    gap: 0.5rem;
+    /* Stack meta items vertically on very small screens */
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ai-img-modal-actions {
+    /* Ensure actions stay on same line */
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .ai-img-modal-prompt {
+    /* Hide prompt by default on mobile to prioritize image */
+    display: none;
+  }
+
+  /* Show prompt when user taps to expand */
+  .ai-img-modal-info.expanded .ai-img-modal-prompt {
+    display: block;
+    font-size: 0.8rem;
+    padding: 0.6rem;
+    max-height: 18vh;
+    max-height: 18dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    line-height: 1.4;
+  }
+
+  /* Tap to view/hide prompt indicator (now a DOM element instead of pseudo-element) */
+  .ai-img-modal-tap-indicator {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(155, 89, 182, 0.8);
+    margin-top: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .ai-img-modal-action-btn {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* Hide ALL button text on mobile, only show icons for space efficiency */
+  .ai-img-modal-action-btn {
+    padding: 0.5rem; /* Reduce padding since we're icon-only */
+  }
+
+  /* Hide all text content inside action buttons on mobile */
+  .ai-img-modal-action-btn:not(.reset-zoom-btn) {
+    font-size: 0; /* Hide text */
+  }
+
+  .ai-img-modal-action-btn i {
+    font-size: 1.1rem; /* Ensure icons are visible */
+  }
+
+  /* Zoom indicator on mobile */
+  .ai-img-zoom-indicator {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ai-img-progress-thumbnail,
+  .ai-img-modal-close,
+  .ai-img-modal-nav,
+  .ai-img-progress-badge,
+  .ai-img-progress-expand-toggle,
+  .ai-img-progress-message-expand-toggle,
+  .ai-img-progress-message-collapse-toggle,
+  .ai-img-progress-bar,
+  .ai-img-zoom-indicator {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Preset Management Styles */
+.preset-management {
+  margin: 1rem 0;
+}
+
+.preset-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.preset-toolbar .flex_fill {
+  flex: 1;
+}
+
+.preset-toolbar button {
+  flex-shrink: 0;
+}
+
+.preset-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.preset-content-preview {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.preset-content-preview label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.preset-preview-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.preset-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.preset-edit-actions button {
+  flex: 1;
+}
+
+.preset-edit-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Pattern Validation Status */
+.pattern-validation-status {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pattern-validation-status.validation-success {
+  background-color: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #81c784;
+}
+
+.pattern-validation-status.validation-warning {
+  background-color: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  color: #ffb74d;
+}
+
+.pattern-validation-status .validation-icon {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.pattern-validation-status .validation-message {
+  display: block;
+}
+
+.pattern-validation-status .validation-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* Manual Generation Button */
+.auto_illustrator_manual_gen {
+  color: #9b59b6 !important;
+  cursor: pointer;
+}
+
+.auto_illustrator_manual_gen:hover {
+  color: #bb79d6 !important;
+}
+
+.auto_illustrator_manual_gen:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Manual Generation Dialog Backdrop */
+.auto-illustrator-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+}
+
+/* All dialogs (manual generation, regeneration, prompt update, confirmation) */
+.auto-illustrator-dialog {
+  position: fixed;
+  top: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--SmartThemeBlurTintColor, #2a2a2a);
+  border: 2px solid var(--SmartThemeBorderColor, #666);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 500px;
+  max-height: 85vh;
+  width: 90%;
+  z-index: 10000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Regeneration confirmation dialog - position lower for easier tapping */
+#auto_illustrator_regen_confirm_dialog {
+  top: 35vh;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .auto-illustrator-dialog {
+    width: 95%;
+    padding: 1rem;
+    top: 5vh;
+    max-height: 90vh;
+  }
+
+  #auto_illustrator_regen_confirm_dialog {
+    top: 30vh;
+  }
+
+  .auto-illustrator-dialog h3 {
+    font-size: 1rem;
+  }
+
+  .auto-illustrator-dialog p {
+    font-size: 0.9rem;
+  }
+}
+
+.auto-illustrator-dialog p {
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+  white-space: pre-line;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.auto-illustrator-dialog h3 {
+  margin: 0 0 1rem 0;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.auto-illustrator-dialog label {
+  display: block;
+  margin: 0.5rem 0 0.25rem 0;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.auto-illustrator-dialog textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.auto-illustrator-dialog textarea:focus {
+  outline: none;
+  border-color: #9b59b6;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.auto-illustrator-dialog textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.auto-illustrator-feedback-textarea {
+  margin-bottom: 0.5rem;
+}
+
+.auto-illustrator-current-prompt {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+  word-wrap: break-word;
+}
+
+.auto-illustrator-mode-group {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auto-illustrator-mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.auto-illustrator-mode-option span {
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.auto-illustrator-mode-option:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.auto-illustrator-mode-option input[type="radio"] {
+  margin-top: 0.2rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.auto-illustrator-mode-option span {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.auto-illustrator-mode-option strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.auto-illustrator-dialog-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.auto-illustrator-dialog-buttons button {
+  min-width: 100px;
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+/* Mobile button optimizations */
+@media (max-width: 768px) {
+  .auto-illustrator-dialog-buttons {
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+
+  .auto-illustrator-dialog-buttons button {
+    min-width: 80px;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* ========================================
+   Image Gallery Widget
+   ======================================== */
+
+/* Gallery widget container */
+.ai-img-gallery-widget-global {
+  position: fixed;
+  top: 5rem;
+  right: 1rem;
+  z-index: 40; /* Lowered from 99 to avoid interfering with ST UI components */
+  display: flex;
+  flex-direction: column;
+  width: min(400px, 90vw);
+  max-height: 80vh;
+  height: 80vh; /* Set explicit height for proper flex child sizing */
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.95) 0%,
+    rgba(20, 20, 30, 0.95) 100%
+  );
+  border: 1.5px solid rgba(155, 89, 182, 0.6);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 2px 4px rgba(155, 89, 182, 0.2);
+  /* Only animate visual properties, not dimensions */
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; /* Keep this to clip rounded corners properly */
+}
+
+/* Minimized state - shrink to fit FAB only */
+.ai-img-gallery-widget-global.minimized {
+  width: auto !important; /* Immediate override, no transition */
+  height: auto !important; /* Immediate override, no transition */
+  max-height: none;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+  transition: none; /* Disable all transitions when minimized */
+  padding: 8px; /* Add padding to prevent hover scale clipping */
+  overflow: visible; /* Allow FAB to expand beyond bounds on hover */
+  pointer-events: none; /* Don't block clicks when minimized */
+}
+
+/* Gallery FAB (Floating Action Button) - minimized state */
+.ai-img-gallery-fab {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    #8b5cf6,
+    #7c3aed
+  );
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 1.15rem; /* Optimized for fa-images icon */
+  cursor: pointer;
+  box-shadow:
+    0 4px 14px rgba(139, 92, 246, 0.4),
+    0 1px 6px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto; /* Ensure FAB can receive clicks even when container has pointer-events: none */
+  will-change: transform; /* Optimize for transform animations */
+  transform-origin: center center; /* Ensure transform from center */
+}
+
+/* FAB icon specific styling */
+.ai-img-gallery-fab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.ai-img-gallery-fab:hover {
+  transform: scale(1.1) translateY(-2px);
+  background: linear-gradient(
+    135deg,
+    rgba(165, 99, 192, 1),
+    rgba(135, 79, 162, 1)
+  );
+  box-shadow:
+    0 8px 20px rgba(155, 89, 182, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.ai-img-gallery-fab:active {
+  transform: scale(1.05) translateY(0);
+}
+
+.ai-img-gallery-fab-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 9px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gallery header */
+.ai-img-gallery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.ai-img-gallery-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.ai-img-gallery-icon {
+  font-size: 1.1rem; /* Adjusted for Font Awesome */
+  margin-right: 0.2rem; /* Add spacing after icon */
+}
+
+.ai-img-gallery-count {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: normal;
+}
+
+.ai-img-gallery-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ai-img-gallery-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem; /* Adjusted for Font Awesome icons */
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.ai-img-gallery-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* Gallery content */
+.ai-img-gallery-content {
+  flex: 1 1 auto; /* Grow and shrink, auto basis */
+  min-height: 0; /* Critical: Allow flex shrinking for proper scrolling */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative; /* Establish positioning context */
+}
+
+/* Empty state */
+.ai-img-gallery-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Message group */
+.ai-img-gallery-message-group {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  flex-shrink: 0; /* Prevent message groups from shrinking */
+}
+
+.ai-img-gallery-message-group:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(155, 89, 182, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.2);
+}
+
+.ai-img-gallery-message-group.expanded {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(155, 89, 182, 0.3);
+}
+
+/* Message header */
+.ai-img-gallery-message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background 0.3s, padding 0.3s;
+  position: relative;
+}
+
+.ai-img-gallery-message-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+  padding-left: 1rem;
+}
+
+.ai-img-gallery-message-header:hover .ai-img-gallery-message-toggle {
+  color: rgba(155, 89, 182, 1);
+  transform: scale(1.2);
+}
+
+.ai-img-gallery-message-toggle {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s, color 0.3s;
+}
+
+/* Expanded state animation */
+.ai-img-gallery-message-group.expanded .ai-img-gallery-message-toggle {
+  transform: rotate(90deg);
+}
+
+.ai-img-gallery-message-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-img-gallery-message-id {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: rgba(155, 89, 182, 1);
+}
+
+.ai-img-gallery-message-preview {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-img-gallery-message-count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+/* Thumbnail gallery in message group */
+.ai-img-gallery-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.5rem;
+  padding: 0 0.75rem 0.75rem 0.75rem;
+  max-height: 400px; /* Limit height to prevent squeezing */
+  overflow-y: auto; /* Allow scrolling for many thumbnails */
+  overflow-x: hidden;
+  animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-img-gallery-thumbnail {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.ai-img-gallery-thumbnail:hover {
+  transform: scale(1.05);
+  border-color: rgba(155, 89, 182, 0.6);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+  z-index: 1;
+}
+
+.ai-img-gallery-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ai-img-gallery-thumbnail-index {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .ai-img-gallery-widget-global {
+    top: 4rem;
+    right: 0.5rem;
+    width: min(350px, 95vw);
+    max-height: 70vh;
+  }
+
+  .ai-img-gallery-widget-global.minimized {
+    top: 4rem;
+    right: 0.5rem;
+  }
+
+  .ai-img-gallery-thumbnails {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .ai-img-gallery-fab {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+  }
+}
+
+/* Scrollbar styling for gallery content */
+.ai-img-gallery-content::-webkit-scrollbar,
+.ai-img-gallery-thumbnails::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.ai-img-gallery-content::-webkit-scrollbar-track,
+.ai-img-gallery-thumbnails::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.ai-img-gallery-content::-webkit-scrollbar-thumb,
+.ai-img-gallery-thumbnails::-webkit-scrollbar-thumb {
+  background: rgba(155, 89, 182, 0.5);
+  border-radius: 4px;
+}
+
+.ai-img-gallery-content::-webkit-scrollbar-thumb:hover,
+.ai-img-gallery-thumbnails::-webkit-scrollbar-thumb:hover {
+  background: rgba(155, 89, 182, 0.7);
+}
+
+/* Corner where scrollbars meet */
+.ai-img-gallery-thumbnails::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Note: :focus-visible pseudo-class cannot be used with ::-webkit-scrollbar-thumb
+   If you see console errors about "Failed to insert focus rule", this is likely
+   from external code (browser/extensions) trying to apply focus styles to scrollbars.
+   This is a known webkit limitation and not a bug in this extension. */
+
+/* ============================================
+   Streaming Preview Widget
+   ============================================ */
+
+/* Main widget container */
+.ai-streaming-preview-widget {
+  position: sticky;
+  top: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+  z-index: 110; /* Above progress widget (100) */
+  width: min(900px, 95%);
+  max-width: 900px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    135deg,
+    rgba(40, 40, 55, 0.95) 0%,
+    rgba(30, 30, 45, 0.95) 100%
+  );
+  border: 1.5px solid rgba(139, 92, 246, 0.6); /* Purple accent */
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 2px 4px rgba(139, 92, 246, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: streamingPreviewSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes streamingPreviewSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Minimized state */
+.ai-streaming-preview-widget.minimized {
+  max-height: none;
+  width: auto;
+}
+
+.ai-streaming-preview-widget.minimized .ai-streaming-preview-content {
+  display: none;
+}
+
+/* Header */
+.ai-streaming-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px 12px 0 0;
+}
+
+.ai-streaming-preview-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-streaming-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-streaming-preview-btn-minimize,
+.ai-streaming-preview-btn-close {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-streaming-preview-btn-minimize:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+  transform: translateY(-1px);
+}
+
+.ai-streaming-preview-btn-close {
+  padding: 0.4rem 0.6rem;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.ai-streaming-preview-btn-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Content area */
+.ai-streaming-preview-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  scroll-behavior: smooth;
+}
+
+/* Loading state */
+.ai-streaming-preview-loading {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+/* Text segments */
+.ai-streaming-preview-text {
+  line-height: 1.6;
+  color: #f0f0f0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Image container */
+.ai-streaming-preview-image-container {
+  margin: -0.5rem 0 -0.8rem 0; /* Negative margins to reduce spacing with text above and below */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Completed image */
+.ai-streaming-preview-image {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: imageSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0;
+  padding: 0;
+}
+
+@keyframes imageSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ai-streaming-preview-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* Image caption */
+.ai-streaming-preview-image-caption {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  font-style: italic;
+  max-width: 400px;
+}
+
+/* Image placeholder (detected or generating) */
+.ai-streaming-preview-image-placeholder {
+  width: 100%;
+  max-width: 400px;
+  height: 300px; /* Fixed height to match typical image dimensions and prevent scroll jumping */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  margin: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.1) 0%,
+    rgba(59, 130, 246, 0.1) 100%
+  );
+  border: 2px dashed rgba(139, 92, 246, 0.4);
+  border-radius: 8px;
+  animation: placeholderPulse 2s ease-in-out infinite;
+}
+
+@keyframes placeholderPulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    border-color: rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    opacity: 1;
+    border-color: rgba(139, 92, 246, 0.6);
+  }
+}
+
+.ai-streaming-preview-image-placeholder-icon {
+  display: none; /* Hide icon completely for cleaner look */
+}
+
+.ai-streaming-preview-image-placeholder-text {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.ai-streaming-preview-image-placeholder-prompt {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  max-width: 300px;
+  font-style: italic;
+}
+
+/* Failed image state */
+.ai-streaming-preview-image-failed {
+  width: 100%;
+  max-width: 400px;
+  height: 300px; /* Fixed height to match placeholder and prevent scroll jumping */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  margin: 0;
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  box-sizing: border-box; /* Include padding and border in dimensions */
+}
+
+.ai-streaming-preview-image-failed-icon {
+  font-size: 2.5rem;
+}
+
+.ai-streaming-preview-image-failed-text {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+/* Scrollbar styling for content */
+.ai-streaming-preview-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ai-streaming-preview-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.ai-streaming-preview-content::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+.ai-streaming-preview-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .ai-streaming-preview-widget {
+    top: 0.5rem;
+    width: 98%;
+    max-height: 60vh;
+  }
+
+  .ai-streaming-preview-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .ai-streaming-preview-content {
+    padding: 1rem;
+  }
+
+  .ai-streaming-preview-image,
+  .ai-streaming-preview-image-placeholder,
+  .ai-streaming-preview-image-failed {
+    max-width: 100%;
+  }
+
+  .ai-streaming-preview-title {
+    font-size: 0.9rem;
+  }
+
+  .ai-streaming-preview-btn-minimize,
+  .ai-streaming-preview-btn-close {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Failed image placeholder styling (img tags with data-failed-placeholder attribute) */
+img[data-failed-placeholder='true'] {
+  cursor: pointer;
+  opacity: 0.8;
+  border: 2px solid #dc3545;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+img[data-failed-placeholder='true']:hover {
+  opacity: 1;
+  border-color: #ff6b6b;
+  transform: scale(1.05);
+}
