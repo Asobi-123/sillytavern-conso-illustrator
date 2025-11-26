@@ -326,7 +326,7 @@ async function showPromptUpdateDialog(
       .addClass('auto-illustrator-dialog');
 
     // 标题改为「编辑提示词」
-    dialog.append($('<h3>').text(t('dialog.editPromptTitle') || '编辑提示词'));
+    dialog.append($('<h3>').text('编辑提示词'));
 
     // 提示标签
     dialog.append($('<label>').text(t('dialog.currentPrompt')));
@@ -342,7 +342,7 @@ async function showPromptUpdateDialog(
 
     // 【核心改动】「使用AI更新」改成「完成」
     const confirmButton = $('<button>')
-      .text(t('dialog.confirm') || '完成')
+      .text('完成')
       .addClass('menu_button')
       .on('click', () => {
         const edited = promptTextarea.val() as string;
