@@ -153,6 +153,17 @@ export const IMAGE_DISPLAY_WIDTH = {
 } as const;
 
 /**
+ * Image retention period configuration (days)
+ * Controls how long generated images are kept before cleanup
+ */
+export const IMAGE_RETENTION_DAYS = {
+  DEFAULT: 1,
+  MIN: 1,
+  MAX: 7,
+  STEP: 1,
+} as const;
+
+/**
  * Default frequency guidelines for LLM prompt generation
  * Tells the LLM when to generate image prompts
  */
@@ -208,6 +219,7 @@ export const DEFAULT_SETTINGS = {
   llmPromptWritingGuidelines: DEFAULT_LLM_PROMPT_WRITING_GUIDELINES,
   finalReconciliationDelayMs: FINAL_RECONCILIATION_DELAY.DEFAULT,
   imageDisplayWidth: IMAGE_DISPLAY_WIDTH.DEFAULT,
+  imageRetentionDays: IMAGE_RETENTION_DAYS.DEFAULT,
 };
 
 /**
@@ -256,5 +268,6 @@ export const UI_ELEMENT_IDS = {
     'auto_illustrator_lite_llm_prompt_writing_guidelines_reset',
   IMAGE_DISPLAY_WIDTH: 'auto_illustrator_lite_image_display_width',
   IMAGE_DISPLAY_WIDTH_VALUE: 'auto_illustrator_lite_image_display_width_value',
+  IMAGE_RETENTION_DAYS: 'auto_illustrator_lite_image_retention_days',
   RESET_BUTTON: 'auto_illustrator_lite_reset',
 } as const;

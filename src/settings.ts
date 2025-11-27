@@ -14,6 +14,7 @@ import {
   CONTEXT_MESSAGE_COUNT,
   META_PROMPT_DEPTH,
   IMAGE_DISPLAY_WIDTH,
+  IMAGE_RETENTION_DAYS, 
   UI_ELEMENT_IDS,
 } from './constants';
 import {t} from './i18n';
@@ -297,7 +298,20 @@ export function createSettingsUI(): string {
               </div>
             </label>
           </div>
+          <hr>
 
+          <div style="margin-top: 1rem;">
+            <strong>图片清理 / Image Cleanup</strong>
+          </div>
+
+          <label for="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}">
+            <span>图片保留天数 / Image Retention Days</span>
+            <small>启动时自动清理超过此天数的图片 / Images older than this will be cleaned up on startup</small>
+            <input id="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}" class="text_pole" type="number" 
+                   min="${IMAGE_RETENTION_DAYS.MIN}" 
+                   max="${IMAGE_RETENTION_DAYS.MAX}" 
+                   step="${IMAGE_RETENTION_DAYS.STEP}" />
+          </label>
           <hr>
 
           <div style="margin-top: 1rem;">

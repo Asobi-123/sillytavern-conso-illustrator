@@ -59,6 +59,8 @@ import {StreamingPreviewWidget} from './streaming_preview_widget';
 import {isIndependentApiMode} from './mode_utils';
 import {initializeChatChangedHandler} from './chat_changed_handler';
 import {initializeChatChangeOperations} from './chat_change_operations';
+import { runStartupCleanup } from './image_cleaner';
+import { getMetadata } from './metadata';
 
 const logger = createLogger('Main');
 
@@ -173,6 +175,13 @@ function updateUI(): void {
   const metaPromptDepthInput = document.getElementById(
     UI_ELEMENT_IDS.META_PROMPT_DEPTH
   ) as HTMLInputElement;
+  // Update image retention days
+  const imageRetentionDaysInput = document.getElementById(
+    UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
+  ) as HTMLInputElement;
+  if (imageRetentionDaysInput) {
+    imageRetentionDaysInput.value = (settings.imageRetentionDays ?? 1).toString();
+  }
 
   // Update basic settings
   if (enabledCheckbox) enabledCheckbox.checked = settings.enabled;
@@ -517,6 +526,13 @@ function handleSettingsChange(): void {
   const imageDisplayWidthValue = document.getElementById(
     UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH_VALUE
   ) as HTMLSpanElement;
+  // Image retention days
+  const imageRetentionDaysInput = document.getElementById(
+    UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
+  ) as HTMLInputElement;
+  if (imageRetentionDaysInput) {
+    settings.imageRetentionDays = parseInt(imageRetentionDaysInput.value, 10) || 1;
+  }
 
   // Track if enabled state or widget visibility changed (requires page reload)
   const wasEnabled = settings.enabled;
@@ -1732,7 +1748,11 @@ function initialize(): void {
       'change',
       handleSettingsChange
     );
-
+    // Image retention days
+    const imageRetentionDaysInput = document.getElementById(
+      UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
+    );
+    imageRetentionDaysInput?.addEventListener('change', handleSettingsChange);
     // Image display width slider
     const imageDisplayWidthInput = document.getElementById(
       UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH
@@ -1755,6 +1775,14 @@ function initialize(): void {
 
   // Add click handlers to existing images
   addImageClickHandlers(settings);
+
+  // Run startup cleanup for expired images
+  try {
+    const metadata = getMetadata();
+    runStartupCleanup(context, metadata, settings);
+  } catch (error) {
+    logger.warn('Startup cleanup skipped (metadata not ready):', error);
+  }
 }
 
 // Initialize when extension loads
