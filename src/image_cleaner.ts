@@ -33,12 +33,12 @@ export interface CleanupResult {
 /**
  * Regex pattern to match a complete image block
  */
-const IMAGE_BLOCK_PATTERN = /<!--img-prompt="[^"]*"-->\s*<!-- auto-illustrator:promptId=[^,]+,imageUrl=([^\s]+)\s*-->\s*<img[^>]*src="[^"]*"[^>]*\/?>/g;
+const IMAGE_BLOCK_PATTERN = /<!--img-prompt="[^"]*"-->\s*<!-- auto-illustrator:promptId=[^,]+,imageUrl=[^\s]+\s*-->\s*<img[^>]*src="([^"]*)"[^>]*\/?>/g;
 
 /**
  * Alternative pattern for images without the prompt tag (legacy format)
  */
-const LEGACY_IMAGE_PATTERN = /<!-- auto-illustrator:promptId=([^,]+),imageUrl=([^\s]+)\s*-->\s*<img[^>]*src="[^"]*"[^>]*\/?>/g;
+const LEGACY_IMAGE_PATTERN = /<!-- auto-illustrator:promptId=[^,]+,imageUrl=[^\s]+\s*-->\s*<img[^>]*src="([^"]*)"[^>]*\/?>/g;
 
 /**
  * Extracts timestamp from image URL
@@ -105,7 +105,7 @@ export function removeExpiredImagesFromText(
   });
   
   // Process legacy pattern (without prompt tag)
-  cleanedText = cleanedText.replace(LEGACY_IMAGE_PATTERN, (match, promptId, imageUrl) => {
+  cleanedText = cleanedText.replace(LEGACY_IMAGE_PATTERN, (match, imageUrl) => {
     if (isImageExpired(imageUrl, retentionDays)) {
       if (!removedUrls.includes(imageUrl)) {
         removedUrls.push(imageUrl);
