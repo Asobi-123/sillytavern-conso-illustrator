@@ -59,8 +59,8 @@ import {StreamingPreviewWidget} from './streaming_preview_widget';
 import {isIndependentApiMode} from './mode_utils';
 import {initializeChatChangedHandler} from './chat_changed_handler';
 import {initializeChatChangeOperations} from './chat_change_operations';
-import { runStartupCleanup } from './image_cleaner';
-import { getMetadata } from './metadata';
+import {runStartupCleanup} from './image_cleaner';
+import {getMetadata} from './metadata';
 
 const logger = createLogger('Main');
 
@@ -180,7 +180,9 @@ function updateUI(): void {
     UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
   ) as HTMLInputElement;
   if (imageRetentionDaysInput) {
-    imageRetentionDaysInput.value = (settings.imageRetentionDays ?? 1).toString();
+    imageRetentionDaysInput.value = (
+      settings.imageRetentionDays ?? 1
+    ).toString();
   }
 
   // Update basic settings
@@ -273,6 +275,34 @@ function updateUI(): void {
   if (llmPromptWritingGuidelinesTextarea) {
     llmPromptWritingGuidelinesTextarea.value =
       settings.llmPromptWritingGuidelines;
+  }
+
+  // Update independent LLM API settings
+  const useIndependentLlmApiCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API
+  ) as HTMLInputElement;
+  const independentLlmApiUrlInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+  ) as HTMLInputElement;
+  const independentLlmApiKeyInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+  ) as HTMLInputElement;
+  const independentLlmModelInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+  ) as HTMLInputElement;
+
+  if (useIndependentLlmApiCheckbox) {
+    useIndependentLlmApiCheckbox.checked =
+      settings.useIndependentLlmApi ?? false;
+  }
+  if (independentLlmApiUrlInput) {
+    independentLlmApiUrlInput.value = settings.independentLlmApiUrl ?? '';
+  }
+  if (independentLlmApiKeyInput) {
+    independentLlmApiKeyInput.value = settings.independentLlmApiKey ?? '';
+  }
+  if (independentLlmModelInput) {
+    independentLlmModelInput.value = settings.independentLlmModel ?? '';
   }
 
   // Update preset dropdown with custom presets
@@ -531,8 +561,32 @@ function handleSettingsChange(): void {
     UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
   ) as HTMLInputElement;
   if (imageRetentionDaysInput) {
-    settings.imageRetentionDays = parseInt(imageRetentionDaysInput.value, 10) || 1;
+    settings.imageRetentionDays =
+      parseInt(imageRetentionDaysInput.value, 10) || 1;
   }
+
+  // Independent LLM API settings
+  const useIndependentLlmApiCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API
+  ) as HTMLInputElement;
+  const independentLlmApiUrlInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+  ) as HTMLInputElement;
+  const independentLlmApiKeyInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+  ) as HTMLInputElement;
+  const independentLlmModelInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+  ) as HTMLInputElement;
+
+  settings.useIndependentLlmApi =
+    useIndependentLlmApiCheckbox?.checked ?? settings.useIndependentLlmApi;
+  settings.independentLlmApiUrl =
+    independentLlmApiUrlInput?.value ?? settings.independentLlmApiUrl;
+  settings.independentLlmApiKey =
+    independentLlmApiKeyInput?.value ?? settings.independentLlmApiKey;
+  settings.independentLlmModel =
+    independentLlmModelInput?.value ?? settings.independentLlmModel;
 
   // Track if enabled state or widget visibility changed (requires page reload)
   const wasEnabled = settings.enabled;
@@ -851,25 +905,25 @@ function handleSettingsChange(): void {
     if (settings.enabled) {
       // ===== 启用扩展 =====
       logger.info('扩展已启用 - 正在注册事件处理器');
-      
+
       // 注册事件处理器
       if (!eventHandlersRegistered) {
         registerEventHandlers();
       }
-      
+
       // 初始化必要的组件
       if (settings.showProgressWidget) {
         initializeProgressWidget(progressManager);
         logger.info('已初始化进度 Widget');
       }
-      
+
       if (settings.showGalleryWidget) {
         initializeGalleryWidget(progressManager);
         const gallery = getGalleryWidget();
         if (gallery) gallery.show();
         logger.info('已初始化图库 Widget');
       }
-      
+
       if (settings.showStreamingPreviewWidget && !streamingPreviewWidget) {
         streamingPreviewWidget = new StreamingPreviewWidget(
           progressManager,
@@ -877,33 +931,32 @@ function handleSettingsChange(): void {
         );
         logger.info('已初始化流式预览 Widget');
       }
-      
+
       // 使用 toastr 显示成功提示 (去掉 positionClass)
       toastr.success('扩展已启用', t('extensionName'), {
-        timeOut: 2000
+        timeOut: 2000,
       });
-      
     } else {
       // ===== 禁用扩展 =====
       logger.info('扩展已禁用 - 正在注销事件处理器');
-      
+
       // 注销事件处理器
       unregisterEventHandlers();
-      
+
       // 清理组件
       clearProgressWidgetState();
-      
+
       // 清理 streamingPreviewWidget (不调用 hide,直接设为 null)
       if (streamingPreviewWidget) {
         streamingPreviewWidget = null;
       }
-      
+
       const gallery = getGalleryWidget();
       if (gallery) gallery.hide();
-      
+
       // 使用 toastr 显示提示 (去掉 positionClass)
       toastr.info('扩展已禁用', t('extensionName'), {
-        timeOut: 2000
+        timeOut: 2000,
       });
     }
   }
@@ -917,7 +970,7 @@ function handleSettingsChange(): void {
     toastr.info(t('toast.reloadRequired'), t('extensionName'), {
       timeOut: 5000,
     });
-    
+
     if (wasShowGalleryWidget !== settings.showGalleryWidget) {
       logger.info(
         `图库 Widget ${settings.showGalleryWidget ? '已启用' : '已禁用'} - 需要重载`
@@ -1004,6 +1057,72 @@ function handleLLMPromptWritingGuidelinesReset(): void {
   }
 
   logger.info('LLM prompt writing guidelines reset to defaults');
+}
+
+/**
+ * Tests the independent LLM API connection
+ */
+async function handleTestIndependentLlmConnection(): Promise<void> {
+  const urlInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+  ) as HTMLInputElement;
+  const keyInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+  ) as HTMLInputElement;
+  const modelInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+  ) as HTMLInputElement;
+
+  const apiUrl = urlInput?.value?.trim();
+  const apiKey = keyInput?.value?.trim();
+  const model = modelInput?.value?.trim();
+
+  if (!apiUrl || !apiKey || !model) {
+    toastr.error(t('toast.independentLlmApiMissingConfig'), t('extensionName'));
+    return;
+  }
+
+  try {
+    toastr.info(t('toast.testingConnection'), t('extensionName'));
+
+    const response = await fetch(`${apiUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          {
+            role: 'user',
+            content: 'Hello',
+          },
+        ],
+        max_tokens: 10,
+      }),
+    });
+
+    if (response.ok) {
+      toastr.success(t('toast.connectionSuccess'), t('extensionName'));
+      logger.info('Independent LLM API connection test successful');
+    } else {
+      const errorText = await response.text();
+      toastr.error(
+        t('toast.connectionFailed', {
+          error: `${response.status}: ${errorText}`,
+        }),
+        t('extensionName')
+      );
+      logger.error('Independent LLM API connection test failed:', errorText);
+    }
+  } catch (error) {
+    toastr.error(
+      t('toast.connectionFailed', {error: String(error)}),
+      t('extensionName')
+    );
+    logger.error('Independent LLM API connection test error:', error);
+  }
 }
 
 /**
@@ -1483,7 +1602,7 @@ function unregisterEventHandlers(): void {
   // 最简单的方法是标记为未注册,下次启用时会重新注册
   // EventSource 的内部机制会处理重复注册
   eventHandlersRegistered = false;
-  
+
   logger.info('事件处理器已标记为未注册');
 }
 
@@ -1753,6 +1872,36 @@ function initialize(): void {
       UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
     );
     imageRetentionDaysInput?.addEventListener('change', handleSettingsChange);
+
+    // Independent LLM API settings
+    const useIndependentLlmApiCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API
+    ) as HTMLInputElement;
+    const independentLlmApiUrlInput = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+    ) as HTMLInputElement;
+    const independentLlmApiKeyInput = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+    ) as HTMLInputElement;
+    const independentLlmModelInput = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+    ) as HTMLInputElement;
+    const independentLlmTestConnectionButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION
+    );
+
+    useIndependentLlmApiCheckbox?.addEventListener(
+      'change',
+      handleSettingsChange
+    );
+    independentLlmApiUrlInput?.addEventListener('change', handleSettingsChange);
+    independentLlmApiKeyInput?.addEventListener('change', handleSettingsChange);
+    independentLlmModelInput?.addEventListener('change', handleSettingsChange);
+    independentLlmTestConnectionButton?.addEventListener(
+      'click',
+      handleTestIndependentLlmConnection
+    );
+
     // Image display width slider
     const imageDisplayWidthInput = document.getElementById(
       UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH

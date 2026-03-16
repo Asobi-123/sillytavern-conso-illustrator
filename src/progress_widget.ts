@@ -20,10 +20,13 @@ declare const toastr: any;
 let currentToast: any = null;
 
 // 跟踪所有消息的进度状态
-const messageProgress = new Map<number, {
-  current: number;
-  total: number;
-}>();
+const messageProgress = new Map<
+  number,
+  {
+    current: number;
+    total: number;
+  }
+>();
 
 /**
  * Progress Widget - 简化版视图层
@@ -34,7 +37,7 @@ class ProgressWidgetView {
 
   constructor(manager: ProgressManager) {
     this.progressManager = manager;
-    
+
     // 订阅进度事件
     manager.addEventListener('progress:started', event => {
       const detail = (event as CustomEvent<ProgressStartedEventDetail>).detail;
@@ -56,31 +59,33 @@ class ProgressWidgetView {
 
   private handleStarted(detail: ProgressStartedEventDetail): void {
     logger.debug(`开始跟踪消息 ${detail.messageId}: 0/${detail.total}`);
-    
+
     messageProgress.set(detail.messageId, {
       current: 0,
       total: detail.total,
     });
-    
+
     this.updateToast();
   }
 
   private handleUpdated(detail: ProgressUpdatedEventDetail): void {
-    logger.debug(`更新消息 ${detail.messageId}: ${detail.completed}/${detail.total}`);
-    
+    logger.debug(
+      `更新消息 ${detail.messageId}: ${detail.completed}/${detail.total}`
+    );
+
     messageProgress.set(detail.messageId, {
       current: detail.completed,
       total: detail.total,
     });
-    
+
     this.updateToast();
   }
 
   private handleCleared(detail: ProgressClearedEventDetail): void {
     logger.debug(`清除消息 ${detail.messageId} 的进度`);
-    
+
     messageProgress.delete(detail.messageId);
-    
+
     // 如果没有任何进行中的任务,显示完成提示
     if (messageProgress.size === 0) {
       this.showCompletionToast();
@@ -107,7 +112,7 @@ class ProgressWidgetView {
     // 计算总进度
     let totalCurrent = 0;
     let totalMax = 0;
-    
+
     for (const progress of messageProgress.values()) {
       totalCurrent += progress.current;
       totalMax += progress.total;
@@ -115,14 +120,14 @@ class ProgressWidgetView {
 
     // 显示进度提示
     const message = `正在生成 ${totalCurrent}/${totalMax} 图片`;
-    
+
     currentToast = toastr.info(message, 'Auto Illustrator', {
-      timeOut: 0,              // 不自动消失
+      timeOut: 0, // 不自动消失
       extendedTimeOut: 0,
-      positionClass: 'toast-top-center',  // 顶部居中
+      positionClass: 'toast-top-center', // 顶部居中
       preventDuplicates: true,
-      closeButton: false,      // 不显示关闭按钮
-      progressBar: true,       // 显示进度条
+      closeButton: false, // 不显示关闭按钮
+      progressBar: true, // 显示进度条
     });
 
     logger.trace(`更新 toast: ${message}`);
@@ -153,9 +158,9 @@ class ProgressWidgetView {
    */
   public clearState(): void {
     logger.info('清除进度状态');
-    
+
     messageProgress.clear();
-    
+
     if (currentToast) {
       toastr.clear(currentToast);
       currentToast = null;

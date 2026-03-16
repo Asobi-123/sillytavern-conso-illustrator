@@ -203,5 +203,20 @@
   "streamingPreview.retryGeneration": "Retry",
   "streamingPreview.waitingForContent": "Waiting for streaming content...",
   "placeholder.generationFailed": "Generation Failed",
-  "placeholder.clickToRetry": "Click to retry generation"
+  "placeholder.clickToRetry": "Click to retry generation",
+  "settings.independentLlmApiTitle": "Independent LLM API for Prompt Refinement",
+  "settings.independentLlmApiDesc": "Use a separate LLM API for generating and refining image prompts (instead of SillyTavern's API)",
+  "settings.useIndependentLlmApi": "Use Independent LLM API",
+  "settings.useIndependentLlmApiDesc": "Enable to use a separate API for prompt generation/refinement",
+  "settings.independentLlmApiUrl": "API URL",
+  "settings.independentLlmApiUrlDesc": "OpenAI-compatible API endpoint (e.g., https://api.openai.com/v1)",
+  "settings.independentLlmApiKey": "API Key",
+  "settings.independentLlmApiKeyDesc": "Your API key for authentication",
+  "settings.independentLlmModel": "Model Name",
+  "settings.independentLlmModelDesc": "Model to use (e.g., gpt-4o-mini, claude-3-5-sonnet-20241022)",
+  "settings.testConnection": "Test Connection",
+  "toast.independentLlmApiMissingConfig": "Please configure API URL, API Key, and Model first",
+  "toast.testingConnection": "Testing connection...",
+  "toast.connectionSuccess": "Connection successful!",
+  "toast.connectionFailed": "Connection failed: {error}"
 }

@@ -203,5 +203,20 @@
   "streamingPreview.retryGeneration": "重试",
   "streamingPreview.waitingForContent": "等待流式内容...",
   "placeholder.generationFailed": "生成失败",
-  "placeholder.clickToRetry": "点击重试生成"
+  "placeholder.clickToRetry": "点击重试生成",
+  "settings.independentLlmApiTitle": "独立 LLM API 用于提示词优化",
+  "settings.independentLlmApiDesc": "使用独立的 LLM API 来生成和优化图像提示词（而不是使用酒馆的 API）",
+  "settings.useIndependentLlmApi": "使用独立 LLM API",
+  "settings.useIndependentLlmApiDesc": "启用后将使用独立 API 进行提示词生成/优化",
+  "settings.independentLlmApiUrl": "API 地址",
+  "settings.independentLlmApiUrlDesc": "OpenAI 兼容的 API 端点（例如：https://api.openai.com/v1）",
+  "settings.independentLlmApiKey": "API 密钥",
+  "settings.independentLlmApiKeyDesc": "用于身份验证的 API 密钥",
+  "settings.independentLlmModel": "模型名称",
+  "settings.independentLlmModelDesc": "要使用的模型（例如：gpt-4o-mini, claude-3-5-sonnet-20241022）",
+  "settings.testConnection": "测试连接",
+  "toast.independentLlmApiMissingConfig": "请先配置 API 地址、API 密钥和模型",
+  "toast.testingConnection": "正在测试连接...",
+  "toast.connectionSuccess": "连接成功！",
+  "toast.connectionFailed": "连接失败：{error}"
 }

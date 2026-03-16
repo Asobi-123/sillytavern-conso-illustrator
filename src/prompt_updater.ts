@@ -87,12 +87,6 @@ export async function generateUpdatedPrompt(
   const parentPromptId = parent.id;
   logger.debug('Current prompt:', currentPrompt);
 
-  // Check for LLM availability
-  if (!context.generateRaw) {
-    logger.error('generateRaw not available in context');
-    throw new Error('LLM generation not available');
-  }
-
   // Build system prompt and user prompt using template
   const systemPrompt =
     'You are a technical assistant helping to update image generation prompts. Output ONLY the updated prompt in HTML comment format. Do NOT write stories, explanations, or continue any roleplay.';
@@ -102,15 +96,29 @@ export async function generateUpdatedPrompt(
     .replace('{{{currentPrompt}}}', currentPrompt)
     .replace('{{{userFeedback}}}', userFeedback);
 
-  logger.debug('Sending prompt to LLM for update (using generateRaw)');
+  logger.debug('Sending prompt to LLM for update');
 
-  // Call LLM with generateRaw (no chat context)
+  // Call LLM (use independent API if configured, otherwise use SillyTavern API)
   let llmResponse: string;
   try {
-    llmResponse = await context.generateRaw({
-      systemPrompt,
-      prompt: userPrompt,
-    });
+    if (settings.useIndependentLlmApi) {
+      // Use independent LLM API
+      llmResponse = await callIndependentLlmApi(
+        systemPrompt,
+        userPrompt,
+        settings
+      );
+    } else {
+      // Use SillyTavern API (original behavior)
+      if (!context.generateRaw) {
+        logger.error('generateRaw not available in context');
+        throw new Error('LLM generation not available');
+      }
+      llmResponse = await context.generateRaw({
+        systemPrompt,
+        prompt: userPrompt,
+      });
+    }
   } catch (error) {
     logger.error('LLM generation failed:', error);
     throw error;
@@ -138,6 +146,69 @@ export async function generateUpdatedPrompt(
   logger.info(`Generated updated prompt: "${updatedPrompt}"`);
 
   return childNode;
+}
+
+/**
+ * Calls independent LLM API for prompt generation
+ *
+ * @param systemPrompt - System prompt
+ * @param userPrompt - User prompt
+ * @param settings - Extension settings
+ * @returns LLM response text
+ */
+async function callIndependentLlmApi(
+  systemPrompt: string,
+  userPrompt: string,
+  settings: AutoIllustratorSettings
+): Promise<string> {
+  const apiUrl = settings.independentLlmApiUrl;
+  const apiKey = settings.independentLlmApiKey;
+  const model = settings.independentLlmModel;
+
+  if (!apiUrl || !apiKey || !model) {
+    throw new Error('Independent LLM API not configured');
+  }
+
+  logger.debug('Calling independent LLM API:', {apiUrl, model});
+
+  const response = await fetch(`${apiUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+        {
+          role: 'user',
+          content: userPrompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 500,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Independent LLM API error: ${response.status} ${errorText}`
+    );
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    throw new Error('Invalid response from independent LLM API');
+  }
+
+  return content;
 }
 
 /**

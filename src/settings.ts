@@ -14,7 +14,7 @@ import {
   CONTEXT_MESSAGE_COUNT,
   META_PROMPT_DEPTH,
   IMAGE_DISPLAY_WIDTH,
-  IMAGE_RETENTION_DAYS, 
+  IMAGE_RETENTION_DAYS,
   UI_ELEMENT_IDS,
 } from './constants';
 import {t} from './i18n';
@@ -297,6 +297,45 @@ export function createSettingsUI(): string {
                 </button>
               </div>
             </label>
+
+            <hr style="margin: 1.5rem 0;">
+
+            <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_SETTINGS_CONTAINER}">
+              <div style="margin-bottom: 1rem;">
+                <strong>${t('settings.independentLlmApiTitle')}</strong>
+                <small style="display: block; margin-top: 0.25rem;">${t('settings.independentLlmApiDesc')}</small>
+              </div>
+
+              <label class="checkbox_label" for="${UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API}">
+                <input id="${UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API}" type="checkbox" />
+                <span>${t('settings.useIndependentLlmApi')}</span>
+                <small>${t('settings.useIndependentLlmApiDesc')}</small>
+              </label>
+
+              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL}">
+                <span>${t('settings.independentLlmApiUrl')}</span>
+                <small>${t('settings.independentLlmApiUrlDesc')}</small>
+                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL}" class="text_pole" type="text" placeholder="https://api.openai.com/v1" />
+              </label>
+
+              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}">
+                <span>${t('settings.independentLlmApiKey')}</span>
+                <small>${t('settings.independentLlmApiKeyDesc')}</small>
+                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}" class="text_pole" type="password" placeholder="sk-..." />
+              </label>
+
+              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}">
+                <span>${t('settings.independentLlmModel')}</span>
+                <small>${t('settings.independentLlmModelDesc')}</small>
+                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}" class="text_pole" type="text" placeholder="gpt-4o-mini" />
+              </label>
+
+              <div style="margin-top: 0.5rem;">
+                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION}" class="menu_button">
+                  <i class="fa-solid fa-plug"></i> ${t('settings.testConnection')}
+                </button>
+              </div>
+            </div>
           </div>
           <hr>
 

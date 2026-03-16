@@ -150,6 +150,14 @@ declare global {
     finalReconciliationDelayMs: number;
     /** Display width of generated images in chat messages (percentage: 10-100) */
     imageDisplayWidth: number;
+    /** Whether to use independent LLM API for prompt generation/refinement */
+    useIndependentLlmApi: boolean;
+    /** Independent LLM API URL (e.g., https://api.openai.com/v1) */
+    independentLlmApiUrl: string;
+    /** Independent LLM API Key */
+    independentLlmApiKey: string;
+    /** Independent LLM Model name (e.g., gpt-4o-mini) */
+    independentLlmModel: string;
   }
 
   interface ImagePromptMatch {

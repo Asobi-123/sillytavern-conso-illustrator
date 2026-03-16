@@ -179,6 +179,15 @@ export const DEFAULT_LLM_FREQUENCY_GUIDELINES = `Find 0-5 key visual moments in 
  * Loaded from: src/presets/prompt_writing_guidelines.md
  */
 export const DEFAULT_LLM_PROMPT_WRITING_GUIDELINES = promptWritingGuidelinesSfw;
+
+/**
+ * Independent LLM API configuration defaults
+ */
+export const INDEPENDENT_LLM_API = {
+  DEFAULT_URL: 'https://api.openai.com/v1',
+  DEFAULT_MODEL: 'gpt-4o-mini',
+} as const;
+
 /**
  * Default prompt detection patterns
  * Supports multiple tag formats for backward compatibility:
@@ -220,6 +229,10 @@ export const DEFAULT_SETTINGS = {
   finalReconciliationDelayMs: FINAL_RECONCILIATION_DELAY.DEFAULT,
   imageDisplayWidth: IMAGE_DISPLAY_WIDTH.DEFAULT,
   imageRetentionDays: IMAGE_RETENTION_DAYS.DEFAULT,
+  useIndependentLlmApi: false,
+  independentLlmApiUrl: INDEPENDENT_LLM_API.DEFAULT_URL,
+  independentLlmApiKey: '',
+  independentLlmModel: INDEPENDENT_LLM_API.DEFAULT_MODEL,
 };
 
 /**
@@ -247,7 +260,8 @@ export const UI_ELEMENT_IDS = {
   PROMPT_PATTERNS_RESET: 'auto_illustrator_lite_prompt_patterns_reset',
   PATTERN_VALIDATION_STATUS: 'auto_illustrator_lite_pattern_validation_status',
   COMMON_STYLE_TAGS: 'auto_illustrator_lite_common_style_tags',
-  COMMON_STYLE_TAGS_POSITION: 'auto_illustrator_lite_common_style_tags_position',
+  COMMON_STYLE_TAGS_POSITION:
+    'auto_illustrator_lite_common_style_tags_position',
   SHOW_GALLERY_WIDGET: 'auto_illustrator_lite_show_gallery_widget',
   SHOW_PROGRESS_WIDGET: 'auto_illustrator_lite_show_progress_widget',
   SHOW_STREAMING_PREVIEW_WIDGET:
@@ -269,5 +283,13 @@ export const UI_ELEMENT_IDS = {
   IMAGE_DISPLAY_WIDTH: 'auto_illustrator_lite_image_display_width',
   IMAGE_DISPLAY_WIDTH_VALUE: 'auto_illustrator_lite_image_display_width_value',
   IMAGE_RETENTION_DAYS: 'auto_illustrator_lite_image_retention_days',
+  USE_INDEPENDENT_LLM_API: 'auto_illustrator_lite_use_independent_llm_api',
+  INDEPENDENT_LLM_API_URL: 'auto_illustrator_lite_independent_llm_api_url',
+  INDEPENDENT_LLM_API_KEY: 'auto_illustrator_lite_independent_llm_api_key',
+  INDEPENDENT_LLM_MODEL: 'auto_illustrator_lite_independent_llm_model',
+  INDEPENDENT_LLM_TEST_CONNECTION:
+    'auto_illustrator_lite_independent_llm_test_connection',
+  INDEPENDENT_LLM_SETTINGS_CONTAINER:
+    'auto_illustrator_lite_independent_llm_settings_container',
   RESET_BUTTON: 'auto_illustrator_lite_reset',
 } as const;

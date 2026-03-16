@@ -330,12 +330,12 @@ async function showPromptUpdateDialog(
 
     // 提示标签
     dialog.append($('<label>').text(t('dialog.currentPrompt')));
-    
+
     // 【核心改动】把只读的 div 改成可编辑的 textarea
     const promptTextarea = $('<textarea>')
       .addClass('auto-illustrator-prompt-textarea')
       .attr('rows', '6')
-      .val(currentPrompt);  // 预填当前提示词
+      .val(currentPrompt); // 预填当前提示词
     dialog.append(promptTextarea);
 
     const buttons = $('<div>').addClass('auto-illustrator-dialog-buttons');
@@ -347,7 +347,10 @@ async function showPromptUpdateDialog(
       .on('click', () => {
         const edited = promptTextarea.val() as string;
         if (!edited || edited.trim() === '') {
-          toastr.warning(t('toast.promptCannotBeEmpty') || '提示词不能为空', t('extensionName'));
+          toastr.warning(
+            t('toast.promptCannotBeEmpty') || '提示词不能为空',
+            t('extensionName')
+          );
           return;
         }
         backdrop.remove();
@@ -390,17 +393,20 @@ async function showPromptUpdateDialog(
   // 如果提示词没变，不需要更新
   if (editedPrompt === currentPrompt) {
     logger.info('Prompt unchanged, skipping update');
-    toastr.info(t('toast.promptUnchanged') || '提示词未更改', t('extensionName'));
+    toastr.info(
+      t('toast.promptUnchanged') || '提示词未更改',
+      t('extensionName')
+    );
     return null;
   }
 
   // 【核心改动】不调用LLM，直接用 refinePrompt 创建子节点
   try {
     const childNode = await refinePrompt(
-      promptNode.id,      // parentPromptId
-      editedPrompt,       // newPromptText (用户编辑后的)
-      'manual-edit',      // refinementInfo (标记为手动编辑)
-      'manual-refined',   // source
+      promptNode.id, // parentPromptId
+      editedPrompt, // newPromptText (用户编辑后的)
+      'manual-edit', // refinementInfo (标记为手动编辑)
+      'manual-refined', // source
       metadata
     );
 
@@ -690,7 +696,9 @@ export async function handleImageRegenerationClick(
       const {parent, child} = updateResult;
 
       // 【核心改动】跳过 showPostUpdateRegenerationDialog，直接使用替换模式
-      logger.info('Prompt updated successfully, applying update and regenerating with replace mode');
+      logger.info(
+        'Prompt updated successfully, applying update and regenerating with replace mode'
+      );
 
       // User confirmed regeneration - apply prompt update to message text
       // Set up one-time listener to attach handlers after DOM update
@@ -727,7 +735,7 @@ export async function handleImageRegenerationClick(
       // 【核心改动】直接使用 'replace-image' 模式，不再弹出选择对话框
       await performRegeneration(
         normalizedUrl,
-        'replace-image',  // 固定使用替换模式
+        'replace-image', // 固定使用替换模式
         messageId,
         context,
         settings,
