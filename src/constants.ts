@@ -11,7 +11,7 @@ import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
 /**
  * Extension identifier used for settings storage
  */
-export const EXTENSION_NAME = 'auto_illustrator_lite';
+export const EXTENSION_NAME = 'auto_illustrator_conso';
 
 /**
  * Streaming poll interval configuration (milliseconds)
@@ -239,57 +239,57 @@ export const DEFAULT_SETTINGS = {
  * UI element IDs for settings controls
  */
 export const UI_ELEMENT_IDS = {
-  ENABLED: 'auto_illustrator_lite_enabled',
-  META_PROMPT: 'auto_illustrator_lite_meta_prompt',
-  META_PROMPT_DEPTH: 'auto_illustrator_lite_meta_prompt_depth',
-  META_PROMPT_PRESET_SELECT: 'auto_illustrator_lite_preset_select',
-  META_PROMPT_PRESET_EDIT: 'auto_illustrator_lite_preset_edit',
-  META_PROMPT_PRESET_SAVE: 'auto_illustrator_lite_preset_save',
-  META_PROMPT_PRESET_SAVE_AS: 'auto_illustrator_lite_preset_save_as',
-  META_PROMPT_PRESET_DELETE: 'auto_illustrator_lite_preset_delete',
-  META_PROMPT_PRESET_CANCEL: 'auto_illustrator_lite_preset_cancel',
-  PRESET_EDITOR: 'auto_illustrator_lite_preset_editor',
-  PRESET_VIEWER: 'auto_illustrator_lite_preset_viewer',
-  PRESET_PREVIEW: 'auto_illustrator_lite_preset_preview',
-  STREAMING_POLL_INTERVAL: 'auto_illustrator_lite_streaming_poll_interval',
-  MAX_CONCURRENT: 'auto_illustrator_lite_max_concurrent',
-  MIN_GENERATION_INTERVAL: 'auto_illustrator_lite_min_generation_interval',
-  LOG_LEVEL: 'auto_illustrator_lite_log_level',
-  MANUAL_GEN_MODE: 'auto_illustrator_lite_manual_gen_mode',
-  PROMPT_PATTERNS: 'auto_illustrator_lite_prompt_patterns',
-  PROMPT_PATTERNS_RESET: 'auto_illustrator_lite_prompt_patterns_reset',
-  PATTERN_VALIDATION_STATUS: 'auto_illustrator_lite_pattern_validation_status',
-  COMMON_STYLE_TAGS: 'auto_illustrator_lite_common_style_tags',
+  ENABLED: 'auto_illustrator_conso_enabled',
+  META_PROMPT: 'auto_illustrator_conso_meta_prompt',
+  META_PROMPT_DEPTH: 'auto_illustrator_conso_meta_prompt_depth',
+  META_PROMPT_PRESET_SELECT: 'auto_illustrator_conso_preset_select',
+  META_PROMPT_PRESET_EDIT: 'auto_illustrator_conso_preset_edit',
+  META_PROMPT_PRESET_SAVE: 'auto_illustrator_conso_preset_save',
+  META_PROMPT_PRESET_SAVE_AS: 'auto_illustrator_conso_preset_save_as',
+  META_PROMPT_PRESET_DELETE: 'auto_illustrator_conso_preset_delete',
+  META_PROMPT_PRESET_CANCEL: 'auto_illustrator_conso_preset_cancel',
+  PRESET_EDITOR: 'auto_illustrator_conso_preset_editor',
+  PRESET_VIEWER: 'auto_illustrator_conso_preset_viewer',
+  PRESET_PREVIEW: 'auto_illustrator_conso_preset_preview',
+  STREAMING_POLL_INTERVAL: 'auto_illustrator_conso_streaming_poll_interval',
+  MAX_CONCURRENT: 'auto_illustrator_conso_max_concurrent',
+  MIN_GENERATION_INTERVAL: 'auto_illustrator_conso_min_generation_interval',
+  LOG_LEVEL: 'auto_illustrator_conso_log_level',
+  MANUAL_GEN_MODE: 'auto_illustrator_conso_manual_gen_mode',
+  PROMPT_PATTERNS: 'auto_illustrator_conso_prompt_patterns',
+  PROMPT_PATTERNS_RESET: 'auto_illustrator_conso_prompt_patterns_reset',
+  PATTERN_VALIDATION_STATUS: 'auto_illustrator_conso_pattern_validation_status',
+  COMMON_STYLE_TAGS: 'auto_illustrator_conso_common_style_tags',
   COMMON_STYLE_TAGS_POSITION:
-    'auto_illustrator_lite_common_style_tags_position',
-  SHOW_GALLERY_WIDGET: 'auto_illustrator_lite_show_gallery_widget',
-  SHOW_PROGRESS_WIDGET: 'auto_illustrator_lite_show_progress_widget',
+    'auto_illustrator_conso_common_style_tags_position',
+  SHOW_GALLERY_WIDGET: 'auto_illustrator_conso_show_gallery_widget',
+  SHOW_PROGRESS_WIDGET: 'auto_illustrator_conso_show_progress_widget',
   SHOW_STREAMING_PREVIEW_WIDGET:
-    'auto_illustrator_lite_show_streaming_preview_widget',
-  PROMPT_GENERATION_MODE_SHARED: 'auto_illustrator_lite_prompt_gen_mode_shared',
+    'auto_illustrator_conso_show_streaming_preview_widget',
+  PROMPT_GENERATION_MODE_SHARED: 'auto_illustrator_conso_prompt_gen_mode_shared',
   PROMPT_GENERATION_MODE_INDEPENDENT:
-    'auto_illustrator_lite_prompt_gen_mode_independent',
+    'auto_illustrator_conso_prompt_gen_mode_independent',
   INDEPENDENT_API_SETTINGS_CONTAINER:
-    'auto_illustrator_lite_independent_api_settings_container',
-  MAX_PROMPTS_PER_MESSAGE: 'auto_illustrator_lite_max_prompts_per_message',
-  CONTEXT_MESSAGE_COUNT: 'auto_illustrator_lite_context_message_count',
-  LLM_FREQUENCY_GUIDELINES: 'auto_illustrator_lite_llm_frequency_guidelines',
+    'auto_illustrator_conso_independent_api_settings_container',
+  MAX_PROMPTS_PER_MESSAGE: 'auto_illustrator_conso_max_prompts_per_message',
+  CONTEXT_MESSAGE_COUNT: 'auto_illustrator_conso_context_message_count',
+  LLM_FREQUENCY_GUIDELINES: 'auto_illustrator_conso_llm_frequency_guidelines',
   LLM_FREQUENCY_GUIDELINES_RESET:
-    'auto_illustrator_lite_llm_frequency_guidelines_reset',
+    'auto_illustrator_conso_llm_frequency_guidelines_reset',
   LLM_PROMPT_WRITING_GUIDELINES:
-    'auto_illustrator_lite_llm_prompt_writing_guidelines',
+    'auto_illustrator_conso_llm_prompt_writing_guidelines',
   LLM_PROMPT_WRITING_GUIDELINES_RESET:
-    'auto_illustrator_lite_llm_prompt_writing_guidelines_reset',
-  IMAGE_DISPLAY_WIDTH: 'auto_illustrator_lite_image_display_width',
-  IMAGE_DISPLAY_WIDTH_VALUE: 'auto_illustrator_lite_image_display_width_value',
-  IMAGE_RETENTION_DAYS: 'auto_illustrator_lite_image_retention_days',
-  USE_INDEPENDENT_LLM_API: 'auto_illustrator_lite_use_independent_llm_api',
-  INDEPENDENT_LLM_API_URL: 'auto_illustrator_lite_independent_llm_api_url',
-  INDEPENDENT_LLM_API_KEY: 'auto_illustrator_lite_independent_llm_api_key',
-  INDEPENDENT_LLM_MODEL: 'auto_illustrator_lite_independent_llm_model',
+    'auto_illustrator_conso_llm_prompt_writing_guidelines_reset',
+  IMAGE_DISPLAY_WIDTH: 'auto_illustrator_conso_image_display_width',
+  IMAGE_DISPLAY_WIDTH_VALUE: 'auto_illustrator_conso_image_display_width_value',
+  IMAGE_RETENTION_DAYS: 'auto_illustrator_conso_image_retention_days',
+  USE_INDEPENDENT_LLM_API: 'auto_illustrator_conso_use_independent_llm_api',
+  INDEPENDENT_LLM_API_URL: 'auto_illustrator_conso_independent_llm_api_url',
+  INDEPENDENT_LLM_API_KEY: 'auto_illustrator_conso_independent_llm_api_key',
+  INDEPENDENT_LLM_MODEL: 'auto_illustrator_conso_independent_llm_model',
   INDEPENDENT_LLM_TEST_CONNECTION:
-    'auto_illustrator_lite_independent_llm_test_connection',
+    'auto_illustrator_conso_independent_llm_test_connection',
   INDEPENDENT_LLM_SETTINGS_CONTAINER:
-    'auto_illustrator_lite_independent_llm_settings_container',
-  RESET_BUTTON: 'auto_illustrator_lite_reset',
+    'auto_illustrator_conso_independent_llm_settings_container',
+  RESET_BUTTON: 'auto_illustrator_conso_reset',
 } as const;

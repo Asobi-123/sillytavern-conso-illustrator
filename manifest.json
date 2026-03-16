@@ -1,13 +1,13 @@
 {
-    "display_name": "自动插画 (简化版) / Auto Illustrator Lite",
+    "display_name": "自动插画 (Conso版) / Auto Illustrator Conso",
     "loading_order": 100,
     "requires": [],
     "optional": [],
     "js": "dist/index.js",
     "css": "dist/style.css",
-    "author": "GamerMitsuha",
+    "author": "Conso (based on GamerMitsuha's work)",
     "version": "1.5.0",
-    "homePage": "https://github.com/gamer-mitsuha/sillytavern-auto-illustrator",
+    "homePage": "https://github.com/Hao19911125/sillytavern-simplified-illustrator",
     "auto_update": true,
     "i18n": {
         "en-us": "i18n/en-us.json",
