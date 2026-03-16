@@ -218,5 +218,8 @@
   "toast.independentLlmApiMissingConfig": "请先配置 API 地址、API 密钥和模型",
   "toast.testingConnection": "正在测试连接...",
   "toast.connectionSuccess": "连接成功！",
-  "toast.connectionFailed": "连接失败：{error}"
+  "toast.connectionFailed": "连接失败：{error}",
+  "settings.imageSubfolderLabel": "图片文件夹标签（当前聊天）",
+  "settings.imageSubfolderLabelDesc": "为当前聊天设置自定义图片存储文件夹标签。图片将保存到 /user/images/{角色名}_{标签}/。留空则使用默认文件夹。",
+  "settings.imageSubfolderLabelPlaceholder": "例如：线路A、剧情2"
 }

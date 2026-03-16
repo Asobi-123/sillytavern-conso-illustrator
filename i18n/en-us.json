@@ -218,5 +218,8 @@
   "toast.independentLlmApiMissingConfig": "Please configure API URL, API Key, and Model first",
   "toast.testingConnection": "Testing connection...",
   "toast.connectionSuccess": "Connection successful!",
-  "toast.connectionFailed": "Connection failed: {error}"
+  "toast.connectionFailed": "Connection failed: {error}",
+  "settings.imageSubfolderLabel": "Image Folder Label (per-chat)",
+  "settings.imageSubfolderLabelDesc": "Custom label for this chat's image storage folder. Images will be saved to /user/images/{CharName}_{label}/. Leave empty to use default folder.",
+  "settings.imageSubfolderLabelPlaceholder": "e.g., route_A, storyline_2"
 }

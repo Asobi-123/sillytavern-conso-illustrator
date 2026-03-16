@@ -117,6 +117,12 @@ export function createSettingsUI(): string {
             </div>
           </div>
 
+          <label for="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}">
+            <span>${t('settings.imageSubfolderLabel')}</span>
+            <small>${t('settings.imageSubfolderLabelDesc')}</small>
+            <input id="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}" class="text_pole" type="text" placeholder="${t('settings.imageSubfolderLabelPlaceholder')}" />
+          </label>
+
           <div class="preset-management">
             <label>${t('settings.metaPromptPreset')}</label>
             <div class="preset-toolbar">

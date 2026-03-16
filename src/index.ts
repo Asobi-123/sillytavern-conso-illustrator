@@ -46,6 +46,7 @@ import {
   initializeConcurrencyLimiter,
   updateMaxConcurrent,
   updateMinInterval,
+  setImageSubfolderLabel,
 } from './image_generator';
 import {initializeI18n, t} from './i18n';
 import {extractImagePromptsMultiPattern} from './regex';
@@ -60,7 +61,7 @@ import {isIndependentApiMode} from './mode_utils';
 import {initializeChatChangedHandler} from './chat_changed_handler';
 import {initializeChatChangeOperations} from './chat_change_operations';
 import {runStartupCleanup} from './image_cleaner';
-import {getMetadata} from './metadata';
+import {getMetadata, saveMetadata} from './metadata';
 
 const logger = createLogger('Main');
 
@@ -303,6 +304,22 @@ function updateUI(): void {
   }
   if (independentLlmModelInput) {
     independentLlmModelInput.value = settings.independentLlmModel ?? '';
+  }
+
+  // Update image subfolder label from chat metadata
+  const imageSubfolderLabelInput = document.getElementById(
+    UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL
+  ) as HTMLInputElement;
+  if (imageSubfolderLabelInput) {
+    try {
+      const metadata = getMetadata();
+      imageSubfolderLabelInput.value = metadata.imageSubfolderLabel ?? '';
+      setImageSubfolderLabel(metadata.imageSubfolderLabel ?? null);
+    } catch {
+      // Metadata not ready (no chat loaded yet)
+      imageSubfolderLabelInput.value = '';
+      setImageSubfolderLabel(null);
+    }
   }
 
   // Update preset dropdown with custom presets
@@ -1912,6 +1929,23 @@ function initialize(): void {
     imageDisplayWidthInput?.addEventListener('change', handleSettingsChange);
 
     resetButton?.addEventListener('click', handleResetSettings);
+
+    // Image subfolder label (per-chat, saved to chat metadata)
+    const imageSubfolderLabelInput = document.getElementById(
+      UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL
+    ) as HTMLInputElement;
+    imageSubfolderLabelInput?.addEventListener('change', () => {
+      const label = imageSubfolderLabelInput.value.trim();
+      try {
+        const metadata = getMetadata();
+        metadata.imageSubfolderLabel = label || undefined;
+        saveMetadata();
+        setImageSubfolderLabel(label || null);
+        logger.info(`Image subfolder label updated: "${label || '(default)'}"`);
+      } catch (error) {
+        logger.warn('Could not save subfolder label (no active chat?):', error);
+      }
+    });
 
     // Update UI with loaded settings
     updateUI();

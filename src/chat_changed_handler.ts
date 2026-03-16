@@ -12,10 +12,11 @@
  */
 
 import {createLogger} from './logger';
-import {loadMetadataFromContext} from './metadata';
+import {loadMetadataFromContext, getMetadata} from './metadata';
 import {sessionManager} from './session_manager';
 import {executeChatChangeOperations} from './chat_change_operations';
 import {reloadGalleryForNewChat} from './gallery_widget';
+import {setImageSubfolderLabel} from './image_generator';
 
 const logger = createLogger('ChatChangedHandler');
 
@@ -32,6 +33,11 @@ function handleChatChanged(): void {
     // Step 1: Load fresh metadata FIRST (must happen before anything else)
     logger.debug('1. Loading fresh metadata from new chat');
     loadMetadataFromContext();
+
+    // Step 1.5: Load subfolder label from chat metadata
+    const metadata = getMetadata();
+    const subfolderLabel = metadata?.imageSubfolderLabel ?? null;
+    setImageSubfolderLabel(subfolderLabel);
 
     // Step 2: Cancel all active streaming sessions
     logger.debug('2. Cancelling all active streaming sessions');

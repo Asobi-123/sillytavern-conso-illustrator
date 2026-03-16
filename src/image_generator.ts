@@ -105,6 +105,74 @@ export function updateMinInterval(minInterval: number): void {
 // Old createImageTag and insertImageAfterPrompt functions removed
 // Now using the shared createImageTag function from reconciliation.ts
 
+// Current subfolder label for image storage (set per-chat)
+let currentSubfolderLabel: string | null = null;
+
+/**
+ * Sets the subfolder label used for image storage.
+ * When set, images will be saved to /user/images/{CharName}_{label}/ instead of /user/images/{CharName}/
+ * @param label - Subfolder label, or null/empty to use default behavior
+ */
+export function setImageSubfolderLabel(label: string | null): void {
+  currentSubfolderLabel = label?.trim() || null;
+  if (currentSubfolderLabel) {
+    logger.info(`Image subfolder label set: "${currentSubfolderLabel}"`);
+  } else {
+    logger.info('Image subfolder label cleared, using default');
+  }
+}
+
+/**
+ * Installs a fetch interceptor that modifies the ch_name in /api/images/upload requests.
+ * Returns a cleanup function to restore the original fetch.
+ */
+function installImageUploadInterceptor(): () => void {
+  if (!currentSubfolderLabel) {
+    return () => {}; // no-op if no label set
+  }
+
+  const originalFetch = window.fetch;
+  const label = currentSubfolderLabel;
+
+  window.fetch = async function (
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response> {
+    // Only intercept POST to /api/images/upload
+    const url =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.href
+          : input.url;
+
+    if (url.includes('/api/images/upload') && init?.method === 'POST' && init?.body) {
+      try {
+        const body = JSON.parse(init.body as string);
+        if (body.ch_name) {
+          const originalName = body.ch_name;
+          body.ch_name = `${originalName}_${label}`;
+          logger.debug(
+            `Intercepted image upload: ch_name "${originalName}" -> "${body.ch_name}"`
+          );
+          init = {...init, body: JSON.stringify(body)};
+        }
+      } catch {
+        // Not JSON or parse error, pass through unchanged
+      }
+    }
+
+    return originalFetch.call(window, input, init);
+  } as typeof window.fetch;
+
+  logger.debug(`Fetch interceptor installed (label: "${label}")`);
+
+  return () => {
+    window.fetch = originalFetch;
+    logger.debug('Fetch interceptor removed');
+  };
+}
+
 /**
  * Generates an image using the SD slash command
  * All image generation goes through the global rate limiter
@@ -161,6 +229,9 @@ export async function generateImage(
 
     const startTime = performance.now();
 
+    // Install fetch interceptor for custom subfolder
+    const removeInterceptor = installImageUploadInterceptor();
+
     try {
       const sdCommand = context.SlashCommandParser?.commands?.['sd'];
       if (!sdCommand || !sdCommand.callback) {
@@ -191,6 +262,9 @@ export async function generateImage(
         error
       );
       return null;
+    } finally {
+      // Always remove interceptor
+      removeInterceptor();
     }
   });
 }

@@ -106,6 +106,9 @@ export interface AutoIllustratorChatMetadata {
 
   /** Gallery widget state (per-chat) */
   galleryWidget?: GalleryWidgetState;
+
+  /** Custom subfolder label for image storage (per-chat) */
+  imageSubfolderLabel?: string;
 }
 
 /**
