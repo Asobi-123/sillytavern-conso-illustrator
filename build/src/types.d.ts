@@ -89,6 +89,8 @@ export interface AutoIllustratorChatMetadata {
     promptRegistry?: import('./prompt_manager').PromptRegistry;
     /** Gallery widget state (per-chat) */
     galleryWidget?: GalleryWidgetState;
+    /** Custom subfolder label for image storage (per-chat) */
+    imageSubfolderLabel?: string;
 }
 /**
  * Gallery widget state stored in chat metadata

@@ -8,7 +8,7 @@
 /**
  * Extension identifier used for settings storage
  */
-export declare const EXTENSION_NAME = "auto_illustrator_lite";
+export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Streaming poll interval configuration (milliseconds)
  * Controls how frequently the extension checks for new prompts during streaming
@@ -156,6 +156,13 @@ export declare const DEFAULT_LLM_FREQUENCY_GUIDELINES = "Find 0-5 key visual mom
  */
 export declare const DEFAULT_LLM_PROMPT_WRITING_GUIDELINES: string;
 /**
+ * Independent LLM API configuration defaults
+ */
+export declare const INDEPENDENT_LLM_API: {
+    readonly DEFAULT_URL: "https://api.openai.com/v1";
+    readonly DEFAULT_MODEL: "gpt-4o-mini";
+};
+/**
  * Default prompt detection patterns
  * Supports multiple tag formats for backward compatibility:
  * - HTML comment format (primary, invisible, passes through DOMPurify)
@@ -192,47 +199,58 @@ export declare const DEFAULT_SETTINGS: {
     finalReconciliationDelayMs: 5000;
     imageDisplayWidth: 100;
     imageRetentionDays: 1;
+    useIndependentLlmApi: boolean;
+    independentLlmApiUrl: "https://api.openai.com/v1";
+    independentLlmApiKey: string;
+    independentLlmModel: "gpt-4o-mini";
 };
 /**
  * UI element IDs for settings controls
  */
 export declare const UI_ELEMENT_IDS: {
-    readonly ENABLED: "auto_illustrator_lite_enabled";
-    readonly META_PROMPT: "auto_illustrator_lite_meta_prompt";
-    readonly META_PROMPT_DEPTH: "auto_illustrator_lite_meta_prompt_depth";
-    readonly META_PROMPT_PRESET_SELECT: "auto_illustrator_lite_preset_select";
-    readonly META_PROMPT_PRESET_EDIT: "auto_illustrator_lite_preset_edit";
-    readonly META_PROMPT_PRESET_SAVE: "auto_illustrator_lite_preset_save";
-    readonly META_PROMPT_PRESET_SAVE_AS: "auto_illustrator_lite_preset_save_as";
-    readonly META_PROMPT_PRESET_DELETE: "auto_illustrator_lite_preset_delete";
-    readonly META_PROMPT_PRESET_CANCEL: "auto_illustrator_lite_preset_cancel";
-    readonly PRESET_EDITOR: "auto_illustrator_lite_preset_editor";
-    readonly PRESET_VIEWER: "auto_illustrator_lite_preset_viewer";
-    readonly PRESET_PREVIEW: "auto_illustrator_lite_preset_preview";
-    readonly STREAMING_POLL_INTERVAL: "auto_illustrator_lite_streaming_poll_interval";
-    readonly MAX_CONCURRENT: "auto_illustrator_lite_max_concurrent";
-    readonly MIN_GENERATION_INTERVAL: "auto_illustrator_lite_min_generation_interval";
-    readonly LOG_LEVEL: "auto_illustrator_lite_log_level";
-    readonly MANUAL_GEN_MODE: "auto_illustrator_lite_manual_gen_mode";
-    readonly PROMPT_PATTERNS: "auto_illustrator_lite_prompt_patterns";
-    readonly PROMPT_PATTERNS_RESET: "auto_illustrator_lite_prompt_patterns_reset";
-    readonly PATTERN_VALIDATION_STATUS: "auto_illustrator_lite_pattern_validation_status";
-    readonly COMMON_STYLE_TAGS: "auto_illustrator_lite_common_style_tags";
-    readonly COMMON_STYLE_TAGS_POSITION: "auto_illustrator_lite_common_style_tags_position";
-    readonly SHOW_GALLERY_WIDGET: "auto_illustrator_lite_show_gallery_widget";
-    readonly SHOW_PROGRESS_WIDGET: "auto_illustrator_lite_show_progress_widget";
-    readonly SHOW_STREAMING_PREVIEW_WIDGET: "auto_illustrator_lite_show_streaming_preview_widget";
-    readonly PROMPT_GENERATION_MODE_SHARED: "auto_illustrator_lite_prompt_gen_mode_shared";
-    readonly PROMPT_GENERATION_MODE_INDEPENDENT: "auto_illustrator_lite_prompt_gen_mode_independent";
-    readonly INDEPENDENT_API_SETTINGS_CONTAINER: "auto_illustrator_lite_independent_api_settings_container";
-    readonly MAX_PROMPTS_PER_MESSAGE: "auto_illustrator_lite_max_prompts_per_message";
-    readonly CONTEXT_MESSAGE_COUNT: "auto_illustrator_lite_context_message_count";
-    readonly LLM_FREQUENCY_GUIDELINES: "auto_illustrator_lite_llm_frequency_guidelines";
-    readonly LLM_FREQUENCY_GUIDELINES_RESET: "auto_illustrator_lite_llm_frequency_guidelines_reset";
-    readonly LLM_PROMPT_WRITING_GUIDELINES: "auto_illustrator_lite_llm_prompt_writing_guidelines";
-    readonly LLM_PROMPT_WRITING_GUIDELINES_RESET: "auto_illustrator_lite_llm_prompt_writing_guidelines_reset";
-    readonly IMAGE_DISPLAY_WIDTH: "auto_illustrator_lite_image_display_width";
-    readonly IMAGE_DISPLAY_WIDTH_VALUE: "auto_illustrator_lite_image_display_width_value";
-    readonly IMAGE_RETENTION_DAYS: "auto_illustrator_lite_image_retention_days";
-    readonly RESET_BUTTON: "auto_illustrator_lite_reset";
+    readonly ENABLED: "auto_illustrator_conso_enabled";
+    readonly META_PROMPT: "auto_illustrator_conso_meta_prompt";
+    readonly META_PROMPT_DEPTH: "auto_illustrator_conso_meta_prompt_depth";
+    readonly META_PROMPT_PRESET_SELECT: "auto_illustrator_conso_preset_select";
+    readonly META_PROMPT_PRESET_EDIT: "auto_illustrator_conso_preset_edit";
+    readonly META_PROMPT_PRESET_SAVE: "auto_illustrator_conso_preset_save";
+    readonly META_PROMPT_PRESET_SAVE_AS: "auto_illustrator_conso_preset_save_as";
+    readonly META_PROMPT_PRESET_DELETE: "auto_illustrator_conso_preset_delete";
+    readonly META_PROMPT_PRESET_CANCEL: "auto_illustrator_conso_preset_cancel";
+    readonly PRESET_EDITOR: "auto_illustrator_conso_preset_editor";
+    readonly PRESET_VIEWER: "auto_illustrator_conso_preset_viewer";
+    readonly PRESET_PREVIEW: "auto_illustrator_conso_preset_preview";
+    readonly STREAMING_POLL_INTERVAL: "auto_illustrator_conso_streaming_poll_interval";
+    readonly MAX_CONCURRENT: "auto_illustrator_conso_max_concurrent";
+    readonly MIN_GENERATION_INTERVAL: "auto_illustrator_conso_min_generation_interval";
+    readonly LOG_LEVEL: "auto_illustrator_conso_log_level";
+    readonly MANUAL_GEN_MODE: "auto_illustrator_conso_manual_gen_mode";
+    readonly PROMPT_PATTERNS: "auto_illustrator_conso_prompt_patterns";
+    readonly PROMPT_PATTERNS_RESET: "auto_illustrator_conso_prompt_patterns_reset";
+    readonly PATTERN_VALIDATION_STATUS: "auto_illustrator_conso_pattern_validation_status";
+    readonly COMMON_STYLE_TAGS: "auto_illustrator_conso_common_style_tags";
+    readonly COMMON_STYLE_TAGS_POSITION: "auto_illustrator_conso_common_style_tags_position";
+    readonly SHOW_GALLERY_WIDGET: "auto_illustrator_conso_show_gallery_widget";
+    readonly SHOW_PROGRESS_WIDGET: "auto_illustrator_conso_show_progress_widget";
+    readonly SHOW_STREAMING_PREVIEW_WIDGET: "auto_illustrator_conso_show_streaming_preview_widget";
+    readonly PROMPT_GENERATION_MODE_SHARED: "auto_illustrator_conso_prompt_gen_mode_shared";
+    readonly PROMPT_GENERATION_MODE_INDEPENDENT: "auto_illustrator_conso_prompt_gen_mode_independent";
+    readonly INDEPENDENT_API_SETTINGS_CONTAINER: "auto_illustrator_conso_independent_api_settings_container";
+    readonly MAX_PROMPTS_PER_MESSAGE: "auto_illustrator_conso_max_prompts_per_message";
+    readonly CONTEXT_MESSAGE_COUNT: "auto_illustrator_conso_context_message_count";
+    readonly LLM_FREQUENCY_GUIDELINES: "auto_illustrator_conso_llm_frequency_guidelines";
+    readonly LLM_FREQUENCY_GUIDELINES_RESET: "auto_illustrator_conso_llm_frequency_guidelines_reset";
+    readonly LLM_PROMPT_WRITING_GUIDELINES: "auto_illustrator_conso_llm_prompt_writing_guidelines";
+    readonly LLM_PROMPT_WRITING_GUIDELINES_RESET: "auto_illustrator_conso_llm_prompt_writing_guidelines_reset";
+    readonly IMAGE_DISPLAY_WIDTH: "auto_illustrator_conso_image_display_width";
+    readonly IMAGE_DISPLAY_WIDTH_VALUE: "auto_illustrator_conso_image_display_width_value";
+    readonly IMAGE_RETENTION_DAYS: "auto_illustrator_conso_image_retention_days";
+    readonly USE_INDEPENDENT_LLM_API: "auto_illustrator_conso_use_independent_llm_api";
+    readonly INDEPENDENT_LLM_API_URL: "auto_illustrator_conso_independent_llm_api_url";
+    readonly INDEPENDENT_LLM_API_KEY: "auto_illustrator_conso_independent_llm_api_key";
+    readonly INDEPENDENT_LLM_MODEL: "auto_illustrator_conso_independent_llm_model";
+    readonly INDEPENDENT_LLM_TEST_CONNECTION: "auto_illustrator_conso_independent_llm_test_connection";
+    readonly INDEPENDENT_LLM_SETTINGS_CONTAINER: "auto_illustrator_conso_independent_llm_settings_container";
+    readonly IMAGE_SUBFOLDER_LABEL: "auto_illustrator_conso_image_subfolder_label";
+    readonly RESET_BUTTON: "auto_illustrator_conso_reset";
 };

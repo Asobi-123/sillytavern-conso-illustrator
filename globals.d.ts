@@ -30,6 +30,11 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type JQuery = any;
 
+  // SillyTavern global object
+  const SillyTavern: {
+    getContext(): SillyTavernContext;
+  };
+
   // SillyTavern context type - manually typed since st-context.js has no type info
   /* eslint-disable @typescript-eslint/no-explicit-any */
   interface SillyTavernContext {
@@ -78,6 +83,8 @@ declare global {
     this_chid: number;
     saveSettingsDebounced(): void;
     saveChat(): Promise<void>;
+    saveMetadata(): void;
+    saveMetadataDebounced(): void;
     setExtensionPrompt(
       key: string,
       value: string,

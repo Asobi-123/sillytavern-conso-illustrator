@@ -26,6 +26,12 @@ export declare function updateMaxConcurrent(maxConcurrent: number): void;
  */
 export declare function updateMinInterval(minInterval: number): void;
 /**
+ * Sets the subfolder label used for image storage.
+ * When set, images will be saved to /user/images/{CharName}_{label}/ instead of /user/images/{CharName}/
+ * @param label - Subfolder label, or null/empty to use default behavior
+ */
+export declare function setImageSubfolderLabel(label: string | null): void;
+/**
  * Generates an image using the SD slash command
  * All image generation goes through the global rate limiter
  * @param prompt - Image generation prompt
