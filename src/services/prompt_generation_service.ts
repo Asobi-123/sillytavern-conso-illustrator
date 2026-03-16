@@ -6,6 +6,7 @@
 import {createLogger} from '../logger';
 import promptGenerationTemplate from '../presets/prompt_generation.md';
 import type {PromptSuggestion} from '../prompt_insertion';
+import {callIndependentLlmApi} from './independent_llm';
 
 const logger = createLogger('PromptGenService');
 
@@ -202,18 +203,28 @@ export async function generatePromptsForMessage(
     contextMessageCount
   );
 
-  logger.debug('Calling LLM for prompt generation (using generateRaw)');
+  logger.debug('Calling LLM for prompt generation');
   logger.debug('Context message count:', contextMessageCount);
   logger.debug('User prompt length:', userPrompt.length);
   logger.trace('User prompt:', userPrompt);
 
-  // Call LLM with generateRaw (no chat context)
+  // Call LLM (use independent API if configured, otherwise use SillyTavern API)
   let llmResponse: string;
   try {
-    llmResponse = await context.generateRaw({
-      systemPrompt,
-      prompt: userPrompt,
-    });
+    if (settings.useIndependentLlmApi) {
+      logger.debug('Using independent LLM API for prompt generation');
+      llmResponse = await callIndependentLlmApi(
+        systemPrompt,
+        userPrompt,
+        settings
+      );
+    } else {
+      logger.debug('Using SillyTavern API (generateRaw) for prompt generation');
+      llmResponse = await context.generateRaw({
+        systemPrompt,
+        prompt: userPrompt,
+      });
+    }
 
     logger.debug('LLM response received');
     logger.trace('Raw LLM response:', llmResponse);

@@ -13,6 +13,7 @@ import {
   type PromptNode,
 } from './prompt_manager';
 import {getMetadata} from './metadata';
+import {callIndependentLlmApi} from './services/independent_llm';
 import {DEFAULT_PROMPT_DETECTION_PATTERNS} from './constants';
 import {renderMessageUpdate} from './utils/message_renderer';
 
@@ -146,69 +147,6 @@ export async function generateUpdatedPrompt(
   logger.info(`Generated updated prompt: "${updatedPrompt}"`);
 
   return childNode;
-}
-
-/**
- * Calls independent LLM API for prompt generation
- *
- * @param systemPrompt - System prompt
- * @param userPrompt - User prompt
- * @param settings - Extension settings
- * @returns LLM response text
- */
-async function callIndependentLlmApi(
-  systemPrompt: string,
-  userPrompt: string,
-  settings: AutoIllustratorSettings
-): Promise<string> {
-  const apiUrl = settings.independentLlmApiUrl;
-  const apiKey = settings.independentLlmApiKey;
-  const model = settings.independentLlmModel;
-
-  if (!apiUrl || !apiKey || !model) {
-    throw new Error('Independent LLM API not configured');
-  }
-
-  logger.debug('Calling independent LLM API:', {apiUrl, model});
-
-  const response = await fetch(`${apiUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 500,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Independent LLM API error: ${response.status} ${errorText}`
-    );
-  }
-
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new Error('Invalid response from independent LLM API');
-  }
-
-  return content;
 }
 
 /**

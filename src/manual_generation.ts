@@ -309,8 +309,10 @@ async function showPromptUpdateDialog(
 
   const currentPrompt = promptNode.text;
 
-  // Show dialog to let user directly edit the prompt
-  const editedPrompt = await new Promise<string | null>(resolve => {
+  // Show dialog to let user edit or AI-refine the prompt
+  const dialogResult = await new Promise<
+    {mode: 'manual'; text: string} | {mode: 'ai'; feedback: string} | null
+  >(resolve => {
     // Check if dialog already exists and close it
     const existingDialog = $('#auto_illustrator_prompt_update_dialog');
     if (existingDialog.length > 0) {
@@ -325,37 +327,60 @@ async function showPromptUpdateDialog(
       .attr('id', 'auto_illustrator_prompt_update_dialog')
       .addClass('auto-illustrator-dialog');
 
-    // 标题改为「编辑提示词」
-    dialog.append($('<h3>').text('编辑提示词'));
+    dialog.append($('<h3>').text(t('dialog.updatePromptTitle')));
 
-    // 提示标签
+    // Current prompt label
     dialog.append($('<label>').text(t('dialog.currentPrompt')));
 
-    // 【核心改动】把只读的 div 改成可编辑的 textarea
+    // Editable textarea for manual editing
     const promptTextarea = $('<textarea>')
       .addClass('auto-illustrator-prompt-textarea')
       .attr('rows', '6')
-      .val(currentPrompt); // 预填当前提示词
+      .val(currentPrompt);
     dialog.append(promptTextarea);
+
+    // AI feedback section
+    dialog.append(
+      $('<label>')
+        .text(t('dialog.aiFeedbackLabel'))
+        .css('margin-top', '0.75rem')
+    );
+    const feedbackTextarea = $('<textarea>')
+      .addClass('auto-illustrator-feedback-textarea')
+      .attr('rows', '3')
+      .attr('placeholder', t('dialog.aiFeedbackPlaceholder'));
+    dialog.append(feedbackTextarea);
 
     const buttons = $('<div>').addClass('auto-illustrator-dialog-buttons');
 
-    // 【核心改动】「使用AI更新」改成「完成」
+    // Manual confirm button
     const confirmButton = $('<button>')
-      .text('完成')
+      .text(t('dialog.confirmManualEdit'))
       .addClass('menu_button')
       .on('click', () => {
         const edited = promptTextarea.val() as string;
         if (!edited || edited.trim() === '') {
-          toastr.warning(
-            t('toast.promptCannotBeEmpty') || '提示词不能为空',
-            t('extensionName')
-          );
+          toastr.warning(t('toast.promptCannotBeEmpty'), t('extensionName'));
           return;
         }
         backdrop.remove();
         dialog.remove();
-        resolve(edited.trim());
+        resolve({mode: 'manual', text: edited.trim()});
+      });
+
+    // AI refine button
+    const aiButton = $('<button>')
+      .text(t('dialog.updateWithAI'))
+      .addClass('menu_button')
+      .on('click', () => {
+        const feedback = (feedbackTextarea.val() as string)?.trim();
+        if (!feedback) {
+          toastr.warning(t('toast.feedbackRequired'), t('extensionName'));
+          return;
+        }
+        backdrop.remove();
+        dialog.remove();
+        resolve({mode: 'ai', feedback});
       });
 
     const cancelButton = $('<button>')
@@ -367,7 +392,7 @@ async function showPromptUpdateDialog(
         resolve(null);
       });
 
-    buttons.append(confirmButton).append(cancelButton);
+    buttons.append(confirmButton).append(aiButton).append(cancelButton);
     dialog.append(buttons);
 
     // Append backdrop and dialog to body
@@ -385,37 +410,60 @@ async function showPromptUpdateDialog(
     (promptTextarea[0] as HTMLTextAreaElement).select();
   });
 
-  if (!editedPrompt) {
+  if (!dialogResult) {
     logger.info('Prompt update cancelled by user');
     return null;
   }
 
-  // 如果提示词没变，不需要更新
-  if (editedPrompt === currentPrompt) {
-    logger.info('Prompt unchanged, skipping update');
-    toastr.info(
-      t('toast.promptUnchanged') || '提示词未更改',
-      t('extensionName')
-    );
-    return null;
-  }
+  if (dialogResult.mode === 'manual') {
+    // Manual edit mode
+    const editedPrompt = dialogResult.text!;
 
-  // 【核心改动】不调用LLM，直接用 refinePrompt 创建子节点
-  try {
-    const childNode = await refinePrompt(
-      promptNode.id, // parentPromptId
-      editedPrompt, // newPromptText (用户编辑后的)
-      'manual-edit', // refinementInfo (标记为手动编辑)
-      'manual-refined', // source
-      metadata
-    );
+    if (editedPrompt === currentPrompt) {
+      logger.info('Prompt unchanged, skipping update');
+      toastr.info(t('toast.promptUnchanged'), t('extensionName'));
+      return null;
+    }
 
-    logger.info('Successfully created child node with manually edited prompt');
-    return {parent: promptNode, child: childNode};
-  } catch (error) {
-    logger.error('Error creating child prompt node:', error);
-    toastr.error(t('toast.failedToUpdatePrompt'), t('extensionName'));
-    return null;
+    try {
+      const childNode = await refinePrompt(
+        promptNode.id,
+        editedPrompt,
+        'manual-edit',
+        'manual-refined',
+        metadata
+      );
+      logger.info(
+        'Successfully created child node with manually edited prompt'
+      );
+      return {parent: promptNode, child: childNode};
+    } catch (error) {
+      logger.error('Error creating child prompt node:', error);
+      toastr.error(t('toast.failedToUpdatePrompt'), t('extensionName'));
+      return null;
+    }
+  } else {
+    // AI refine mode
+    const feedback = dialogResult.feedback!;
+    try {
+      toastr.info(t('toast.aiRefining'), t('extensionName'));
+      const childNode = await generateUpdatedPrompt(
+        imageUrl,
+        feedback,
+        context,
+        settings
+      );
+      if (!childNode) {
+        toastr.error(t('toast.aiRefineFailed'), t('extensionName'));
+        return null;
+      }
+      logger.info('Successfully created child node with AI-refined prompt');
+      return {parent: promptNode, child: childNode};
+    } catch (error) {
+      logger.error('Error during AI prompt refinement:', error);
+      toastr.error(t('toast.aiRefineFailed'), t('extensionName'));
+      return null;
+    }
   }
 }
 

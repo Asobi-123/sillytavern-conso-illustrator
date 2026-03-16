@@ -266,7 +266,8 @@ export const UI_ELEMENT_IDS = {
   SHOW_PROGRESS_WIDGET: 'auto_illustrator_conso_show_progress_widget',
   SHOW_STREAMING_PREVIEW_WIDGET:
     'auto_illustrator_conso_show_streaming_preview_widget',
-  PROMPT_GENERATION_MODE_SHARED: 'auto_illustrator_conso_prompt_gen_mode_shared',
+  PROMPT_GENERATION_MODE_SHARED:
+    'auto_illustrator_conso_prompt_gen_mode_shared',
   PROMPT_GENERATION_MODE_INDEPENDENT:
     'auto_illustrator_conso_prompt_gen_mode_independent',
   INDEPENDENT_API_SETTINGS_CONTAINER:

@@ -146,7 +146,11 @@ function installImageUploadInterceptor(): () => void {
           ? input.href
           : input.url;
 
-    if (url.includes('/api/images/upload') && init?.method === 'POST' && init?.body) {
+    if (
+      url.includes('/api/images/upload') &&
+      init?.method === 'POST' &&
+      init?.body
+    ) {
       try {
         const body = JSON.parse(init.body as string);
         if (body.ch_name) {
