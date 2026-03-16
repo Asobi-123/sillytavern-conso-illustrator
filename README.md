@@ -29,7 +29,7 @@
 - **本版**：点击「更新提示词」→ **直接编辑**当前提示词 → 点完成 → 立即生成新图片
 
 #### 💾 独立配置
-- 使用独立的配置 ID（`auto_illustrator_lite`）
+- 使用独立的配置 ID（`auto_illustrator_conso`）
 - 可与原版插件共存，互不干扰
 
 ---
@@ -86,7 +86,7 @@ Thanks to the original author **gamer-mitsuha** for the excellent work! This pro
 - **This version**: Click "Update Prompt" → **Directly edit** the prompt → Click confirm → Generate immediately
 
 #### 💾 Independent Configuration
-- Uses separate config ID (`auto_illustrator_lite`)
+- Uses separate config ID (`auto_illustrator_conso`)
 - Can coexist with original plugin without conflicts
 
 ---
