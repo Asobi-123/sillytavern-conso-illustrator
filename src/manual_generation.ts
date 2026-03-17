@@ -448,7 +448,7 @@ async function showPromptUpdateDialog(
     try {
       toastr.info(t('toast.aiRefining'), t('extensionName'));
       const childNode = await generateUpdatedPrompt(
-        imageUrl,
+        normalizedUrl,
         feedback,
         context,
         settings

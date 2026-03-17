@@ -11,6 +11,45 @@ import {callIndependentLlmApi} from './independent_llm';
 const logger = createLogger('PromptGenService');
 
 /**
+ * Cleans message text for LLM consumption by removing noise content.
+ * Strips HTML comments, inline-styled div blocks, and HTML tags (keeping text content).
+ *
+ * @param text - Raw message text potentially containing HTML
+ * @returns Cleaned plain text suitable for LLM analysis
+ */
+export function cleanMessageTextForLlm(text: string): string {
+  let cleaned = text;
+
+  // 1. Remove HTML comments (<!-- ... -->) including multiline
+  //    These contain draft/compliance metadata that's pure noise
+  cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
+
+  // 2. Remove <div style="...">...</div> blocks (inline HTML/CSS UI elements)
+  //    These are visual widgets (e.g., status panels) not narrative content
+  //    Use non-greedy matching and handle nested divs by repeating
+  for (let i = 0; i < 5; i++) {
+    const before = cleaned;
+    cleaned = cleaned.replace(
+      /<div\s+style="[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+      ''
+    );
+    if (cleaned === before) break;
+  }
+
+  // 3. Strip remaining HTML tags but keep their text content
+  //    e.g., <details><summary>Title</summary>Content</details> → Title Content
+  cleaned = cleaned.replace(/<[^>]+>/g, '');
+
+  // 4. Collapse multiple blank lines into at most two
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+
+  // 5. Trim leading/trailing whitespace
+  cleaned = cleaned.trim();
+
+  return cleaned;
+}
+
+/**
  * Builds user prompt with context from previous messages
  * Format: === CONTEXT === ... === CURRENT MESSAGE === ...
  *
@@ -34,7 +73,7 @@ function buildUserPromptWithContext(
     contextText = recentMessages
       .map(msg => {
         const name = msg.name || (msg.is_user ? 'User' : 'Assistant');
-        const text = msg.mes || '';
+        const text = cleanMessageTextForLlm(msg.mes || '');
         return `${name}: ${text}`;
       })
       .join('\n\n');
@@ -172,6 +211,12 @@ export async function generatePromptsForMessage(
   logger.info('Generating image prompts using separate LLM call');
   logger.debug(`Message length: ${messageText.length} characters`);
 
+  // Clean message text for LLM (remove HTML noise)
+  const cleanedMessageText = cleanMessageTextForLlm(messageText);
+  logger.debug(
+    `Cleaned message length: ${cleanedMessageText.length} characters (removed ${messageText.length - cleanedMessageText.length})`
+  );
+
   // Check for LLM availability
   if (!context.generateRaw) {
     logger.error('generateRaw not available in context');
@@ -195,11 +240,11 @@ export async function generatePromptsForMessage(
     promptWritingGuidelines
   );
 
-  // Build user prompt with context and current message
+  // Build user prompt with context and cleaned current message
   const contextMessageCount = settings.contextMessageCount || 10;
   const userPrompt = buildUserPromptWithContext(
     context,
-    messageText,
+    cleanedMessageText,
     contextMessageCount
   );
 

@@ -291,6 +291,9 @@ function updateUI(): void {
   const independentLlmModelInput = document.getElementById(
     UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
   ) as HTMLInputElement;
+  const independentLlmModelSelect = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL_SELECT
+  ) as HTMLSelectElement;
 
   if (useIndependentLlmApiCheckbox) {
     useIndependentLlmApiCheckbox.checked =
@@ -304,6 +307,26 @@ function updateUI(): void {
   }
   if (independentLlmModelInput) {
     independentLlmModelInput.value = settings.independentLlmModel ?? '';
+  }
+  if (independentLlmModelSelect) {
+    // If there's a saved model, show it as the selected option
+    const savedModel = settings.independentLlmModel ?? '';
+    if (savedModel && independentLlmModelSelect.options.length <= 1) {
+      const opt = document.createElement('option');
+      opt.value = savedModel;
+      opt.textContent = `${savedModel} (saved)`;
+      independentLlmModelSelect.appendChild(opt);
+    }
+    independentLlmModelSelect.value = savedModel;
+  }
+
+  const independentLlmMaxTokensInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS
+  ) as HTMLInputElement;
+  if (independentLlmMaxTokensInput) {
+    independentLlmMaxTokensInput.value = String(
+      settings.independentLlmMaxTokens ?? 4096
+    );
   }
 
   // Update image subfolder label from chat metadata
@@ -604,6 +627,14 @@ function handleSettingsChange(): void {
     independentLlmApiKeyInput?.value ?? settings.independentLlmApiKey;
   settings.independentLlmModel =
     independentLlmModelInput?.value ?? settings.independentLlmModel;
+
+  const independentLlmMaxTokensInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS
+  ) as HTMLInputElement;
+  if (independentLlmMaxTokensInput) {
+    settings.independentLlmMaxTokens =
+      parseInt(independentLlmMaxTokensInput.value, 10) || 4096;
+  }
 
   // Track if enabled state or widget visibility changed (requires page reload)
   const wasEnabled = settings.enabled;
@@ -1094,7 +1125,7 @@ async function handleTestIndependentLlmConnection(): Promise<void> {
   const apiKey = keyInput?.value?.trim();
   const model = modelInput?.value?.trim();
 
-  if (!apiUrl || !apiKey || !model) {
+  if (!apiUrl || !model) {
     toastr.error(t('toast.independentLlmApiMissingConfig'), t('extensionName'));
     return;
   }
@@ -1102,12 +1133,20 @@ async function handleTestIndependentLlmConnection(): Promise<void> {
   try {
     toastr.info(t('toast.testingConnection'), t('extensionName'));
 
-    const response = await fetch(`${apiUrl}/chat/completions`, {
+    const {buildChatCompletionsUrl} = await import(
+      './services/independent_llm'
+    );
+    const fullUrl = buildChatCompletionsUrl(apiUrl);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (apiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+
+    const response = await fetch(fullUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers,
       body: JSON.stringify({
         model: model,
         messages: [
@@ -1139,6 +1178,94 @@ async function handleTestIndependentLlmConnection(): Promise<void> {
       t('extensionName')
     );
     logger.error('Independent LLM API connection test error:', error);
+  }
+}
+
+/**
+ * Fetches available models from the independent LLM API endpoint
+ * and populates the model select dropdown.
+ */
+async function handleFetchModels(): Promise<void> {
+  const urlInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+  ) as HTMLInputElement;
+  const keyInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+  ) as HTMLInputElement;
+  const modelSelect = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL_SELECT
+  ) as HTMLSelectElement;
+  const modelInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+  ) as HTMLInputElement;
+
+  const apiUrl = urlInput?.value?.trim();
+  if (!apiUrl) {
+    toastr.warning(t('toast.fetchModelsNeedUrl'), t('extensionName'));
+    return;
+  }
+
+  const apiKey = keyInput?.value?.trim();
+
+  try {
+    toastr.info(t('toast.fetchingModels'), t('extensionName'));
+
+    const {fetchAvailableModels} = await import('./services/independent_llm');
+    const models = await fetchAvailableModels(apiUrl, apiKey || undefined);
+
+    if (!modelSelect) return;
+
+    // Clear existing options
+    modelSelect.innerHTML = '';
+
+    if (models.length === 0) {
+      const emptyOpt = document.createElement('option');
+      emptyOpt.value = '';
+      emptyOpt.textContent = t('toast.fetchModelsEmpty');
+      modelSelect.appendChild(emptyOpt);
+      toastr.warning(t('toast.fetchModelsEmpty'), t('extensionName'));
+      return;
+    }
+
+    // Add placeholder
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = t('settings.independentLlmModelPlaceholder');
+    placeholder.disabled = true;
+    modelSelect.appendChild(placeholder);
+
+    // Add fetched models
+    for (const modelId of models) {
+      const opt = document.createElement('option');
+      opt.value = modelId;
+      opt.textContent = modelId;
+      modelSelect.appendChild(opt);
+    }
+
+    // If current model input matches one of the fetched models, select it
+    const currentModel = modelInput?.value?.trim();
+    if (currentModel) {
+      const matchingOpt = modelSelect.querySelector(
+        `option[value="${CSS.escape(currentModel)}"]`
+      );
+      if (matchingOpt) {
+        modelSelect.value = currentModel;
+      } else {
+        modelSelect.selectedIndex = 0;
+      }
+    }
+
+    toastr.success(
+      t('toast.fetchModelsSuccess', {count: String(models.length)}),
+      t('extensionName')
+    );
+    logger.info(`Fetched ${models.length} models from API`);
+  } catch (error) {
+    toastr.error(
+      t('toast.fetchModelsFailed', {error: String(error)}),
+      t('extensionName')
+    );
+    logger.error('Failed to fetch models:', error);
   }
 }
 
@@ -1903,6 +2030,12 @@ function initialize(): void {
     const independentLlmModelInput = document.getElementById(
       UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
     ) as HTMLInputElement;
+    const independentLlmModelSelect = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL_SELECT
+    ) as HTMLSelectElement;
+    const independentLlmFetchModelsButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_FETCH_MODELS
+    );
     const independentLlmTestConnectionButton = document.getElementById(
       UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION
     );
@@ -1914,6 +2047,29 @@ function initialize(): void {
     independentLlmApiUrlInput?.addEventListener('change', handleSettingsChange);
     independentLlmApiKeyInput?.addEventListener('change', handleSettingsChange);
     independentLlmModelInput?.addEventListener('change', handleSettingsChange);
+
+    // Model select → sync to text input on change
+    independentLlmModelSelect?.addEventListener('change', () => {
+      const selectedModel = independentLlmModelSelect.value;
+      if (selectedModel && independentLlmModelInput) {
+        independentLlmModelInput.value = selectedModel;
+        handleSettingsChange();
+      }
+    });
+
+    independentLlmFetchModelsButton?.addEventListener(
+      'click',
+      handleFetchModels
+    );
+
+    const independentLlmMaxTokensInput = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS
+    );
+    independentLlmMaxTokensInput?.addEventListener(
+      'change',
+      handleSettingsChange
+    );
+
     independentLlmTestConnectionButton?.addEventListener(
       'click',
       handleTestIndependentLlmConnection

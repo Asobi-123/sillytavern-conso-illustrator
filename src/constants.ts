@@ -189,6 +189,16 @@ export const INDEPENDENT_LLM_API = {
 } as const;
 
 /**
+ * Independent LLM max tokens configuration
+ */
+export const INDEPENDENT_LLM_MAX_TOKENS = {
+  DEFAULT: 4096,
+  MIN: 256,
+  MAX: 32000,
+  STEP: 256,
+} as const;
+
+/**
  * Default prompt detection patterns
  * Supports multiple tag formats for backward compatibility:
  * - HTML comment format (primary, invisible, passes through DOMPurify)
@@ -233,6 +243,7 @@ export const DEFAULT_SETTINGS = {
   independentLlmApiUrl: INDEPENDENT_LLM_API.DEFAULT_URL,
   independentLlmApiKey: '',
   independentLlmModel: INDEPENDENT_LLM_API.DEFAULT_MODEL,
+  independentLlmMaxTokens: INDEPENDENT_LLM_MAX_TOKENS.DEFAULT,
 };
 
 /**
@@ -288,6 +299,12 @@ export const UI_ELEMENT_IDS = {
   INDEPENDENT_LLM_API_URL: 'auto_illustrator_conso_independent_llm_api_url',
   INDEPENDENT_LLM_API_KEY: 'auto_illustrator_conso_independent_llm_api_key',
   INDEPENDENT_LLM_MODEL: 'auto_illustrator_conso_independent_llm_model',
+  INDEPENDENT_LLM_MODEL_SELECT:
+    'auto_illustrator_conso_independent_llm_model_select',
+  INDEPENDENT_LLM_FETCH_MODELS:
+    'auto_illustrator_conso_independent_llm_fetch_models',
+  INDEPENDENT_LLM_MAX_TOKENS:
+    'auto_illustrator_conso_independent_llm_max_tokens',
   INDEPENDENT_LLM_TEST_CONNECTION:
     'auto_illustrator_conso_independent_llm_test_connection',
   INDEPENDENT_LLM_SETTINGS_CONTAINER:

@@ -165,6 +165,8 @@ declare global {
     independentLlmApiKey: string;
     /** Independent LLM Model name (e.g., gpt-4o-mini) */
     independentLlmModel: string;
+    /** Independent LLM max tokens for response */
+    independentLlmMaxTokens: number;
   }
 
   interface ImagePromptMatch {

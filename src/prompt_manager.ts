@@ -533,18 +533,19 @@ export function getPromptForImage(
   metadata: AutoIllustratorChatMetadata
 ): PromptNode | null {
   const registry = getRegistry(metadata);
+  const normalized = normalizeImageUrl(imageUrl);
 
   // DEBUG: Log lookup attempt
   logger.info('=== DEBUG: getPromptForImage ===');
-  logger.info(`Looking up URL: ${imageUrl}`);
+  logger.info(`Looking up URL: ${normalized}`);
   logger.info(
     `Registry has ${Object.keys(registry.imageToPromptId).length} image mappings`
   );
 
-  const promptId = registry.imageToPromptId[imageUrl];
+  const promptId = registry.imageToPromptId[normalized];
 
   if (!promptId) {
-    logger.info(`No promptId found for URL: ${imageUrl}`);
+    logger.info(`No promptId found for URL: ${normalized}`);
     return null;
   }
 

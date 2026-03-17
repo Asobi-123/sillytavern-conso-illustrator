@@ -163,6 +163,15 @@ export declare const INDEPENDENT_LLM_API: {
     readonly DEFAULT_MODEL: "gpt-4o-mini";
 };
 /**
+ * Independent LLM max tokens configuration
+ */
+export declare const INDEPENDENT_LLM_MAX_TOKENS: {
+    readonly DEFAULT: 4096;
+    readonly MIN: 256;
+    readonly MAX: 32000;
+    readonly STEP: 256;
+};
+/**
  * Default prompt detection patterns
  * Supports multiple tag formats for backward compatibility:
  * - HTML comment format (primary, invisible, passes through DOMPurify)
@@ -203,6 +212,7 @@ export declare const DEFAULT_SETTINGS: {
     independentLlmApiUrl: "https://api.openai.com/v1";
     independentLlmApiKey: string;
     independentLlmModel: "gpt-4o-mini";
+    independentLlmMaxTokens: 4096;
 };
 /**
  * UI element IDs for settings controls
@@ -249,6 +259,9 @@ export declare const UI_ELEMENT_IDS: {
     readonly INDEPENDENT_LLM_API_URL: "auto_illustrator_conso_independent_llm_api_url";
     readonly INDEPENDENT_LLM_API_KEY: "auto_illustrator_conso_independent_llm_api_key";
     readonly INDEPENDENT_LLM_MODEL: "auto_illustrator_conso_independent_llm_model";
+    readonly INDEPENDENT_LLM_MODEL_SELECT: "auto_illustrator_conso_independent_llm_model_select";
+    readonly INDEPENDENT_LLM_FETCH_MODELS: "auto_illustrator_conso_independent_llm_fetch_models";
+    readonly INDEPENDENT_LLM_MAX_TOKENS: "auto_illustrator_conso_independent_llm_max_tokens";
     readonly INDEPENDENT_LLM_TEST_CONNECTION: "auto_illustrator_conso_independent_llm_test_connection";
     readonly INDEPENDENT_LLM_SETTINGS_CONTAINER: "auto_illustrator_conso_independent_llm_settings_container";
     readonly IMAGE_SUBFOLDER_LABEL: "auto_illustrator_conso_image_subfolder_label";

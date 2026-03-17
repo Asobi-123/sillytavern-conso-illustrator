@@ -9,36 +9,137 @@ import {createLogger} from '../logger';
 const logger = createLogger('IndependentLLM');
 
 /**
+ * Builds the full chat completions URL from a base API URL.
+ * Handles various input formats intelligently:
+ * - Already has /chat/completions → use as-is
+ * - Ends with /v1/ → append chat/completions
+ * - Otherwise → append /v1/chat/completions
+ */
+export function buildChatCompletionsUrl(baseUrl: string): string {
+  let url = baseUrl.trim();
+  if (!url.endsWith('/')) {
+    url += '/';
+  }
+  if (url.includes('/chat/completions')) {
+    // Already a full endpoint, use as-is (strip trailing slash if after completions)
+    return baseUrl.trim().replace(/\/+$/, '');
+  }
+  if (url.endsWith('/v1/')) {
+    return url + 'chat/completions';
+  }
+  return url + 'v1/chat/completions';
+}
+
+/**
+ * Builds the models list URL from a base API URL.
+ * Used by the "Fetch Models" button.
+ */
+export function buildModelsUrl(baseUrl: string): string {
+  let url = baseUrl.trim();
+  if (!url.endsWith('/')) {
+    url += '/';
+  }
+  if (url.endsWith('/v1/')) {
+    return url + 'models';
+  }
+  return url + 'v1/models';
+}
+
+/**
+ * Fetches available models from an OpenAI-compatible API endpoint.
+ *
+ * @param apiUrl - Base API URL
+ * @param apiKey - API key (optional, some local LLMs don't require it)
+ * @returns Array of model ID strings
+ */
+export async function fetchAvailableModels(
+  apiUrl: string,
+  apiKey?: string
+): Promise<string[]> {
+  const modelsUrl = buildModelsUrl(apiUrl);
+  logger.debug('Fetching models from:', modelsUrl);
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(modelsUrl, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`${response.status}: ${errorText}`);
+  }
+
+  const data = await response.json();
+  const models: string[] = [];
+
+  // OpenAI format: { data: [{ id: "model-name" }, ...] }
+  if (data?.data && Array.isArray(data.data)) {
+    for (const model of data.data) {
+      if (model.id) {
+        models.push(model.id);
+      }
+    }
+  } else if (Array.isArray(data)) {
+    // Some APIs return a flat array
+    for (const model of data) {
+      if (typeof model === 'string') {
+        models.push(model);
+      } else if (model.id) {
+        models.push(model.id);
+      }
+    }
+  }
+
+  models.sort();
+  logger.debug(`Found ${models.length} models`);
+  return models;
+}
+
+/**
  * Calls an independent LLM API for text generation.
  *
  * @param systemPrompt - System prompt
  * @param userPrompt - User prompt
- * @param settings - Extension settings (must contain independentLlmApiUrl, independentLlmApiKey, independentLlmModel)
- * @param maxTokens - Maximum tokens for response (default: 2000)
+ * @param settings - Extension settings (must contain independentLlmApiUrl, independentLlmModel)
+ * @param maxTokensOverride - Override max tokens (if not provided, uses settings.independentLlmMaxTokens or 4096)
  * @returns LLM response text
  */
 export async function callIndependentLlmApi(
   systemPrompt: string,
   userPrompt: string,
   settings: AutoIllustratorSettings,
-  maxTokens = 2000
+  maxTokensOverride?: number
 ): Promise<string> {
   const apiUrl = settings.independentLlmApiUrl;
   const apiKey = settings.independentLlmApiKey;
   const model = settings.independentLlmModel;
+  const maxTokens =
+    maxTokensOverride ?? settings.independentLlmMaxTokens ?? 4096;
 
-  if (!apiUrl || !apiKey || !model) {
+  if (!apiUrl || !model) {
     throw new Error('Independent LLM API not configured');
   }
 
-  logger.debug('Calling independent LLM API:', {apiUrl, model});
+  const fullUrl = buildChatCompletionsUrl(apiUrl);
+  logger.debug('Calling independent LLM API:', {fullUrl, model});
 
-  const response = await fetch(`${apiUrl}/chat/completions`, {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(fullUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers,
     body: JSON.stringify({
       model: model,
       messages: [

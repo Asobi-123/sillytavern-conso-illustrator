@@ -16,6 +16,7 @@ import {getMetadata} from './metadata';
 import {callIndependentLlmApi} from './services/independent_llm';
 import {DEFAULT_PROMPT_DETECTION_PATTERNS} from './constants';
 import {renderMessageUpdate} from './utils/message_renderer';
+import {normalizeImageUrl} from './image_utils';
 
 // Re-export PromptNode type for consumers
 export type {PromptNode};
@@ -172,9 +173,12 @@ export async function applyPromptUpdate(
   settings: AutoIllustratorSettings
 ): Promise<boolean> {
   const metadata = getMetadata();
+  const normalized = normalizeImageUrl(imageUrl);
 
-  // Find message containing this image
-  const message = context.chat?.find(msg => msg.mes.includes(imageUrl));
+  // Find message containing this image (try both normalized and encoded forms)
+  const message = context.chat?.find(
+    msg => msg.mes.includes(normalized) || msg.mes.includes(imageUrl)
+  );
 
   if (!message) {
     logger.error('Message containing image not found');

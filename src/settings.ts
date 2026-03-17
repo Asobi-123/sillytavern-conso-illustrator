@@ -15,6 +15,7 @@ import {
   META_PROMPT_DEPTH,
   IMAGE_DISPLAY_WIDTH,
   IMAGE_RETENTION_DAYS,
+  INDEPENDENT_LLM_MAX_TOKENS,
   UI_ELEMENT_IDS,
 } from './constants';
 import {t} from './i18n';
@@ -330,10 +331,25 @@ export function createSettingsUI(): string {
                 <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}" class="text_pole" type="password" placeholder="sk-..." />
               </label>
 
-              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}">
+              <label>
                 <span>${t('settings.independentLlmModel')}</span>
                 <small>${t('settings.independentLlmModelDesc')}</small>
-                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}" class="text_pole" type="text" placeholder="gpt-4o-mini" />
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL_SELECT}" class="text_pole" style="flex: 0 0 auto; min-width: 150px;">
+                    <option value="">${t('settings.independentLlmModelPlaceholder')}</option>
+                  </select>
+                  <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}" class="text_pole" type="text" placeholder="${t('settings.independentLlmModelPlaceholder')}" style="flex: 1; min-width: 200px;" />
+                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_FETCH_MODELS}" class="menu_button menu_button_icon" title="${t('settings.fetchModels')}">
+                    <i class="fa-solid fa-plug-circle-bolt"></i>
+                    <span>${t('settings.fetchModels')}</span>
+                  </button>
+                </div>
+              </label>
+
+              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}">
+                <span>${t('settings.independentLlmMaxTokens')}</span>
+                <small>${t('settings.independentLlmMaxTokensDesc')}</small>
+                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}" class="text_pole" type="number" min="${INDEPENDENT_LLM_MAX_TOKENS.MIN}" max="${INDEPENDENT_LLM_MAX_TOKENS.MAX}" step="${INDEPENDENT_LLM_MAX_TOKENS.STEP}" />
               </label>
 
               <div style="margin-top: 0.5rem;">
