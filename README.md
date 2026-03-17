@@ -1,4 +1,6 @@
-# 🎨 SillyTavern Auto Illustrator - Simplified Edition
+# 🎨 SillyTavern Auto Illustrator - Conso Edition
+
+**Fork from:** [sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator)
 
 [English](#english) | [中文](#中文)
 
@@ -8,11 +10,11 @@
 
 ### 📖 简介
 
-这是基于 [SillyTavern Auto Illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) 的修改版本。
+这是基于 [Hao19911125/sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator) 的进一步开发版本。
 
-感谢原作者 **gamer-mitsuha** 的优秀工作！本项目在原版基础上做了一些个人化调整，以适应我的使用习惯。
+感谢原作者 **gamer-mitsuha** 和分支作者 **Hao19911125** 的优秀工作！本项目在他们的基础上进行了增强，添加了更多功能和改进。
 
-### ✨ 与原版的区别
+### ✨ 本版本的特性和改进
 
 #### 🎯 更简洁的进度提示
 - **原版**：右下角悬浮窗显示进度
@@ -32,6 +34,12 @@
 - 使用独立的配置 ID（`auto_illustrator_conso`）
 - 可与原版插件共存，互不干扰
 
+#### 🤖 独立 LLM 支持（v1.0.0 新增）
+- **自动模型获取**：从独立 LLM API 自动获取可用模型列表
+- **灵活 API 配置**：支持 OpenAI 兼容的任何 LLM 服务（本地或云端）
+- **Max Tokens 控制**：独立配置提示词生成的 Token 限制
+- **模型持久化**：自动保存选中的 LLM 模型，下次使用时自动加载
+
 ---
 
 ### 🚀 安装方法
@@ -50,8 +58,9 @@ git clone https://github.com/Hao19911125/sillytavern-simplified-illustrator.git
 
 ### 🙏 致谢
 
-- 原版作者：[gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)
-- 本项目仅做了界面和交互上的小调整，核心功能来自原版
+- 原作者：[gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)（SillyTavern Auto Illustrator）
+- 分支作者：[Hao19911125](https://github.com/Hao19911125)（sillytavern-simplified-illustrator）
+- 本项目在上述两个项目的基础上进行了功能增强和改进
 
 ---
 
@@ -65,9 +74,9 @@ git clone https://github.com/Hao19911125/sillytavern-simplified-illustrator.git
 
 ### 📖 About
 
-This is a modified version based on [SillyTavern Auto Illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator).
+This is a further developed version based on [Hao19911125/sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator).
 
-Thanks to the original author **gamer-mitsuha** for the excellent work! This project makes some personal adjustments to better suit my usage preferences.
+Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) for their excellent work! This project builds upon their foundation with enhanced features and improvements.
 
 ### ✨ Differences from Original
 
@@ -89,6 +98,12 @@ Thanks to the original author **gamer-mitsuha** for the excellent work! This pro
 - Uses separate config ID (`auto_illustrator_conso`)
 - Can coexist with original plugin without conflicts
 
+#### 🤖 Independent LLM Support (New in v1.0.0)
+- **Auto Model Discovery**: Automatically fetch available models from independent LLM API
+- **Flexible API Configuration**: Support any OpenAI-compatible LLM service (local or cloud-based)
+- **Max Tokens Control**: Independent Token limit configuration for prompt generation
+- **Model Persistence**: Automatically save and restore selected LLM model on next use
+
 ---
 
 ### 🚀 Installation
@@ -107,8 +122,9 @@ git clone https://github.com/Hao19911125/sillytavern-simplified-illustrator.git
 
 ### 🙏 Credits
 
-- Original author: [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)
-- This project only makes minor UI/UX adjustments; core functionality comes from the original
+- Original author: [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) (SillyTavern Auto Illustrator)
+- Fork author: [Hao19911125](https://github.com/Hao19911125) (sillytavern-simplified-illustrator)
+- This project builds upon both projects with feature enhancements and improvements
 
 ---
 
