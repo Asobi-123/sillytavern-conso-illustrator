@@ -264,6 +264,7 @@ export declare const UI_ELEMENT_IDS: {
     readonly INDEPENDENT_LLM_MAX_TOKENS: "auto_illustrator_conso_independent_llm_max_tokens";
     readonly INDEPENDENT_LLM_TEST_CONNECTION: "auto_illustrator_conso_independent_llm_test_connection";
     readonly INDEPENDENT_LLM_SETTINGS_CONTAINER: "auto_illustrator_conso_independent_llm_settings_container";
+    readonly INDEPENDENT_LLM_VIEW_LAST_REQUEST: "auto_illustrator_conso_independent_llm_view_last_request";
     readonly IMAGE_SUBFOLDER_LABEL: "auto_illustrator_conso_image_subfolder_label";
     readonly RESET_BUTTON: "auto_illustrator_conso_reset";
 };

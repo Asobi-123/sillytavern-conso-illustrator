@@ -1182,6 +1182,81 @@ async function handleTestIndependentLlmConnection(): Promise<void> {
 }
 
 /**
+ * Shows a read-only modal with the last independent LLM request snapshot.
+ */
+function handleViewLastRequest(): void {
+  const {getLastRequestSnapshot} = require('./services/independent_llm');
+  const snapshot = getLastRequestSnapshot();
+
+  if (!snapshot) {
+    toastr.info(t('toast.noRequestSnapshot'), t('extensionName'));
+    return;
+  }
+
+  // Build formatted content
+  const timestamp = new Date(snapshot.timestamp).toLocaleString();
+  const messagesFormatted = snapshot.messages
+    .map(
+      (m: {role: string; content: string}) =>
+        `--- ${m.role.toUpperCase()} ---\n${m.content}`
+    )
+    .join('\n\n');
+
+  const content = [
+    `URL: ${snapshot.url}`,
+    `Model: ${snapshot.model}`,
+    `Max Tokens: ${snapshot.maxTokens}`,
+    `Temperature: ${snapshot.temperature}`,
+    `Authorization: ${snapshot.hasAuthorization ? 'Bearer ****' : '(none)'}`,
+    `Time: ${timestamp}`,
+    '',
+    '=== Messages ===',
+    messagesFormatted,
+  ].join('\n');
+
+  // Create backdrop
+  const backdrop = $('<div>').addClass('auto-illustrator-dialog-backdrop');
+  const dialog = $('<div>')
+    .attr('id', 'auto_illustrator_last_request_dialog')
+    .addClass('auto-illustrator-dialog')
+    .css({maxWidth: '700px', maxHeight: '80vh'});
+
+  dialog.append($('<h3>').text(t('dialog.lastRequestTitle')));
+
+  const pre = $('<pre>')
+    .css({
+      whiteSpace: 'pre-wrap',
+      wordBreak: 'break-all',
+      maxHeight: '60vh',
+      overflow: 'auto',
+      fontSize: '0.85em',
+      background: 'var(--SmartThemeBotMesBlurTintColor, #1a1a2e)',
+      padding: '0.75rem',
+      borderRadius: '6px',
+    })
+    .text(content);
+  dialog.append(pre);
+
+  const buttons = $('<div>').addClass('auto-illustrator-dialog-buttons');
+  const closeBtn = $('<button>')
+    .text(t('dialog.cancel'))
+    .addClass('menu_button')
+    .on('click', () => {
+      backdrop.remove();
+      dialog.remove();
+    });
+  buttons.append(closeBtn);
+  dialog.append(buttons);
+
+  backdrop.on('click', () => {
+    backdrop.remove();
+    dialog.remove();
+  });
+
+  $('body').append(backdrop).append(dialog);
+}
+
+/**
  * Fetches available models from the independent LLM API endpoint
  * and populates the model select dropdown.
  */
@@ -2073,6 +2148,14 @@ function initialize(): void {
     independentLlmTestConnectionButton?.addEventListener(
       'click',
       handleTestIndependentLlmConnection
+    );
+
+    const independentLlmViewLastRequestButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_VIEW_LAST_REQUEST
+    );
+    independentLlmViewLastRequestButton?.addEventListener(
+      'click',
+      handleViewLastRequest
     );
 
     // Image display width slider

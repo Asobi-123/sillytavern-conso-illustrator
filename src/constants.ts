@@ -309,6 +309,8 @@ export const UI_ELEMENT_IDS = {
     'auto_illustrator_conso_independent_llm_test_connection',
   INDEPENDENT_LLM_SETTINGS_CONTAINER:
     'auto_illustrator_conso_independent_llm_settings_container',
+  INDEPENDENT_LLM_VIEW_LAST_REQUEST:
+    'auto_illustrator_conso_independent_llm_view_last_request',
   IMAGE_SUBFOLDER_LABEL: 'auto_illustrator_conso_image_subfolder_label',
   RESET_BUTTON: 'auto_illustrator_conso_reset',
 } as const;

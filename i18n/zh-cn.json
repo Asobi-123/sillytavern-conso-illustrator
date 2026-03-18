@@ -222,6 +222,7 @@
   "settings.independentLlmMaxTokens": "最大 Token 数",
   "settings.independentLlmMaxTokensDesc": "LLM 回复的最大 token 数（越高回复越长，费用越多）",
   "settings.testConnection": "测试连接",
+  "settings.viewLastRequest": "查看最近请求",
   "toast.independentLlmApiMissingConfig": "请先配置 API 地址和模型",
   "toast.fetchingModels": "正在获取模型列表...",
   "toast.fetchModelsSuccess": "找到 {count} 个模型",
@@ -233,10 +234,12 @@
   "toast.connectionFailed": "连接失败：{error}",
   "toast.aiRefining": "AI 正在优化提示词...",
   "toast.aiRefineFailed": "AI 优化提示词失败",
+  "toast.noRequestSnapshot": "尚无独立 LLM 请求记录。请先触发一次提示词生成或优化。",
   "toast.feedbackRequired": "请描述你希望 AI 进行的修改",
   "toast.promptCannotBeEmpty": "提示词不能为空",
   "toast.promptUnchanged": "提示词未更改",
   "settings.imageSubfolderLabel": "图片文件夹标签（当前聊天）",
+  "dialog.lastRequestTitle": "最近独立 LLM 请求",
   "settings.imageSubfolderLabelDesc": "为当前聊天设置自定义图片存储文件夹标签。图片将保存到 /user/images/{角色名}_{标签}/。留空则使用默认文件夹。",
   "settings.imageSubfolderLabelPlaceholder": "例如：线路A、剧情2"
 }

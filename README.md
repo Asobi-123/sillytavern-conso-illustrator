@@ -41,6 +41,11 @@
 - **Max Tokens 控制**：独立配置提示词生成的 Token 限制（256-32000）
 - **模型持久化**：自动保存选中的模型，下次启动自动加载
 - **连接测试**：验证 API 配置是否可用
+- **请求快照查看**：查看最近一次独立 LLM 的完整请求内容（URL、模型、messages），方便确认角色设定和上下文是否正确传入
+
+#### 🛡️ 稳健的 LLM 回退机制
+- 独立 LLM 开关打开但配置不完整时，自动回退到酒馆共享 API，不再硬失败
+- 仅在两条路径都不可用时才报错
 
 #### 📁 图片子文件夹标签
 - 为每个聊天配置独立的图片存储子文件夹标签
@@ -116,6 +121,11 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 - **Max Tokens Control**: Independent Token limit for prompt generation (256-32000)
 - **Model Persistence**: Automatically save and restore selected model across sessions
 - **Connection Test**: Verify API configuration
+- **Request Snapshot Viewer**: Inspect the full content of the last independent LLM request (URL, model, messages) to verify that character definitions and context are being sent correctly
+
+#### 🛡️ Robust LLM Fallback
+- When the independent LLM toggle is on but configuration is incomplete, automatically falls back to SillyTavern's shared API instead of hard-failing
+- Only errors when both paths are unavailable
 
 #### 📁 Image Subfolder Label
 - Configure independent image storage subfolder labels per chat

@@ -9,6 +9,37 @@ import {createLogger} from '../logger';
 const logger = createLogger('IndependentLLM');
 
 /**
+ * Snapshot of the last independent LLM API request.
+ * Stored in module-level runtime state (not persisted to settings).
+ */
+export interface IndependentLlmRequestSnapshot {
+  /** Final URL the request was sent to */
+  url: string;
+  /** Model name used */
+  model: string;
+  /** Max tokens setting */
+  maxTokens: number;
+  /** Temperature setting */
+  temperature: number;
+  /** Messages sent (system + user) */
+  messages: Array<{role: string; content: string}>;
+  /** Whether an Authorization header was present */
+  hasAuthorization: boolean;
+  /** Timestamp of the request */
+  timestamp: number;
+}
+
+/** Module-level snapshot of the last request */
+let lastRequestSnapshot: IndependentLlmRequestSnapshot | null = null;
+
+/**
+ * Returns the most recent independent LLM API request snapshot, or null if none.
+ */
+export function getLastRequestSnapshot(): IndependentLlmRequestSnapshot | null {
+  return lastRequestSnapshot;
+}
+
+/**
  * Builds the full chat completions URL from a base API URL.
  * Handles various input formats intelligently:
  * - Already has /chat/completions → use as-is
@@ -137,21 +168,28 @@ export async function callIndependentLlmApi(
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
+  const messages = [
+    {role: 'system', content: systemPrompt},
+    {role: 'user', content: userPrompt},
+  ];
+
+  // Record request snapshot before sending
+  lastRequestSnapshot = {
+    url: fullUrl,
+    model,
+    maxTokens,
+    temperature: 0.7,
+    messages,
+    hasAuthorization: !!apiKey,
+    timestamp: Date.now(),
+  };
+
   const response = await fetch(fullUrl, {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      model: model,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
+      model,
+      messages,
       temperature: 0.7,
       max_tokens: maxTokens,
     }),
@@ -172,4 +210,17 @@ export async function callIndependentLlmApi(
   }
 
   return content;
+}
+
+/**
+ * Checks whether the independent LLM API has the minimum required configuration
+ * (both URL and model must be non-empty).
+ */
+export function isIndependentLlmConfigured(
+  settings: AutoIllustratorSettings
+): boolean {
+  return !!(
+    settings.independentLlmApiUrl?.trim() &&
+    settings.independentLlmModel?.trim()
+  );
 }

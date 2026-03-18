@@ -352,9 +352,12 @@ export function createSettingsUI(): string {
                 <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}" class="text_pole" type="number" min="${INDEPENDENT_LLM_MAX_TOKENS.MIN}" max="${INDEPENDENT_LLM_MAX_TOKENS.MAX}" step="${INDEPENDENT_LLM_MAX_TOKENS.STEP}" />
               </label>
 
-              <div style="margin-top: 0.5rem;">
+              <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION}" class="menu_button">
                   <i class="fa-solid fa-plug"></i> ${t('settings.testConnection')}
+                </button>
+                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_VIEW_LAST_REQUEST}" class="menu_button">
+                  <i class="fa-solid fa-eye"></i> ${t('settings.viewLastRequest')}
                 </button>
               </div>
             </div>

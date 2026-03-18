@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-03-19
+
+### Added
+
+- **Independent LLM Request Viewer** - New "View Last Request" button in independent LLM settings that shows a read-only snapshot of the most recent API request, including final URL, model, messages (system/user), temperature, max tokens, and whether an Authorization header was present. Useful for verifying that character definitions, world info, and context actually reached the independent LLM.
+
+### Fixed
+
+- **Prompt Update Fallback** - Fixed prompt update (AI refinement) crashing when the independent LLM toggle was enabled but URL or model was not configured. Now gracefully falls back to SillyTavern's shared API when independent LLM config is incomplete, and only errors when both paths are unavailable.
+- **Append Mode After Prompt Update** - Fixed "Update Prompt → regenerate" always forcing replace mode. The post-update regeneration dialog now correctly asks the user to choose between Replace and Append, preserving existing images when Append is selected. Cancelling the dialog keeps the updated prompt without triggering any regeneration.
 
 ### Fixed
 

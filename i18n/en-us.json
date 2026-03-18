@@ -222,6 +222,7 @@
   "settings.independentLlmMaxTokens": "Max Tokens",
   "settings.independentLlmMaxTokensDesc": "Maximum tokens for LLM response (higher = longer responses, more cost)",
   "settings.testConnection": "Test Connection",
+  "settings.viewLastRequest": "View Last Request",
   "toast.independentLlmApiMissingConfig": "Please configure API URL and Model first",
   "toast.fetchingModels": "Fetching model list...",
   "toast.fetchModelsSuccess": "Found {count} models",
@@ -233,10 +234,12 @@
   "toast.connectionFailed": "Connection failed: {error}",
   "toast.aiRefining": "AI is refining the prompt...",
   "toast.aiRefineFailed": "AI prompt refinement failed",
+  "toast.noRequestSnapshot": "No independent LLM request recorded yet. Trigger a prompt generation or refinement first.",
   "toast.feedbackRequired": "Please describe what changes you want the AI to make",
   "toast.promptCannotBeEmpty": "Prompt cannot be empty",
   "toast.promptUnchanged": "Prompt unchanged",
   "settings.imageSubfolderLabel": "Image Folder Label (per-chat)",
+  "dialog.lastRequestTitle": "Last Independent LLM Request",
   "settings.imageSubfolderLabelDesc": "Custom label for this chat's image storage folder. Images will be saved to /user/images/{CharName}_{label}/. Leave empty to use default folder.",
   "settings.imageSubfolderLabelPlaceholder": "e.g., route_A, storyline_2"
 }

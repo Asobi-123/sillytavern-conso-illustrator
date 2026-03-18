@@ -743,12 +743,7 @@ export async function handleImageRegenerationClick(
     if (updateResult) {
       const {parent, child} = updateResult;
 
-      // 【核心改动】跳过 showPostUpdateRegenerationDialog，直接使用替换模式
-      logger.info(
-        'Prompt updated successfully, applying update and regenerating with replace mode'
-      );
-
-      // User confirmed regeneration - apply prompt update to message text
+      // Apply prompt update to message text first
       // Set up one-time listener to attach handlers after DOM update
       const MESSAGE_UPDATED = context.eventTypes.MESSAGE_UPDATED;
       context.eventSource.once(MESSAGE_UPDATED, () => {
@@ -780,10 +775,16 @@ export async function handleImageRegenerationClick(
 
       toastr.success(t('toast.promptUpdated'), t('extensionName'));
 
-      // 【核心改动】直接使用 'replace-image' 模式，不再弹出选择对话框
+      // Ask user how to regenerate (replace or append), or cancel
+      const regenMode = await showPostUpdateRegenerationDialog(child.text);
+      if (!regenMode) {
+        logger.info('User cancelled post-update regeneration');
+        return;
+      }
+
       await performRegeneration(
         normalizedUrl,
-        'replace-image', // 固定使用替换模式
+        regenMode,
         messageId,
         context,
         settings,

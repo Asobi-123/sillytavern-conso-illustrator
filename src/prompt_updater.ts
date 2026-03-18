@@ -13,7 +13,10 @@ import {
   type PromptNode,
 } from './prompt_manager';
 import {getMetadata} from './metadata';
-import {callIndependentLlmApi} from './services/independent_llm';
+import {
+  callIndependentLlmApi,
+  isIndependentLlmConfigured,
+} from './services/independent_llm';
 import {DEFAULT_PROMPT_DETECTION_PATTERNS} from './constants';
 import {renderMessageUpdate} from './utils/message_renderer';
 import {normalizeImageUrl} from './image_utils';
@@ -100,10 +103,18 @@ export async function generateUpdatedPrompt(
 
   logger.debug('Sending prompt to LLM for update');
 
-  // Call LLM (use independent API if configured, otherwise use SillyTavern API)
+  // Determine which LLM path to use:
+  // Independent LLM is only eligible when prompt generation mode is 'independent-api',
+  // the toggle is ON, and the config (URL + model) is actually filled in.
+  const isIndependentMode = settings.promptGenerationMode === 'independent-api';
+  const useIndependent =
+    isIndependentMode &&
+    settings.useIndependentLlmApi &&
+    isIndependentLlmConfigured(settings);
+
   let llmResponse: string;
   try {
-    if (settings.useIndependentLlmApi) {
+    if (useIndependent) {
       // Use independent LLM API
       llmResponse = await callIndependentLlmApi(
         systemPrompt,
@@ -111,7 +122,17 @@ export async function generateUpdatedPrompt(
         settings
       );
     } else {
-      // Use SillyTavern API (original behavior)
+      if (
+        isIndependentMode &&
+        settings.useIndependentLlmApi &&
+        !isIndependentLlmConfigured(settings)
+      ) {
+        // Toggle on but config incomplete — log and fall back
+        logger.warn(
+          'Independent LLM enabled but missing URL/model, falling back to shared API'
+        );
+      }
+      // Use SillyTavern API (shared / fallback)
       if (!context.generateRaw) {
         logger.error('generateRaw not available in context');
         throw new Error('LLM generation not available');
