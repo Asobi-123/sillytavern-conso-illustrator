@@ -172,6 +172,10 @@ export declare const INDEPENDENT_LLM_MAX_TOKENS: {
     readonly STEP: 256;
 };
 /**
+ * Default HTML tags to filter from message text before sending to LLM
+ */
+export declare const DEFAULT_CONTENT_FILTER_TAGS: string[];
+/**
  * Default prompt detection patterns
  * Supports multiple tag formats for backward compatibility:
  * - HTML comment format (primary, invisible, passes through DOMPurify)
@@ -213,6 +217,10 @@ export declare const DEFAULT_SETTINGS: {
     independentLlmApiKey: string;
     independentLlmModel: "gpt-4o-mini";
     independentLlmMaxTokens: 4096;
+    injectCharacterDescription: boolean;
+    injectUserPersona: boolean;
+    injectScenario: boolean;
+    contentFilterTags: string[];
 };
 /**
  * UI element IDs for settings controls
@@ -266,5 +274,10 @@ export declare const UI_ELEMENT_IDS: {
     readonly INDEPENDENT_LLM_SETTINGS_CONTAINER: "auto_illustrator_conso_independent_llm_settings_container";
     readonly INDEPENDENT_LLM_VIEW_LAST_REQUEST: "auto_illustrator_conso_independent_llm_view_last_request";
     readonly IMAGE_SUBFOLDER_LABEL: "auto_illustrator_conso_image_subfolder_label";
+    readonly INJECT_CHARACTER_DESCRIPTION: "auto_illustrator_conso_inject_character_description";
+    readonly INJECT_USER_PERSONA: "auto_illustrator_conso_inject_user_persona";
+    readonly INJECT_SCENARIO: "auto_illustrator_conso_inject_scenario";
+    readonly CONTENT_FILTER_TAGS: "auto_illustrator_conso_content_filter_tags";
+    readonly CONTENT_FILTER_TAGS_RESET: "auto_illustrator_conso_content_filter_tags_reset";
     readonly RESET_BUTTON: "auto_illustrator_conso_reset";
 };

@@ -35,6 +35,7 @@ import {
   IMAGE_DISPLAY_WIDTH,
   DEFAULT_LLM_FREQUENCY_GUIDELINES,
   DEFAULT_LLM_PROMPT_WRITING_GUIDELINES,
+  DEFAULT_CONTENT_FILTER_TAGS,
   PROMPT_GENERATION_MODE,
 } from './constants';
 import {
@@ -327,6 +328,37 @@ function updateUI(): void {
     independentLlmMaxTokensInput.value = String(
       settings.independentLlmMaxTokens ?? 4096
     );
+  }
+
+  // Update context injection checkboxes
+  const injectCharDescCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION
+  ) as HTMLInputElement;
+  const injectUserPersonaCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_USER_PERSONA
+  ) as HTMLInputElement;
+  const injectScenarioCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_SCENARIO
+  ) as HTMLInputElement;
+  if (injectCharDescCheckbox) {
+    injectCharDescCheckbox.checked =
+      settings.injectCharacterDescription ?? true;
+  }
+  if (injectUserPersonaCheckbox) {
+    injectUserPersonaCheckbox.checked = settings.injectUserPersona ?? true;
+  }
+  if (injectScenarioCheckbox) {
+    injectScenarioCheckbox.checked = settings.injectScenario ?? true;
+  }
+
+  // Update content filter tags
+  const contentFilterTagsTextarea = document.getElementById(
+    UI_ELEMENT_IDS.CONTENT_FILTER_TAGS
+  ) as HTMLTextAreaElement;
+  if (contentFilterTagsTextarea) {
+    contentFilterTagsTextarea.value = (
+      settings.contentFilterTags ?? DEFAULT_CONTENT_FILTER_TAGS
+    ).join('\n');
   }
 
   // Update image subfolder label from chat metadata
@@ -634,6 +666,34 @@ function handleSettingsChange(): void {
   if (independentLlmMaxTokensInput) {
     settings.independentLlmMaxTokens =
       parseInt(independentLlmMaxTokensInput.value, 10) || 4096;
+  }
+
+  // Context injection checkboxes
+  const injectCharDescCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION
+  ) as HTMLInputElement;
+  const injectUserPersonaCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_USER_PERSONA
+  ) as HTMLInputElement;
+  const injectScenarioCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_SCENARIO
+  ) as HTMLInputElement;
+  settings.injectCharacterDescription =
+    injectCharDescCheckbox?.checked ?? settings.injectCharacterDescription;
+  settings.injectUserPersona =
+    injectUserPersonaCheckbox?.checked ?? settings.injectUserPersona;
+  settings.injectScenario =
+    injectScenarioCheckbox?.checked ?? settings.injectScenario;
+
+  // Content filter tags
+  const contentFilterTagsTextarea = document.getElementById(
+    UI_ELEMENT_IDS.CONTENT_FILTER_TAGS
+  ) as HTMLTextAreaElement;
+  if (contentFilterTagsTextarea) {
+    settings.contentFilterTags = contentFilterTagsTextarea.value
+      .split('\n')
+      .map(t => t.trim())
+      .filter(t => t.length > 0);
   }
 
   // Track if enabled state or widget visibility changed (requires page reload)
@@ -2144,6 +2204,36 @@ function initialize(): void {
       'change',
       handleSettingsChange
     );
+
+    // Context injection checkboxes
+    const injectCharDescCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION
+    ) as HTMLInputElement;
+    const injectUserPersonaCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.INJECT_USER_PERSONA
+    ) as HTMLInputElement;
+    const injectScenarioCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.INJECT_SCENARIO
+    ) as HTMLInputElement;
+    injectCharDescCheckbox?.addEventListener('change', handleSettingsChange);
+    injectUserPersonaCheckbox?.addEventListener('change', handleSettingsChange);
+    injectScenarioCheckbox?.addEventListener('change', handleSettingsChange);
+
+    // Content filter tags
+    const contentFilterTagsTextarea = document.getElementById(
+      UI_ELEMENT_IDS.CONTENT_FILTER_TAGS
+    ) as HTMLTextAreaElement;
+    const contentFilterTagsResetButton = document.getElementById(
+      UI_ELEMENT_IDS.CONTENT_FILTER_TAGS_RESET
+    );
+    contentFilterTagsTextarea?.addEventListener('change', handleSettingsChange);
+    contentFilterTagsResetButton?.addEventListener('click', () => {
+      if (contentFilterTagsTextarea) {
+        contentFilterTagsTextarea.value =
+          DEFAULT_CONTENT_FILTER_TAGS.join('\n');
+        handleSettingsChange();
+      }
+    });
 
     independentLlmTestConnectionButton?.addEventListener(
       'click',

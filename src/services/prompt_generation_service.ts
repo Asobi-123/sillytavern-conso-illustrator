@@ -12,29 +12,48 @@ const logger = createLogger('PromptGenService');
 
 /**
  * Cleans message text for LLM consumption by removing noise content.
- * Strips HTML comments, inline-styled div blocks, and HTML tags (keeping text content).
+ * Strips HTML comments, user-specified tag blocks, CSS noise, and remaining HTML tags (keeping text content).
  *
  * @param text - Raw message text potentially containing HTML
+ * @param filterTags - HTML tag names to remove entirely (e.g., ['style', 'script'])
  * @returns Cleaned plain text suitable for LLM analysis
  */
-export function cleanMessageTextForLlm(text: string): string {
+export function cleanMessageTextForLlm(
+  text: string,
+  filterTags?: string[]
+): string {
   let cleaned = text;
 
   // 1. Remove HTML comments (<!-- ... -->) including multiline
   //    These contain draft/compliance metadata that's pure noise
   cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
 
-  // 2. Remove <div style="...">...</div> blocks (inline HTML/CSS UI elements)
-  //    These are visual widgets (e.g., status panels) not narrative content
-  //    Use non-greedy matching and handle nested divs by repeating
-  for (let i = 0; i < 5; i++) {
-    const before = cleaned;
-    cleaned = cleaned.replace(
-      /<div\s+style="[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
-      ''
-    );
-    if (cleaned === before) break;
+  // 2a. Remove user-specified HTML tag blocks (e.g., <style>...</style>, <script>...</script>)
+  if (filterTags && filterTags.length > 0) {
+    for (const tag of filterTags) {
+      const sanitized = tag.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+      if (!sanitized) continue;
+      const tagRegex = new RegExp(
+        `<${sanitized}[^>]*>[\\s\\S]*?<\\/${sanitized}>`,
+        'gi'
+      );
+      cleaned = cleaned.replace(tagRegex, '');
+    }
   }
+
+  // 2b. Built-in CSS noise removal
+  // Remove @keyframes blocks: @keyframes name { ... }
+  cleaned = cleaned.replace(
+    /@keyframes\s+[^{]+\{[^}]*(?:\{[^}]*\}[^}]*)*\}/gi,
+    ''
+  );
+  // Remove @media query blocks: @media (...) { ... }
+  cleaned = cleaned.replace(/@media\s+[^{]+\{[^}]*(?:\{[^}]*\}[^}]*)*\}/gi, '');
+  // Remove CSS selector rule blocks: .class { }, #id { }, element { }
+  cleaned = cleaned.replace(
+    /(?:^|\n)\s*(?:[.#][\w-]+|[\w]+(?:\s*[>+~]\s*[\w.#]+)*)\s*\{[^}]*\}/gm,
+    ''
+  );
 
   // 3. Strip remaining HTML tags but keep their text content
   //    e.g., <details><summary>Title</summary>Content</details> → Title Content
@@ -50,18 +69,88 @@ export function cleanMessageTextForLlm(text: string): string {
 }
 
 /**
+ * Builds the CHARACTER INFO section from SillyTavern context.
+ * Includes character description/personality, user persona, and scenario
+ * based on settings flags.
+ *
+ * @param context - SillyTavern context
+ * @param settings - Extension settings
+ * @returns Formatted character info section, or empty string if nothing to include
+ */
+function buildCharacterInfoSection(
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings
+): string {
+  if (
+    !settings.injectCharacterDescription &&
+    !settings.injectUserPersona &&
+    !settings.injectScenario
+  ) {
+    return '';
+  }
+
+  let fields: {
+    description?: string;
+    personality?: string;
+    persona?: string;
+    scenario?: string;
+  } = {};
+  try {
+    fields = context.getCharacterCardFields?.() ?? {};
+  } catch {
+    logger.debug('getCharacterCardFields not available');
+    return '';
+  }
+
+  const sections: string[] = [];
+
+  if (settings.injectCharacterDescription) {
+    const name2 = context.name2 || 'Character';
+    const desc = fields.description?.trim();
+    const pers = fields.personality?.trim();
+    if (desc || pers) {
+      sections.push(`Character Name: ${name2}`);
+      if (desc) sections.push(`Character Description: ${desc}`);
+      if (pers) sections.push(`Character Personality: ${pers}`);
+    }
+  }
+
+  if (settings.injectUserPersona) {
+    const name1 = context.name1 || 'User';
+    const persona = fields.persona?.trim();
+    if (persona) {
+      sections.push(`User Name: ${name1}`);
+      sections.push(`User Persona: ${persona}`);
+    }
+  }
+
+  if (settings.injectScenario) {
+    const scenario = fields.scenario?.trim();
+    if (scenario) {
+      sections.push(`Scenario: ${scenario}`);
+    }
+  }
+
+  if (sections.length === 0) return '';
+
+  return `=== CHARACTER INFO ===\n${sections.join('\n')}\n\n`;
+}
+
+/**
  * Builds user prompt with context from previous messages
- * Format: === CONTEXT === ... === CURRENT MESSAGE === ...
+ * Format: === CHARACTER INFO === ... === CONTEXT === ... === CURRENT MESSAGE === ...
  *
  * @param context - SillyTavern context
  * @param currentMessageText - The message to generate prompts for
  * @param contextMessageCount - Number of previous messages to include as context
+ * @param settings - Extension settings (for character info injection and content filter)
  * @returns Formatted user prompt with context
  */
 function buildUserPromptWithContext(
   context: SillyTavernContext,
   currentMessageText: string,
-  contextMessageCount: number
+  contextMessageCount: number,
+  settings: AutoIllustratorSettings
 ): string {
   // Get recent chat history (last N messages, excluding current)
   const chat = context.chat || [];
@@ -73,7 +162,10 @@ function buildUserPromptWithContext(
     contextText = recentMessages
       .map(msg => {
         const name = msg.name || (msg.is_user ? 'User' : 'Assistant');
-        const text = cleanMessageTextForLlm(msg.mes || '');
+        const text = cleanMessageTextForLlm(
+          msg.mes || '',
+          settings.contentFilterTags
+        );
         return `${name}: ${text}`;
       })
       .join('\n\n');
@@ -81,7 +173,9 @@ function buildUserPromptWithContext(
     contextText = '(No previous messages)';
   }
 
-  return `=== CONTEXT ===
+  const characterInfo = buildCharacterInfoSection(context, settings);
+
+  return `${characterInfo}=== CONTEXT ===
 ${contextText}
 
 === CURRENT MESSAGE ===
@@ -212,7 +306,10 @@ export async function generatePromptsForMessage(
   logger.debug(`Message length: ${messageText.length} characters`);
 
   // Clean message text for LLM (remove HTML noise)
-  const cleanedMessageText = cleanMessageTextForLlm(messageText);
+  const cleanedMessageText = cleanMessageTextForLlm(
+    messageText,
+    settings.contentFilterTags
+  );
   logger.debug(
     `Cleaned message length: ${cleanedMessageText.length} characters (removed ${messageText.length - cleanedMessageText.length})`
   );
@@ -245,7 +342,8 @@ export async function generatePromptsForMessage(
   const userPrompt = buildUserPromptWithContext(
     context,
     cleanedMessageText,
-    contextMessageCount
+    contextMessageCount,
+    settings
   );
 
   logger.debug('Calling LLM for prompt generation');

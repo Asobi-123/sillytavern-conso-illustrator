@@ -5,12 +5,13 @@
 import type { PromptSuggestion } from '../prompt_insertion';
 /**
  * Cleans message text for LLM consumption by removing noise content.
- * Strips HTML comments, inline-styled div blocks, and HTML tags (keeping text content).
+ * Strips HTML comments, user-specified tag blocks, CSS noise, and remaining HTML tags (keeping text content).
  *
  * @param text - Raw message text potentially containing HTML
+ * @param filterTags - HTML tag names to remove entirely (e.g., ['style', 'script'])
  * @returns Cleaned plain text suitable for LLM analysis
  */
-export declare function cleanMessageTextForLlm(text: string): string;
+export declare function cleanMessageTextForLlm(text: string, filterTags?: string[]): string;
 /**
  * Generates image prompts for a message using separate LLM call
  *

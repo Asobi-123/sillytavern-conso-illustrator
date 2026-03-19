@@ -241,5 +241,16 @@
   "settings.imageSubfolderLabel": "Image Folder Label (per-chat)",
   "dialog.lastRequestTitle": "Last Independent LLM Request",
   "settings.imageSubfolderLabelDesc": "Custom label for this chat's image storage folder. Images will be saved to /user/images/{CharName}_{label}/. Leave empty to use default folder.",
-  "settings.imageSubfolderLabelPlaceholder": "e.g., route_A, storyline_2"
+  "settings.imageSubfolderLabelPlaceholder": "e.g., route_A, storyline_2",
+  "settings.contextInjectionTitle": "Context Injection",
+  "settings.injectCharacterDescription": "Inject Character Description",
+  "settings.injectCharacterDescriptionDesc": "Include character description and personality in LLM context",
+  "settings.injectUserPersona": "Inject User Persona",
+  "settings.injectUserPersonaDesc": "Include user persona description in LLM context",
+  "settings.injectScenario": "Inject Scenario",
+  "settings.injectScenarioDesc": "Include scenario setting in LLM context",
+  "settings.contentFilterTags": "Content Filter Tags",
+  "settings.contentFilterTagsDesc": "HTML tag names to strip from messages before sending to LLM (one per line). e.g., entering 'status' removes all <status>...</status> blocks.",
+  "settings.contentFilterTagsPlaceholder": "style\nscript",
+  "settings.contentFilterTagsReset": "Reset to default filter tags"
 }

@@ -283,6 +283,28 @@ export function createSettingsUI(): string {
               <input id="${UI_ELEMENT_IDS.CONTEXT_MESSAGE_COUNT}" class="text_pole" type="number" min="${CONTEXT_MESSAGE_COUNT.MIN}" max="${CONTEXT_MESSAGE_COUNT.MAX}" step="${CONTEXT_MESSAGE_COUNT.STEP}" />
             </label>
 
+            <div style="margin-top: 0.75rem; margin-bottom: 0.5rem;">
+              <strong>${t('settings.contextInjectionTitle')}</strong>
+            </div>
+
+            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}">
+              <input id="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}" type="checkbox" />
+              <span>${t('settings.injectCharacterDescription')}</span>
+              <small>${t('settings.injectCharacterDescriptionDesc')}</small>
+            </label>
+
+            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_USER_PERSONA}">
+              <input id="${UI_ELEMENT_IDS.INJECT_USER_PERSONA}" type="checkbox" />
+              <span>${t('settings.injectUserPersona')}</span>
+              <small>${t('settings.injectUserPersonaDesc')}</small>
+            </label>
+
+            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_SCENARIO}">
+              <input id="${UI_ELEMENT_IDS.INJECT_SCENARIO}" type="checkbox" />
+              <span>${t('settings.injectScenario')}</span>
+              <small>${t('settings.injectScenarioDesc')}</small>
+            </label>
+
             <label for="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}">
               <span>${t('settings.llmFrequencyGuidelines')}</span>
               <small>${t('settings.llmFrequencyGuidelinesDesc')}</small>
@@ -300,6 +322,17 @@ export function createSettingsUI(): string {
               <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
                 <textarea id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}" class="text_pole textarea_compact" rows="15" style="flex: 1; font-family: monospace; font-size: 0.9em;"></textarea>
                 <button id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
+                  <i class="fa-solid fa-undo"></i>
+                </button>
+              </div>
+            </label>
+
+            <label for="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}">
+              <span>${t('settings.contentFilterTags')}</span>
+              <small>${t('settings.contentFilterTagsDesc')}</small>
+              <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                <textarea id="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}" class="text_pole textarea_compact" rows="3" style="flex: 1; font-family: monospace; font-size: 0.9em;" placeholder="${t('settings.contentFilterTagsPlaceholder')}"></textarea>
+                <button id="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
                   <i class="fa-solid fa-undo"></i>
                 </button>
               </div>

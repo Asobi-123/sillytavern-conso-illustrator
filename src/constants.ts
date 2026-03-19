@@ -199,6 +199,11 @@ export const INDEPENDENT_LLM_MAX_TOKENS = {
 } as const;
 
 /**
+ * Default HTML tags to filter from message text before sending to LLM
+ */
+export const DEFAULT_CONTENT_FILTER_TAGS = ['style', 'script'];
+
+/**
  * Default prompt detection patterns
  * Supports multiple tag formats for backward compatibility:
  * - HTML comment format (primary, invisible, passes through DOMPurify)
@@ -244,6 +249,10 @@ export const DEFAULT_SETTINGS = {
   independentLlmApiKey: '',
   independentLlmModel: INDEPENDENT_LLM_API.DEFAULT_MODEL,
   independentLlmMaxTokens: INDEPENDENT_LLM_MAX_TOKENS.DEFAULT,
+  injectCharacterDescription: true,
+  injectUserPersona: true,
+  injectScenario: true,
+  contentFilterTags: DEFAULT_CONTENT_FILTER_TAGS,
 };
 
 /**
@@ -312,5 +321,11 @@ export const UI_ELEMENT_IDS = {
   INDEPENDENT_LLM_VIEW_LAST_REQUEST:
     'auto_illustrator_conso_independent_llm_view_last_request',
   IMAGE_SUBFOLDER_LABEL: 'auto_illustrator_conso_image_subfolder_label',
+  INJECT_CHARACTER_DESCRIPTION:
+    'auto_illustrator_conso_inject_character_description',
+  INJECT_USER_PERSONA: 'auto_illustrator_conso_inject_user_persona',
+  INJECT_SCENARIO: 'auto_illustrator_conso_inject_scenario',
+  CONTENT_FILTER_TAGS: 'auto_illustrator_conso_content_filter_tags',
+  CONTENT_FILTER_TAGS_RESET: 'auto_illustrator_conso_content_filter_tags_reset',
   RESET_BUTTON: 'auto_illustrator_conso_reset',
 } as const;

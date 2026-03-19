@@ -79,6 +79,18 @@ declare global {
     chat: any[];
     chatMetadata: Record<string, any>; // Official property name (camelCase)
     chat_metadata: Record<string, any>; // Legacy alias
+    name1: string;
+    name2: string;
+    characterId: number;
+    getCharacterCardFields(): {
+      description: string;
+      personality: string;
+      persona: string;
+      scenario: string;
+      mes_example: string;
+      system_prompt: string;
+      post_history_instructions: string;
+    };
     characters: any[];
     this_chid: number;
     saveSettingsDebounced(): void;
@@ -167,6 +179,14 @@ declare global {
     independentLlmModel: string;
     /** Independent LLM max tokens for response */
     independentLlmMaxTokens: number;
+    /** Inject character description and personality into LLM context */
+    injectCharacterDescription: boolean;
+    /** Inject user persona into LLM context */
+    injectUserPersona: boolean;
+    /** Inject scenario setting into LLM context */
+    injectScenario: boolean;
+    /** HTML tags to filter from message text before sending to LLM */
+    contentFilterTags: string[];
   }
 
   interface ImagePromptMatch {

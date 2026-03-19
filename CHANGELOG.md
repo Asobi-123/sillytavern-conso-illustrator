@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Character Card Context Injection** - Three new checkboxes (all enabled by default) to inject character description/personality, user persona, and scenario from SillyTavern character cards into the independent LLM prompt. The LLM now has direct access to character appearance details, user persona, and scene setting for more accurate image prompts.
+- **Content Filter Tags** - New textarea setting allowing users to specify HTML tags to strip from messages before sending to the LLM (default: `style`, `script`). Enter one tag name per line; the plugin automatically removes matching tag blocks (e.g., `<status>...</status>`).
+- **Enhanced CSS Noise Cleaning** - Built-in automatic removal of `@keyframes`, `@media` query blocks, and CSS selector rule blocks from message text, reducing token waste in LLM context.
+
+### Changed
+
+- **System Prompt Updated** - The independent LLM system prompt now references the new `=== CHARACTER INFO ===` section as the primary source for character appearances.
+
 ## [1.0.1] - 2026-03-19
 
 ### Added

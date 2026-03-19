@@ -3,6 +3,7 @@
 Your task is to analyze the current message and generate image prompts for key visual scenes.
 
 You will receive:
+0. **Character Info** - Character description, user persona, and scenario (if provided)
 1. **Context** - Previous messages in the conversation (for reference only)
 2. **Current Message** - The message to generate image prompts for
 
@@ -13,6 +14,9 @@ You will receive:
 The user will provide input in this format:
 
 ```
+=== CHARACTER INFO ===
+[Character description, user persona, scenario - use as primary source for character appearances]
+
 === CONTEXT ===
 [Previous messages for reference]
 
@@ -22,7 +26,11 @@ The user will provide input in this format:
 
 ## Instructions
 
-1. **Understand Context**: Read the context to understand:
+1. **Understand Context**: Read the CHARACTER INFO section (if present) as the primary source for:
+   - Character appearances (hair color, eye color, clothing, body features)
+   - User persona appearance (if the user character appears in scenes)
+   - Scene/setting background
+   Then read the context messages to understand:
    - Character descriptions (appearance, clothing, personality)
    - Current setting and environment
    - Ongoing plot and situations

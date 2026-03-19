@@ -241,5 +241,16 @@
   "settings.imageSubfolderLabel": "图片文件夹标签（当前聊天）",
   "dialog.lastRequestTitle": "最近独立 LLM 请求",
   "settings.imageSubfolderLabelDesc": "为当前聊天设置自定义图片存储文件夹标签。图片将保存到 /user/images/{角色名}_{标签}/。留空则使用默认文件夹。",
-  "settings.imageSubfolderLabelPlaceholder": "例如：线路A、剧情2"
+  "settings.imageSubfolderLabelPlaceholder": "例如：线路A、剧情2",
+  "settings.contextInjectionTitle": "上下文注入",
+  "settings.injectCharacterDescription": "注入角色卡描述",
+  "settings.injectCharacterDescriptionDesc": "在 LLM 上下文中包含角色描述和性格",
+  "settings.injectUserPersona": "注入用户 Persona",
+  "settings.injectUserPersonaDesc": "在 LLM 上下文中包含用户 Persona 描述",
+  "settings.injectScenario": "注入场景设定",
+  "settings.injectScenarioDesc": "在 LLM 上下文中包含场景设定",
+  "settings.contentFilterTags": "内容过滤标签",
+  "settings.contentFilterTagsDesc": "发送给 LLM 前要移除的 HTML 标签名（一行一个）。例如输入 'status' 会移除所有 <status>...</status> 块。",
+  "settings.contentFilterTagsPlaceholder": "style\nscript",
+  "settings.contentFilterTagsReset": "重置为默认过滤标签"
 }
