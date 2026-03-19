@@ -105,11 +105,16 @@ function buildCharacterInfoSection(
   const sections: string[] = [];
 
   if (settings.injectCharacterDescription) {
-    const name2 = context.name2 || 'Character';
+    // Get character name from character data (more reliable than context.name2
+    // which may return "SillyTavern System" in certain scenarios)
+    const charName =
+      context.characters?.[context.this_chid]?.name ||
+      context.name2 ||
+      'Character';
     const desc = fields.description?.trim();
     const pers = fields.personality?.trim();
     if (desc || pers) {
-      sections.push(`Character Name: ${name2}`);
+      sections.push(`Character Name: ${charName}`);
       if (desc) sections.push(`Character Description: ${desc}`);
       if (pers) sections.push(`Character Personality: ${pers}`);
     }
