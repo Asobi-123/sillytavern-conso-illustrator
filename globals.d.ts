@@ -137,6 +137,15 @@ declare global {
     predefined: boolean;
   }
 
+  // Independent LLM guidelines preset interface
+  interface IndependentLlmGuidelinesPreset {
+    id: string;
+    name: string;
+    frequencyGuidelines: string;
+    promptWritingGuidelines: string;
+    predefined: boolean;
+  }
+
   interface AutoIllustratorSettings {
     enabled: boolean;
     metaPrompt: string;
@@ -165,6 +174,10 @@ declare global {
     contextMessageCount: number;
     llmFrequencyGuidelines: string;
     llmPromptWritingGuidelines: string;
+    /** Current independent LLM guidelines preset ID */
+    currentIndependentLlmPresetId: string;
+    /** Custom independent LLM guidelines presets */
+    customIndependentLlmPresets: IndependentLlmGuidelinesPreset[];
     /** Delay (ms) before running final reconciliation after GENERATION_ENDED (default: 5000, 0 to disable) */
     finalReconciliationDelayMs: number;
     /** Display width of generated images in chat messages (percentage: 10-100) */

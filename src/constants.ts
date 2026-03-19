@@ -241,6 +241,8 @@ export const DEFAULT_SETTINGS = {
   contextMessageCount: CONTEXT_MESSAGE_COUNT.DEFAULT,
   llmFrequencyGuidelines: DEFAULT_LLM_FREQUENCY_GUIDELINES,
   llmPromptWritingGuidelines: DEFAULT_LLM_PROMPT_WRITING_GUIDELINES,
+  currentIndependentLlmPresetId: 'default',
+  customIndependentLlmPresets: [] as IndependentLlmGuidelinesPreset[],
   finalReconciliationDelayMs: FINAL_RECONCILIATION_DELAY.DEFAULT,
   imageDisplayWidth: IMAGE_DISPLAY_WIDTH.DEFAULT,
   imageRetentionDays: IMAGE_RETENTION_DAYS.DEFAULT,
@@ -327,5 +329,19 @@ export const UI_ELEMENT_IDS = {
   INJECT_SCENARIO: 'auto_illustrator_conso_inject_scenario',
   CONTENT_FILTER_TAGS: 'auto_illustrator_conso_content_filter_tags',
   CONTENT_FILTER_TAGS_RESET: 'auto_illustrator_conso_content_filter_tags_reset',
+  INDEPENDENT_LLM_PRESET_SELECT:
+    'auto_illustrator_conso_independent_llm_preset_select',
+  INDEPENDENT_LLM_PRESET_EDIT:
+    'auto_illustrator_conso_independent_llm_preset_edit',
+  INDEPENDENT_LLM_PRESET_SAVE:
+    'auto_illustrator_conso_independent_llm_preset_save',
+  INDEPENDENT_LLM_PRESET_SAVE_AS:
+    'auto_illustrator_conso_independent_llm_preset_save_as',
+  INDEPENDENT_LLM_PRESET_DELETE:
+    'auto_illustrator_conso_independent_llm_preset_delete',
+  INDEPENDENT_LLM_PRESET_CANCEL:
+    'auto_illustrator_conso_independent_llm_preset_cancel',
+  INDEPENDENT_LLM_PRESET_EDITOR:
+    'auto_illustrator_conso_independent_llm_preset_editor',
   RESET_BUTTON: 'auto_illustrator_conso_reset',
 } as const;

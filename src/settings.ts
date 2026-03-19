@@ -4,6 +4,7 @@
  */
 
 import {getDefaultMetaPrompt, getPresetById} from './meta_prompt_presets';
+import {getIndependentLlmPresetById} from './independent_llm_presets';
 import {
   EXTENSION_NAME,
   DEFAULT_SETTINGS,
@@ -49,6 +50,7 @@ export function loadSettings(
 
   if (!saved) {
     logger.debug('No saved settings found, using defaults');
+    context.extensionSettings[EXTENSION_NAME] = defaults;
     return defaults;
   }
 
@@ -73,6 +75,14 @@ export function loadSettings(
     merged.customPresets || []
   );
   merged.metaPrompt = preset.template;
+
+  // Load independent LLM guidelines from current preset
+  const ilmPreset = getIndependentLlmPresetById(
+    merged.currentIndependentLlmPresetId,
+    merged.customIndependentLlmPresets || []
+  );
+  merged.llmFrequencyGuidelines = ilmPreset.frequencyGuidelines;
+  merged.llmPromptWritingGuidelines = ilmPreset.promptWritingGuidelines;
 
   return merged;
 }
@@ -305,11 +315,46 @@ export function createSettingsUI(): string {
               <small>${t('settings.injectScenarioDesc')}</small>
             </label>
 
+            <div class="preset-management" style="margin-top: 1rem;">
+              <label>${t('settings.independentLlmPreset')}</label>
+              <div class="preset-toolbar">
+                <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT}" class="text_pole flex_fill">
+                  <optgroup label="${t('settings.predefinedPresets')}">
+                    <option value="default">Default</option>
+                  </optgroup>
+                  <optgroup label="${t('settings.customPresets')}" id="custom_independent_llm_presets_group">
+                    <!-- populated by JavaScript -->
+                  </optgroup>
+                </select>
+                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDIT}" class="menu_button menu_button_icon" title="${t('settings.editPreset')}">
+                  <i class="fa-solid fa-edit"></i>
+                </button>
+                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_DELETE}" class="menu_button menu_button_icon" title="${t('settings.deletePreset')}">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+
+              <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDITOR}" style="display:none">
+                <small>${t('settings.editingIndependentLlmPresetHint')}</small>
+                <div class="preset-edit-actions" style="margin-top: 0.5rem;">
+                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE}" class="menu_button">
+                    <i class="fa-solid fa-save"></i> ${t('settings.save')}
+                  </button>
+                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE_AS}" class="menu_button">
+                    <i class="fa-solid fa-copy"></i> ${t('settings.saveAs')}
+                  </button>
+                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_CANCEL}" class="menu_button">
+                    <i class="fa-solid fa-times"></i> ${t('settings.cancel')}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <label for="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}">
               <span>${t('settings.llmFrequencyGuidelines')}</span>
               <small>${t('settings.llmFrequencyGuidelinesDesc')}</small>
               <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                <textarea id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}" class="text_pole textarea_compact" rows="4" style="flex: 1; font-family: monospace; font-size: 0.9em;"></textarea>
+                <textarea id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}" class="text_pole textarea_compact" rows="4" style="flex: 1; font-family: monospace; font-size: 0.9em;" readonly></textarea>
                 <button id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
                   <i class="fa-solid fa-undo"></i>
                 </button>
@@ -320,7 +365,7 @@ export function createSettingsUI(): string {
               <span>${t('settings.llmPromptWritingGuidelines')}</span>
               <small>${t('settings.llmPromptWritingGuidelinesDesc')}</small>
               <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                <textarea id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}" class="text_pole textarea_compact" rows="15" style="flex: 1; font-family: monospace; font-size: 0.9em;"></textarea>
+                <textarea id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}" class="text_pole textarea_compact" rows="15" style="flex: 1; font-family: monospace; font-size: 0.9em;" readonly></textarea>
                 <button id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
                   <i class="fa-solid fa-undo"></i>
                 </button>

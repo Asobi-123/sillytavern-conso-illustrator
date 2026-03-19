@@ -44,6 +44,11 @@ import {
   isPredefinedPresetName,
 } from './meta_prompt_presets';
 import {
+  getIndependentLlmPresetById,
+  isIndependentLlmPresetPredefined,
+  isIndependentLlmPredefinedPresetName,
+} from './independent_llm_presets';
+import {
   initializeConcurrencyLimiter,
   updateMaxConcurrent,
   updateMinInterval,
@@ -70,6 +75,7 @@ const logger = createLogger('Main');
 let context: SillyTavernContext;
 let settings: AutoIllustratorSettings;
 let isEditingPreset = false; // Track if user is currently editing a preset
+let isEditingIndependentLlmPreset = false; // Track if user is editing independent LLM preset
 let streamingPreviewWidget: StreamingPreviewWidget | null = null; // Streaming preview widget instance
 let imageWidthUpdateTimer: ReturnType<typeof setTimeout> | null = null; // Debounce timer for image width updates
 let previousImageDisplayWidth: number | null = null; // Track previous width to detect actual changes
@@ -417,6 +423,46 @@ function updateUI(): void {
   if (presetEditor) presetEditor.style.display = 'none';
   if (presetViewer) presetViewer.style.display = 'block';
   isEditingPreset = false;
+
+  // Update independent LLM preset dropdown
+  const ilmPresetSelect = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT
+  ) as HTMLSelectElement;
+  const ilmPresetDeleteButton = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_DELETE
+  ) as HTMLButtonElement;
+  const ilmPresetEditor = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDITOR
+  ) as HTMLDivElement;
+
+  if (ilmPresetSelect) {
+    const customGroup = ilmPresetSelect.querySelector(
+      '#custom_independent_llm_presets_group'
+    );
+    if (customGroup) {
+      customGroup.innerHTML = '';
+      (settings.customIndependentLlmPresets || []).forEach(preset => {
+        const option = document.createElement('option');
+        option.value = preset.id;
+        option.textContent = preset.name;
+        customGroup.appendChild(option);
+      });
+    }
+    ilmPresetSelect.value = settings.currentIndependentLlmPresetId;
+  }
+
+  if (ilmPresetDeleteButton) {
+    const isPredefined = isIndependentLlmPresetPredefined(
+      settings.currentIndependentLlmPresetId
+    );
+    ilmPresetDeleteButton.disabled = isPredefined;
+    ilmPresetDeleteButton.title = isPredefined
+      ? t('toast.cannotDeletePredefinedIndependentLlm')
+      : t('settings.deletePreset');
+  }
+
+  if (ilmPresetEditor) ilmPresetEditor.style.display = 'none';
+  isEditingIndependentLlmPreset = false;
 
   // Update validation status
   updateValidationStatus();
@@ -1678,6 +1724,281 @@ function handlePresetDelete(): void {
   logger.info('Preset deleted:', preset.name);
 }
 
+// ===== Independent LLM Preset Handlers =====
+
+/**
+ * Handles independent LLM preset selection change
+ */
+function handleIndependentLlmPresetChange(): void {
+  if (isEditingIndependentLlmPreset) {
+    handleIndependentLlmPresetCancel();
+  }
+
+  const select = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT
+  ) as HTMLSelectElement;
+  if (!select) return;
+
+  const selectedId = select.value;
+  const preset = getIndependentLlmPresetById(
+    selectedId,
+    settings.customIndependentLlmPresets || []
+  );
+
+  settings.currentIndependentLlmPresetId = selectedId;
+  settings.llmFrequencyGuidelines = preset.frequencyGuidelines;
+  settings.llmPromptWritingGuidelines = preset.promptWritingGuidelines;
+  saveSettings(settings, context);
+  updateUI();
+
+  logger.info('Independent LLM preset changed:', {
+    id: selectedId,
+    name: preset.name,
+  });
+}
+
+/**
+ * Handles entering edit mode for independent LLM preset
+ */
+function handleIndependentLlmPresetEdit(): void {
+  const editor = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDITOR
+  ) as HTMLDivElement;
+  const freqTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
+  ) as HTMLTextAreaElement;
+  const writingTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES
+  ) as HTMLTextAreaElement;
+  const saveButton = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE
+  ) as HTMLButtonElement;
+
+  if (!editor || !freqTextarea || !writingTextarea) return;
+
+  editor.style.display = 'block';
+  freqTextarea.removeAttribute('readonly');
+  writingTextarea.removeAttribute('readonly');
+
+  if (saveButton) {
+    const isPredefined = isIndependentLlmPresetPredefined(
+      settings.currentIndependentLlmPresetId
+    );
+    saveButton.disabled = isPredefined;
+    saveButton.title = isPredefined
+      ? t('toast.cannotDeletePredefinedIndependentLlm')
+      : t('settings.save');
+  }
+
+  isEditingIndependentLlmPreset = true;
+  logger.info('Entered independent LLM preset edit mode');
+}
+
+/**
+ * Handles saving changes to current custom independent LLM preset
+ */
+function handleIndependentLlmPresetSave(): void {
+  if (
+    isIndependentLlmPresetPredefined(settings.currentIndependentLlmPresetId)
+  ) {
+    toastr.error(
+      t('toast.cannotDeletePredefinedIndependentLlm'),
+      t('extensionName')
+    );
+    return;
+  }
+
+  const freqTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
+  ) as HTMLTextAreaElement;
+  const writingTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES
+  ) as HTMLTextAreaElement;
+  if (!freqTextarea || !writingTextarea) return;
+
+  const presetIndex = (settings.customIndependentLlmPresets || []).findIndex(
+    p => p.id === settings.currentIndependentLlmPresetId
+  );
+  if (presetIndex === -1) {
+    toastr.error(t('toast.presetNotFound'), t('extensionName'));
+    return;
+  }
+
+  settings.customIndependentLlmPresets[presetIndex].frequencyGuidelines =
+    freqTextarea.value;
+  settings.customIndependentLlmPresets[presetIndex].promptWritingGuidelines =
+    writingTextarea.value;
+  settings.llmFrequencyGuidelines = freqTextarea.value;
+  settings.llmPromptWritingGuidelines = writingTextarea.value;
+  saveSettings(settings, context);
+
+  exitIndependentLlmEditMode();
+  updateUI();
+  toastr.success(t('toast.independentLlmPresetSaved'), t('extensionName'));
+  logger.info(
+    'Independent LLM preset saved:',
+    settings.customIndependentLlmPresets[presetIndex].name
+  );
+}
+
+/**
+ * Handles saving current content as a new independent LLM preset
+ */
+function handleIndependentLlmPresetSaveAs(): void {
+  const freqTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
+  ) as HTMLTextAreaElement;
+  const writingTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES
+  ) as HTMLTextAreaElement;
+  if (!freqTextarea || !writingTextarea) return;
+
+  const name = prompt(t('prompt.enterIndependentLlmPresetName'));
+  if (!name || name.trim() === '') return;
+
+  const trimmedName = name.trim();
+
+  if (isIndependentLlmPredefinedPresetName(trimmedName)) {
+    toastr.error(
+      t('toast.cannotUsePredefinedIndependentLlmNames'),
+      t('extensionName')
+    );
+    return;
+  }
+
+  if (!settings.customIndependentLlmPresets) {
+    settings.customIndependentLlmPresets = [];
+  }
+
+  const existingPreset = settings.customIndependentLlmPresets.find(
+    p => p.name === trimmedName
+  );
+
+  if (existingPreset) {
+    const overwrite = confirm(
+      t('prompt.overwriteIndependentLlmPreset', {name: trimmedName})
+    );
+    if (!overwrite) return;
+
+    existingPreset.frequencyGuidelines = freqTextarea.value;
+    existingPreset.promptWritingGuidelines = writingTextarea.value;
+    settings.currentIndependentLlmPresetId = existingPreset.id;
+  } else {
+    const newPreset: IndependentLlmGuidelinesPreset = {
+      id: `custom-${Date.now()}`,
+      name: trimmedName,
+      frequencyGuidelines: freqTextarea.value,
+      promptWritingGuidelines: writingTextarea.value,
+      predefined: false,
+    };
+    settings.customIndependentLlmPresets.push(newPreset);
+    settings.currentIndependentLlmPresetId = newPreset.id;
+  }
+
+  settings.llmFrequencyGuidelines = freqTextarea.value;
+  settings.llmPromptWritingGuidelines = writingTextarea.value;
+  saveSettings(settings, context);
+
+  exitIndependentLlmEditMode();
+  updateUI();
+  toastr.success(
+    t('toast.independentLlmPresetSavedNamed', {name: trimmedName}),
+    t('extensionName')
+  );
+  logger.info('Independent LLM preset saved as:', trimmedName);
+}
+
+/**
+ * Handles canceling independent LLM preset edit
+ */
+function handleIndependentLlmPresetCancel(): void {
+  const freqTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
+  ) as HTMLTextAreaElement;
+  const writingTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES
+  ) as HTMLTextAreaElement;
+
+  // Restore original values
+  if (freqTextarea) freqTextarea.value = settings.llmFrequencyGuidelines;
+  if (writingTextarea)
+    writingTextarea.value = settings.llmPromptWritingGuidelines;
+
+  exitIndependentLlmEditMode();
+  logger.info('Cancelled independent LLM preset edit');
+}
+
+/**
+ * Handles deleting a custom independent LLM preset
+ */
+function handleIndependentLlmPresetDelete(): void {
+  if (
+    isIndependentLlmPresetPredefined(settings.currentIndependentLlmPresetId)
+  ) {
+    toastr.error(
+      t('toast.cannotDeletePredefinedIndependentLlm'),
+      t('extensionName')
+    );
+    return;
+  }
+
+  const preset = (settings.customIndependentLlmPresets || []).find(
+    p => p.id === settings.currentIndependentLlmPresetId
+  );
+  if (!preset) {
+    toastr.error(t('toast.presetNotFound'), t('extensionName'));
+    return;
+  }
+
+  const confirmDelete = confirm(
+    t('prompt.deleteIndependentLlmPresetConfirm', {name: preset.name})
+  );
+  if (!confirmDelete) return;
+
+  settings.customIndependentLlmPresets =
+    settings.customIndependentLlmPresets.filter(
+      p => p.id !== settings.currentIndependentLlmPresetId
+    );
+
+  // Switch to default
+  settings.currentIndependentLlmPresetId = 'default';
+  const defaultPreset = getIndependentLlmPresetById(
+    'default',
+    settings.customIndependentLlmPresets
+  );
+  settings.llmFrequencyGuidelines = defaultPreset.frequencyGuidelines;
+  settings.llmPromptWritingGuidelines = defaultPreset.promptWritingGuidelines;
+
+  saveSettings(settings, context);
+  updateUI();
+
+  toastr.success(
+    t('toast.independentLlmPresetDeleted', {name: preset.name}),
+    t('extensionName')
+  );
+  logger.info('Independent LLM preset deleted:', preset.name);
+}
+
+/**
+ * Exits independent LLM preset edit mode
+ */
+function exitIndependentLlmEditMode(): void {
+  const editor = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDITOR
+  ) as HTMLDivElement;
+  const freqTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
+  ) as HTMLTextAreaElement;
+  const writingTextarea = document.getElementById(
+    UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES
+  ) as HTMLTextAreaElement;
+
+  if (editor) editor.style.display = 'none';
+  if (freqTextarea) freqTextarea.setAttribute('readonly', 'readonly');
+  if (writingTextarea) writingTextarea.setAttribute('readonly', 'readonly');
+  isEditingIndependentLlmPreset = false;
+}
+
 /**
  * Cancels all active streaming sessions
  * Used when chat is cleared or reset
@@ -2238,6 +2559,50 @@ function initialize(): void {
     independentLlmTestConnectionButton?.addEventListener(
       'click',
       handleTestIndependentLlmConnection
+    );
+
+    // Independent LLM preset management
+    const ilmPresetSelect = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT
+    );
+    const ilmPresetEditButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDIT
+    );
+    const ilmPresetSaveButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE
+    );
+    const ilmPresetSaveAsButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE_AS
+    );
+    const ilmPresetDeleteButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_DELETE
+    );
+    const ilmPresetCancelButton = document.getElementById(
+      UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_CANCEL
+    );
+    ilmPresetSelect?.addEventListener(
+      'change',
+      handleIndependentLlmPresetChange
+    );
+    ilmPresetEditButton?.addEventListener(
+      'click',
+      handleIndependentLlmPresetEdit
+    );
+    ilmPresetSaveButton?.addEventListener(
+      'click',
+      handleIndependentLlmPresetSave
+    );
+    ilmPresetSaveAsButton?.addEventListener(
+      'click',
+      handleIndependentLlmPresetSaveAs
+    );
+    ilmPresetDeleteButton?.addEventListener(
+      'click',
+      handleIndependentLlmPresetDelete
+    );
+    ilmPresetCancelButton?.addEventListener(
+      'click',
+      handleIndependentLlmPresetCancel
     );
 
     const independentLlmViewLastRequestButton = document.getElementById(

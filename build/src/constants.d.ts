@@ -209,6 +209,8 @@ export declare const DEFAULT_SETTINGS: {
     contextMessageCount: 10;
     llmFrequencyGuidelines: string;
     llmPromptWritingGuidelines: string;
+    currentIndependentLlmPresetId: string;
+    customIndependentLlmPresets: IndependentLlmGuidelinesPreset[];
     finalReconciliationDelayMs: 5000;
     imageDisplayWidth: 100;
     imageRetentionDays: 1;
@@ -279,5 +281,12 @@ export declare const UI_ELEMENT_IDS: {
     readonly INJECT_SCENARIO: "auto_illustrator_conso_inject_scenario";
     readonly CONTENT_FILTER_TAGS: "auto_illustrator_conso_content_filter_tags";
     readonly CONTENT_FILTER_TAGS_RESET: "auto_illustrator_conso_content_filter_tags_reset";
+    readonly INDEPENDENT_LLM_PRESET_SELECT: "auto_illustrator_conso_independent_llm_preset_select";
+    readonly INDEPENDENT_LLM_PRESET_EDIT: "auto_illustrator_conso_independent_llm_preset_edit";
+    readonly INDEPENDENT_LLM_PRESET_SAVE: "auto_illustrator_conso_independent_llm_preset_save";
+    readonly INDEPENDENT_LLM_PRESET_SAVE_AS: "auto_illustrator_conso_independent_llm_preset_save_as";
+    readonly INDEPENDENT_LLM_PRESET_DELETE: "auto_illustrator_conso_independent_llm_preset_delete";
+    readonly INDEPENDENT_LLM_PRESET_CANCEL: "auto_illustrator_conso_independent_llm_preset_cancel";
+    readonly INDEPENDENT_LLM_PRESET_EDITOR: "auto_illustrator_conso_independent_llm_preset_editor";
     readonly RESET_BUTTON: "auto_illustrator_conso_reset";
 };

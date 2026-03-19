@@ -88,6 +88,18 @@ describe('settings', () => {
       expect(loaded.metaPrompt).toBeTruthy();
     });
 
+    it('should write defaults to extensionSettings on first load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {},
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      // extensionSettings should now contain defaults so saveSettingsDebounced persists them
+      expect(mockContext.extensionSettings[EXTENSION_NAME]).toBeDefined();
+      expect(mockContext.extensionSettings[EXTENSION_NAME]).toEqual(loaded);
+    });
+
     it('should merge partial settings with defaults', () => {
       const partialSettings = {
         enabled: false,

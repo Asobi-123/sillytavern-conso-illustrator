@@ -252,5 +252,15 @@
   "settings.contentFilterTags": "内容过滤标签",
   "settings.contentFilterTagsDesc": "发送给 LLM 前要移除的 HTML 标签名（一行一个）。例如输入 'status' 会移除所有 <status>...</status> 块。",
   "settings.contentFilterTagsPlaceholder": "style\nscript",
-  "settings.contentFilterTagsReset": "重置为默认过滤标签"
+  "settings.contentFilterTagsReset": "重置为默认过滤标签",
+  "settings.independentLlmPreset": "提示词指南预设（独立API模式）",
+  "settings.editingIndependentLlmPresetHint": "正在编辑预设 - 修改下方的频率指南和编写指南，然后点击保存或另存为",
+  "toast.independentLlmPresetSaved": "指南预设已保存",
+  "toast.independentLlmPresetSavedNamed": "指南预设 '{name}' 已保存",
+  "toast.independentLlmPresetDeleted": "指南预设 '{name}' 已删除",
+  "toast.cannotDeletePredefinedIndependentLlm": "无法删除预定义指南预设",
+  "toast.cannotUsePredefinedIndependentLlmNames": "无法使用预定义预设名称（Default）",
+  "prompt.enterIndependentLlmPresetName": "输入新指南预设的名称：",
+  "prompt.overwriteIndependentLlmPreset": "覆盖现有指南预设 '{name}'？",
+  "prompt.deleteIndependentLlmPresetConfirm": "删除指南预设 '{name}'？"
 }

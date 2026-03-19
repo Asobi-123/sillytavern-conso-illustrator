@@ -210,6 +210,39 @@ describe('Message Handler V2', () => {
       // Should process even for system messages (only skip user messages)
       expect(mockSessionManager.finalizeStreamingAndInsert).toHaveBeenCalled();
     });
+
+    it('should skip if message has empty content', async () => {
+      mockContext.chat[1].mes = '';
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(mockSessionManager.getSession).not.toHaveBeenCalled();
+      expect(
+        mockSessionManager.finalizeStreamingAndInsert
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should skip if message has only whitespace', async () => {
+      mockContext.chat[1].mes = '   \n  ';
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(mockSessionManager.getSession).not.toHaveBeenCalled();
+      expect(
+        mockSessionManager.finalizeStreamingAndInsert
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should skip if message mes is undefined', async () => {
+      mockContext.chat[1].mes = undefined;
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(mockSessionManager.getSession).not.toHaveBeenCalled();
+      expect(
+        mockSessionManager.finalizeStreamingAndInsert
+      ).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleGenerationEnded - Delayed Reconciliation', () => {
@@ -331,6 +364,32 @@ describe('Message Handler V2', () => {
       expect(reconcileMessage).not.toHaveBeenCalled();
 
       // Should not schedule delayed reconciliation either
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(reconcileMessage).not.toHaveBeenCalled();
+    });
+
+    it('should skip reconciliation for empty messages (main API error)', async () => {
+      const {reconcileMessage} = await import('./reconciliation');
+      vi.mocked(reconcileMessage).mockClear();
+
+      mockContext.chat[1].mes = '';
+      await handleGenerationEnded(1, mockContext, mockSettings);
+
+      expect(reconcileMessage).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(reconcileMessage).not.toHaveBeenCalled();
+    });
+
+    it('should skip reconciliation for whitespace-only messages', async () => {
+      const {reconcileMessage} = await import('./reconciliation');
+      vi.mocked(reconcileMessage).mockClear();
+
+      mockContext.chat[1].mes = '   ';
+      await handleGenerationEnded(1, mockContext, mockSettings);
+
+      expect(reconcileMessage).not.toHaveBeenCalled();
+
       await vi.advanceTimersByTimeAsync(10000);
       expect(reconcileMessage).not.toHaveBeenCalled();
     });

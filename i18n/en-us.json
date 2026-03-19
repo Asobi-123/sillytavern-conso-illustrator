@@ -252,5 +252,15 @@
   "settings.contentFilterTags": "Content Filter Tags",
   "settings.contentFilterTagsDesc": "HTML tag names to strip from messages before sending to LLM (one per line). e.g., entering 'status' removes all <status>...</status> blocks.",
   "settings.contentFilterTagsPlaceholder": "style\nscript",
-  "settings.contentFilterTagsReset": "Reset to default filter tags"
+  "settings.contentFilterTagsReset": "Reset to default filter tags",
+  "settings.independentLlmPreset": "Prompt Guidelines Preset (Independent API Mode)",
+  "settings.editingIndependentLlmPresetHint": "Editing preset - modify the frequency and writing guidelines below, then click Save or Save As",
+  "toast.independentLlmPresetSaved": "Guidelines preset saved",
+  "toast.independentLlmPresetSavedNamed": "Guidelines preset '{name}' saved",
+  "toast.independentLlmPresetDeleted": "Guidelines preset '{name}' deleted",
+  "toast.cannotDeletePredefinedIndependentLlm": "Cannot delete predefined guidelines presets",
+  "toast.cannotUsePredefinedIndependentLlmNames": "Cannot use predefined preset names (Default)",
+  "prompt.enterIndependentLlmPresetName": "Enter name for new guidelines preset:",
+  "prompt.overwriteIndependentLlmPreset": "Overwrite existing guidelines preset '{name}'?",
+  "prompt.deleteIndependentLlmPresetConfirm": "Delete guidelines preset '{name}'?"
 }

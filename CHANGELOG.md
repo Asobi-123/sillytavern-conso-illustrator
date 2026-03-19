@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-19
+
+### Added
+
+- **Independent LLM Guidelines Preset Management** - Preset system for frequency guidelines and prompt writing guidelines in independent API mode. Save, switch, and manage custom presets just like meta prompt presets in shared API mode.
+
+### Fixed
+
+- **Streaming Preview Checkbox** - Fixed first untick of streaming preview checkbox not persisting on page refresh. Root cause: default settings were not written to extensionSettings on fresh install.
+- **Main API Error Triggering Independent LLM** - Fixed independent LLM still running when main API errors produce empty messages. Empty/whitespace-only messages are now skipped.
+
 ## [1.1.0] - 2026-03-19
 
 ### Added

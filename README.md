@@ -28,6 +28,7 @@
 | 图片子文件夹标签 | - | - | ✅ 支持 |
 | 自动模型获取 | - | - | ✅ 支持 |
 | Max Tokens 控制 | - | - | ✅ 支持 |
+| 提示词指南预设管理 | - | - | ✅ 支持 |
 
 ### ✨ Conso 版新增特性
 
@@ -46,6 +47,12 @@
 - **自定义 HTML 标签过滤**：输入标签名（一行一个）即可自动移除整个标签块，如 `<style>`、`<status>` 等
 - **内置 CSS 噪音清洗**：自动移除 `@keyframes`、`@media`、CSS 选择器规则块等无关内容
 - 大幅减少发给 LLM 的无效 token，提升 prompt 生成质量
+
+#### 📋 提示词指南预设管理 (v1.2.0 新增)
+- **预设保存/切换/删除**：为独立 API 模式的频率指南和提示词编写指南提供完整的预设管理功能
+- 支持预定义预设（Default）和自定义预设
+- 切换预设自动更新两个指南文本框
+- 与共享 API 的元提示预设功能完全一致的操作体验
 
 #### 🤖 独立 LLM API 支持
 - 支持 OpenAI 兼容的任何 LLM 服务（本地或云端）
@@ -121,6 +128,7 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 | Image Subfolder Label | - | - | ✅ Supported |
 | Auto Model Discovery | - | - | ✅ Supported |
 | Max Tokens Control | - | - | ✅ Supported |
+| Guidelines Preset Management | - | - | ✅ Supported |
 
 ### ✨ New Features in Conso Edition
 
@@ -139,6 +147,12 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 - **Custom HTML Tag Filter**: Enter tag names (one per line) to automatically strip entire tag blocks like `<style>`, `<status>`, etc.
 - **Built-in CSS Noise Cleaning**: Automatically removes `@keyframes`, `@media`, and CSS selector rule blocks
 - Significantly reduces wasted tokens sent to the LLM, improving prompt generation quality
+
+#### 📋 Guidelines Preset Management (v1.2.0)
+- **Preset Save/Switch/Delete**: Full preset management for frequency guidelines and prompt writing guidelines in independent API mode
+- Supports predefined presets (Default) and custom presets
+- Switching presets automatically updates both guideline textareas
+- Same UX as the meta prompt preset system in shared API mode
 
 #### 🤖 Independent LLM API Support
 - Support any OpenAI-compatible LLM service (local or cloud-based)

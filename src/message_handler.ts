@@ -168,7 +168,11 @@ export async function handleMessageReceived(
     return;
   }
 
-  // Check if we have an active streaming session for this message
+  // Skip empty messages (main API may have errored)
+  if (!message.mes || message.mes.trim().length === 0) {
+    logger.info('Message has no content, skipping (main API may have errored)');
+    return;
+  }
   const session = sessionManager.getSession(messageId);
 
   if (!session) {
@@ -432,6 +436,14 @@ export async function handleGenerationEnded(
   // Skip user messages
   if (message.is_user) {
     logger.debug('Skipping user message');
+    return;
+  }
+
+  // Skip empty messages (main API may have errored)
+  if (!message.mes || message.mes.trim().length === 0) {
+    logger.info(
+      'Message has no content, skipping reconciliation (main API may have errored)'
+    );
     return;
   }
 
