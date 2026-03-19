@@ -105,10 +105,10 @@ function buildCharacterInfoSection(
   const sections: string[] = [];
 
   if (settings.injectCharacterDescription) {
-    // Get character name from character data (more reliable than context.name2
-    // which may return "SillyTavern System" in certain scenarios)
+    // Get character name from character data (context.name2 may return
+    // "SillyTavern System" before character loads; characterId maps to this_chid)
     const charName =
-      context.characters?.[context.this_chid]?.name ||
+      context.characters?.[context.characterId]?.name ||
       context.name2 ||
       'Character';
     const desc = fields.description?.trim();
