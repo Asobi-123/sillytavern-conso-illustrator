@@ -102,14 +102,16 @@ function buildCharacterInfoSection(
     return '';
   }
 
+  // Get a fresh context snapshot for name1/name2/characterId
+  // (the cached context passed in may have stale values from init time)
+  const freshCtx = SillyTavern.getContext();
+
   const sections: string[] = [];
 
   if (settings.injectCharacterDescription) {
-    // Get character name from character data (context.name2 may return
-    // "SillyTavern System" before character loads; characterId maps to this_chid)
     const charName =
-      context.characters?.[context.characterId]?.name ||
-      context.name2 ||
+      freshCtx.characters?.[freshCtx.characterId]?.name ||
+      freshCtx.name2 ||
       'Character';
     const desc = fields.description?.trim();
     const pers = fields.personality?.trim();
@@ -121,7 +123,7 @@ function buildCharacterInfoSection(
   }
 
   if (settings.injectUserPersona) {
-    const name1 = context.name1 || 'User';
+    const name1 = freshCtx.name1 || 'User';
     const persona = fields.persona?.trim();
     if (persona) {
       sections.push(`User Name: ${name1}`);
