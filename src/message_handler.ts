@@ -188,10 +188,17 @@ export async function handleMessageReceived(
 
       try {
         // Step 1: Call LLM to generate prompts
+        let metadata;
+        try {
+          metadata = getMetadata();
+        } catch {
+          // Metadata not ready, proceed without world info
+        }
         const prompts = await generatePromptsForMessage(
           message.mes,
           context,
-          settings
+          settings,
+          metadata
         );
 
         if (prompts.length === 0) {

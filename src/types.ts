@@ -109,6 +109,9 @@ export interface AutoIllustratorChatMetadata {
 
   /** Custom subfolder label for image storage (per-chat) */
   imageSubfolderLabel?: string;
+
+  /** World info injection configuration (per-chat) */
+  worldInfoConfig?: PluginWorldInfoConfig;
 }
 
 /**
@@ -179,3 +182,32 @@ export interface GenerationSession {
 }
 
 // Old StreamingSession interface removed - use GenerationSession instead
+
+/** World book entry (only fields the plugin needs) */
+export interface WorldInfoEntry {
+  uid: number;
+  /** Entry name/title */
+  comment: string;
+  /** Entry body text */
+  content: string;
+  /** Keywords (display only) */
+  key: string[];
+  /** SillyTavern's disable state (plugin ignores this) */
+  disable: boolean;
+  /** Whether the entry is constant/always-active */
+  constant: boolean;
+}
+
+/** Per-book entry override state */
+export interface PluginWorldBookOverrides {
+  /** uid -> enabled. Absent = off (default off) */
+  entryOverrides: Record<number, boolean>;
+}
+
+/** Per-chat world info configuration */
+export interface PluginWorldInfoConfig {
+  selectedWorldBooks: string[];
+  worldBookOverrides: Record<string, PluginWorldBookOverrides>;
+  /** Whether auto-initialization has been performed (prevents re-adding character default book) */
+  initialized?: boolean;
+}

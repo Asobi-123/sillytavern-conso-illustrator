@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-20
+
+### Added
+
+- **World Info Injection** - Inject selected world book entries into independent LLM context. Features include: plugin-independent toggle (does not affect SillyTavern's world info), per-chat configuration, cross-character world book selection, search & filter for books and entries, auto-initialization with character-bound world book, and select all/deselect all bulk actions.
+
 ## [1.2.0] - 2026-03-19
 
 ### Added

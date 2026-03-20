@@ -68,6 +68,11 @@ import {initializeChatChangedHandler} from './chat_changed_handler';
 import {initializeChatChangeOperations} from './chat_change_operations';
 import {runStartupCleanup} from './image_cleaner';
 import {getMetadata, saveMetadata} from './metadata';
+import {
+  initializeWorldInfoPanel,
+  toggleWorldInfoPanelVisibility,
+  registerWorldInfoEventListeners,
+} from './worldinfo_ui';
 
 const logger = createLogger('Main');
 
@@ -356,6 +361,15 @@ function updateUI(): void {
   if (injectScenarioCheckbox) {
     injectScenarioCheckbox.checked = settings.injectScenario ?? true;
   }
+
+  // Update world info injection checkbox
+  const injectWorldInfoCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_WORLD_INFO
+  ) as HTMLInputElement;
+  if (injectWorldInfoCheckbox) {
+    injectWorldInfoCheckbox.checked = settings.injectWorldInfo ?? false;
+  }
+  toggleWorldInfoPanelVisibility(settings.injectWorldInfo ?? false);
 
   // Update content filter tags
   const contentFilterTagsTextarea = document.getElementById(
@@ -730,6 +744,14 @@ function handleSettingsChange(): void {
     injectUserPersonaCheckbox?.checked ?? settings.injectUserPersona;
   settings.injectScenario =
     injectScenarioCheckbox?.checked ?? settings.injectScenario;
+
+  // World info injection
+  const injectWorldInfoCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.INJECT_WORLD_INFO
+  ) as HTMLInputElement;
+  settings.injectWorldInfo =
+    injectWorldInfoCheckbox?.checked ?? settings.injectWorldInfo;
+  toggleWorldInfoPanelVisibility(settings.injectWorldInfo);
 
   // Content filter tags
   const contentFilterTagsTextarea = document.getElementById(
@@ -2540,6 +2562,12 @@ function initialize(): void {
     injectUserPersonaCheckbox?.addEventListener('change', handleSettingsChange);
     injectScenarioCheckbox?.addEventListener('change', handleSettingsChange);
 
+    // World info injection
+    const injectWorldInfoCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.INJECT_WORLD_INFO
+    ) as HTMLInputElement;
+    injectWorldInfoCheckbox?.addEventListener('change', handleSettingsChange);
+
     // Content filter tags
     const contentFilterTagsTextarea = document.getElementById(
       UI_ELEMENT_IDS.CONTENT_FILTER_TAGS
@@ -2643,6 +2671,12 @@ function initialize(): void {
 
     // Update UI with loaded settings
     updateUI();
+
+    // Register world info event listeners and initialize panel (non-blocking)
+    registerWorldInfoEventListeners();
+    initializeWorldInfoPanel().catch(error => {
+      logger.warn('World info panel initialization failed:', error);
+    });
   }
 
   logger.info('Extension initialized successfully');

@@ -262,5 +262,22 @@
   "toast.cannotUsePredefinedIndependentLlmNames": "无法使用预定义预设名称（Default）",
   "prompt.enterIndependentLlmPresetName": "输入新指南预设的名称：",
   "prompt.overwriteIndependentLlmPreset": "覆盖现有指南预设 '{name}'？",
-  "prompt.deleteIndependentLlmPresetConfirm": "删除指南预设 '{name}'？"
+  "prompt.deleteIndependentLlmPresetConfirm": "删除指南预设 '{name}'？",
+  "settings.worldInfoTitle": "世界书注入",
+  "settings.injectWorldInfo": "注入世界书信息",
+  "settings.injectWorldInfoDesc": "将选中的世界书条目注入 LLM 上下文（插件独立开关，不影响酒馆的世界书设置）",
+  "settings.worldInfoSearchPlaceholder": "搜索世界书...",
+  "settings.worldInfoSearchEntryPlaceholder": "搜索条目...",
+  "settings.worldInfoRefresh": "刷新",
+  "settings.worldInfoSelectAll": "全选",
+  "settings.worldInfoDeselectAll": "全部取消",
+  "settings.worldInfoEntriesCount": "{enabled}/{total} 条",
+  "settings.worldInfoNoBooks": "未找到世界书",
+  "settings.worldInfoNoBooksMatch": "没有匹配的世界书",
+  "settings.worldInfoNoEntries": "此世界书没有条目",
+  "settings.worldInfoNoEntriesMatch": "没有匹配的条目",
+  "settings.worldInfoCharBadge": "角色绑定",
+  "settings.worldInfoLoading": "正在加载世界书...",
+  "toast.worldInfoFetchFailed": "获取世界书数据失败：{error}",
+  "toast.worldInfoRefreshed": "世界书数据已刷新"
 }

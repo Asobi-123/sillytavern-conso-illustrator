@@ -3,6 +3,7 @@
  * Generates image prompts using a separate LLM call
  */
 import type { PromptSuggestion } from '../prompt_insertion';
+import type { AutoIllustratorChatMetadata } from '../types';
 /**
  * Cleans message text for LLM consumption by removing noise content.
  * Strips HTML comments, user-specified tag blocks, CSS noise, and remaining HTML tags (keeping text content).
@@ -12,6 +13,15 @@ import type { PromptSuggestion } from '../prompt_insertion';
  * @returns Cleaned plain text suitable for LLM analysis
  */
 export declare function cleanMessageTextForLlm(text: string, filterTags?: string[]): string;
+/**
+ * Builds the WORLD INFO section from selected world book entries.
+ * Only includes entries explicitly enabled by the user (default off).
+ *
+ * @param settings - Extension settings
+ * @param metadata - Current chat metadata
+ * @returns Formatted world info section, or empty string if nothing to include
+ */
+export declare function buildWorldInfoSection(settings: AutoIllustratorSettings, metadata?: AutoIllustratorChatMetadata): Promise<string>;
 /**
  * Generates image prompts for a message using separate LLM call
  *
@@ -35,4 +45,4 @@ export declare function cleanMessageTextForLlm(text: string, filterTags?: string
  * //   insertBefore: "under the pale"
  * // }]
  */
-export declare function generatePromptsForMessage(messageText: string, context: SillyTavernContext, settings: AutoIllustratorSettings): Promise<PromptSuggestion[]>;
+export declare function generatePromptsForMessage(messageText: string, context: SillyTavernContext, settings: AutoIllustratorSettings, metadata?: AutoIllustratorChatMetadata): Promise<PromptSuggestion[]>;

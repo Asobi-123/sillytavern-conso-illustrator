@@ -29,6 +29,7 @@
 | 自动模型获取 | - | - | ✅ 支持 |
 | Max Tokens 控制 | - | - | ✅ 支持 |
 | 提示词指南预设管理 | - | - | ✅ 支持 |
+| 世界书注入 | - | - | ✅ 支持 |
 
 ### ✨ Conso 版新增特性
 
@@ -53,6 +54,15 @@
 - 支持预定义预设（Default）和自定义预设
 - 切换预设自动更新两个指南文本框
 - 与共享 API 的元提示预设功能完全一致的操作体验
+
+#### 🌐 世界书注入 (v1.3.0 新增)
+- **插件独立开关**：不影响也不依赖酒馆原生的世界书启用/禁用状态
+- **按聊天保存配置**：不同聊天可以有不同的世界书选择方案
+- **跨角色选择世界书**：可选系统中任意世界书，不限于当前角色
+- **搜索功能**：支持世界书名称搜索和条目内容搜索
+- **默认全部关闭**：选中世界书后条目默认关闭，用户主动启用需要的条目
+- **自动初始化**：新聊天自动添加当前角色绑定的主世界书
+- **全选/全部取消**：批量操作条目开关
 
 #### 🤖 独立 LLM API 支持
 - 支持 OpenAI 兼容的任何 LLM 服务（本地或云端）
@@ -129,6 +139,7 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 | Auto Model Discovery | - | - | ✅ Supported |
 | Max Tokens Control | - | - | ✅ Supported |
 | Guidelines Preset Management | - | - | ✅ Supported |
+| World Info Injection | - | - | ✅ Supported |
 
 ### ✨ New Features in Conso Edition
 
@@ -153,6 +164,15 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 - Supports predefined presets (Default) and custom presets
 - Switching presets automatically updates both guideline textareas
 - Same UX as the meta prompt preset system in shared API mode
+
+#### 🌐 World Info Injection (v1.3.0)
+- **Plugin-Independent Toggle**: Does not affect or depend on SillyTavern's native world info enable/disable state
+- **Per-Chat Configuration**: Different chats can have different world book selections
+- **Cross-Character Selection**: Select any world book in the system, not limited to the current character
+- **Search**: Search by world book name and entry content
+- **Default Off**: After selecting a world book, all entries are off by default — users enable what they need
+- **Auto-Initialization**: New chats automatically add the current character's bound world book
+- **Bulk Actions**: Select All / Deselect All for entry toggles
 
 #### 🤖 Independent LLM API Support
 - Support any OpenAI-compatible LLM service (local or cloud-based)

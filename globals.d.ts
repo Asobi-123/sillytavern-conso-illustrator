@@ -200,6 +200,8 @@ declare global {
     injectScenario: boolean;
     /** HTML tags to filter from message text before sending to LLM */
     contentFilterTags: string[];
+    /** Inject world info entries into LLM context */
+    injectWorldInfo: boolean;
   }
 
   interface ImagePromptMatch {

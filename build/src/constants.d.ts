@@ -223,6 +223,7 @@ export declare const DEFAULT_SETTINGS: {
     injectUserPersona: boolean;
     injectScenario: boolean;
     contentFilterTags: string[];
+    injectWorldInfo: boolean;
 };
 /**
  * UI element IDs for settings controls
@@ -289,4 +290,10 @@ export declare const UI_ELEMENT_IDS: {
     readonly INDEPENDENT_LLM_PRESET_CANCEL: "auto_illustrator_conso_independent_llm_preset_cancel";
     readonly INDEPENDENT_LLM_PRESET_EDITOR: "auto_illustrator_conso_independent_llm_preset_editor";
     readonly RESET_BUTTON: "auto_illustrator_conso_reset";
+    readonly INJECT_WORLD_INFO: "auto_illustrator_conso_inject_world_info";
+    readonly WORLD_INFO_PANEL: "auto_illustrator_conso_world_info_panel";
+    readonly WORLD_INFO_SEARCH: "auto_illustrator_conso_world_info_search";
+    readonly WORLD_INFO_REFRESH: "auto_illustrator_conso_world_info_refresh";
+    readonly WORLD_INFO_BOOK_LIST: "auto_illustrator_conso_world_info_book_list";
+    readonly WORLD_INFO_ENTRY_PANEL: "auto_illustrator_conso_world_info_entry_panel";
 };

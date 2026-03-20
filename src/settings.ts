@@ -315,6 +315,29 @@ export function createSettingsUI(): string {
               <small>${t('settings.injectScenarioDesc')}</small>
             </label>
 
+            <div style="margin-top: 0.75rem; margin-bottom: 0.5rem;">
+              <strong>${t('settings.worldInfoTitle')}</strong>
+            </div>
+
+            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}">
+              <input id="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}" type="checkbox" />
+              <span>${t('settings.injectWorldInfo')}</span>
+              <small>${t('settings.injectWorldInfoDesc')}</small>
+            </label>
+
+            <div id="${UI_ELEMENT_IDS.WORLD_INFO_PANEL}" style="display: none; margin-top: 0.5rem;">
+              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <input id="${UI_ELEMENT_IDS.WORLD_INFO_SEARCH}" class="text_pole" type="text" placeholder="${t('settings.worldInfoSearchPlaceholder')}" style="flex: 1;" />
+                <button id="${UI_ELEMENT_IDS.WORLD_INFO_REFRESH}" class="menu_button menu_button_icon" title="${t('settings.worldInfoRefresh')}">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+              <div id="${UI_ELEMENT_IDS.WORLD_INFO_BOOK_LIST}" class="world-info-book-list">
+                <div class="world-info-empty">${t('settings.worldInfoLoading')}</div>
+              </div>
+              <div id="${UI_ELEMENT_IDS.WORLD_INFO_ENTRY_PANEL}"></div>
+            </div>
+
             <div class="preset-management" style="margin-top: 1rem;">
               <label>${t('settings.independentLlmPreset')}</label>
               <div class="preset-toolbar">

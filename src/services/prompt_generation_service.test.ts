@@ -3,7 +3,10 @@
  */
 
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {generatePromptsForMessage} from './prompt_generation_service';
+import {
+  generatePromptsForMessage,
+  buildWorldInfoSection,
+} from './prompt_generation_service';
 
 describe('prompt_generation_service', () => {
   let mockContext: SillyTavernContext;
@@ -453,6 +456,52 @@ REASONING: Handles newlines naturally
       // The regex captures only the first line for INSERT_AFTER/INSERT_BEFORE
       expect(result[0].insertAfter).toBe('Test');
       expect(result[0].insertBefore).toBe('message with newlines');
+    });
+  });
+
+  describe('buildWorldInfoSection', () => {
+    it('should return empty string when injectWorldInfo is false', async () => {
+      const result = await buildWorldInfoSection(
+        {...mockSettings, injectWorldInfo: false} as AutoIllustratorSettings,
+        undefined
+      );
+      expect(result).toBe('');
+    });
+
+    it('should return empty string when metadata is undefined', async () => {
+      const result = await buildWorldInfoSection(
+        {...mockSettings, injectWorldInfo: true} as AutoIllustratorSettings,
+        undefined
+      );
+      expect(result).toBe('');
+    });
+
+    it('should return empty string when no world books selected', async () => {
+      const result = await buildWorldInfoSection(
+        {...mockSettings, injectWorldInfo: true} as AutoIllustratorSettings,
+        {
+          worldInfoConfig: {
+            selectedWorldBooks: [],
+            worldBookOverrides: {},
+          },
+        }
+      );
+      expect(result).toBe('');
+    });
+
+    it('should return empty string when all entries are disabled (default off)', async () => {
+      const result = await buildWorldInfoSection(
+        {...mockSettings, injectWorldInfo: true} as AutoIllustratorSettings,
+        {
+          worldInfoConfig: {
+            selectedWorldBooks: ['TestBook'],
+            worldBookOverrides: {
+              TestBook: {entryOverrides: {}},
+            },
+          },
+        }
+      );
+      expect(result).toBe('');
     });
   });
 });

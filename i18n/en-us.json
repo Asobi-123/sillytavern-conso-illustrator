@@ -262,5 +262,22 @@
   "toast.cannotUsePredefinedIndependentLlmNames": "Cannot use predefined preset names (Default)",
   "prompt.enterIndependentLlmPresetName": "Enter name for new guidelines preset:",
   "prompt.overwriteIndependentLlmPreset": "Overwrite existing guidelines preset '{name}'?",
-  "prompt.deleteIndependentLlmPresetConfirm": "Delete guidelines preset '{name}'?"
+  "prompt.deleteIndependentLlmPresetConfirm": "Delete guidelines preset '{name}'?",
+  "settings.worldInfoTitle": "World Info Injection",
+  "settings.injectWorldInfo": "Inject World Info",
+  "settings.injectWorldInfoDesc": "Include selected world book entries in LLM context (plugin-independent toggle, does not affect SillyTavern's world info)",
+  "settings.worldInfoSearchPlaceholder": "Search world books...",
+  "settings.worldInfoSearchEntryPlaceholder": "Search entries...",
+  "settings.worldInfoRefresh": "Refresh",
+  "settings.worldInfoSelectAll": "Select All",
+  "settings.worldInfoDeselectAll": "Deselect All",
+  "settings.worldInfoEntriesCount": "{enabled}/{total} entries",
+  "settings.worldInfoNoBooks": "No world books found",
+  "settings.worldInfoNoBooksMatch": "No world books match the search",
+  "settings.worldInfoNoEntries": "No entries in this world book",
+  "settings.worldInfoNoEntriesMatch": "No entries match the search",
+  "settings.worldInfoCharBadge": "Character",
+  "settings.worldInfoLoading": "Loading world books...",
+  "toast.worldInfoFetchFailed": "Failed to fetch world book data: {error}",
+  "toast.worldInfoRefreshed": "World book data refreshed"
 }

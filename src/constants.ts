@@ -255,6 +255,7 @@ export const DEFAULT_SETTINGS = {
   injectUserPersona: true,
   injectScenario: true,
   contentFilterTags: DEFAULT_CONTENT_FILTER_TAGS,
+  injectWorldInfo: false,
 };
 
 /**
@@ -344,4 +345,10 @@ export const UI_ELEMENT_IDS = {
   INDEPENDENT_LLM_PRESET_EDITOR:
     'auto_illustrator_conso_independent_llm_preset_editor',
   RESET_BUTTON: 'auto_illustrator_conso_reset',
+  INJECT_WORLD_INFO: 'auto_illustrator_conso_inject_world_info',
+  WORLD_INFO_PANEL: 'auto_illustrator_conso_world_info_panel',
+  WORLD_INFO_SEARCH: 'auto_illustrator_conso_world_info_search',
+  WORLD_INFO_REFRESH: 'auto_illustrator_conso_world_info_refresh',
+  WORLD_INFO_BOOK_LIST: 'auto_illustrator_conso_world_info_book_list',
+  WORLD_INFO_ENTRY_PANEL: 'auto_illustrator_conso_world_info_entry_panel',
 } as const;

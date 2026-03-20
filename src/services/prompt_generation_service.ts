@@ -7,6 +7,11 @@ import {createLogger} from '../logger';
 import promptGenerationTemplate from '../presets/prompt_generation.md';
 import type {PromptSuggestion} from '../prompt_insertion';
 import {callIndependentLlmApi} from './independent_llm';
+import {fetchWorldBookEntries} from './worldinfo_service';
+import type {
+  AutoIllustratorChatMetadata,
+  PluginWorldInfoConfig,
+} from '../types';
 
 const logger = createLogger('PromptGenService');
 
@@ -144,20 +149,83 @@ function buildCharacterInfoSection(
 }
 
 /**
+ * Builds the WORLD INFO section from selected world book entries.
+ * Only includes entries explicitly enabled by the user (default off).
+ *
+ * @param settings - Extension settings
+ * @param metadata - Current chat metadata
+ * @returns Formatted world info section, or empty string if nothing to include
+ */
+export async function buildWorldInfoSection(
+  settings: AutoIllustratorSettings,
+  metadata?: AutoIllustratorChatMetadata
+): Promise<string> {
+  if (!settings.injectWorldInfo) return '';
+
+  const config: PluginWorldInfoConfig | undefined = metadata?.worldInfoConfig;
+  if (
+    !config ||
+    !config.selectedWorldBooks ||
+    config.selectedWorldBooks.length === 0
+  ) {
+    return '';
+  }
+
+  const bookSections: string[] = [];
+
+  for (const bookName of config.selectedWorldBooks) {
+    const overrides = config.worldBookOverrides[bookName]?.entryOverrides ?? {};
+    const enabledUids = Object.entries(overrides)
+      .filter(([, enabled]) => enabled === true)
+      .map(([uid]) => Number(uid));
+
+    if (enabledUids.length === 0) continue;
+
+    try {
+      const entries = await fetchWorldBookEntries(bookName);
+      const enabledSet = new Set(enabledUids);
+      const enabledEntries = entries.filter(e => enabledSet.has(e.uid));
+
+      if (enabledEntries.length === 0) continue;
+
+      const entryLines = enabledEntries
+        .map(e => {
+          const title = e.comment || `Entry #${e.uid}`;
+          return `${title}: ${e.content}`;
+        })
+        .join('\n');
+
+      bookSections.push(`[${bookName}]\n${entryLines}`);
+    } catch (error) {
+      logger.warn(
+        `Failed to fetch entries for world book "${bookName}":`,
+        error
+      );
+    }
+  }
+
+  if (bookSections.length === 0) return '';
+
+  return `=== WORLD INFO ===\n${bookSections.join('\n\n')}\n\n`;
+}
+
+/**
  * Builds user prompt with context from previous messages
- * Format: === CHARACTER INFO === ... === CONTEXT === ... === CURRENT MESSAGE === ...
+ * Format: === CHARACTER INFO === ... === WORLD INFO === ... === CONTEXT === ... === CURRENT MESSAGE === ...
  *
  * @param context - SillyTavern context
  * @param currentMessageText - The message to generate prompts for
  * @param contextMessageCount - Number of previous messages to include as context
  * @param settings - Extension settings (for character info injection and content filter)
+ * @param worldInfoSection - Pre-built world info section (async, built externally)
  * @returns Formatted user prompt with context
  */
 function buildUserPromptWithContext(
   context: SillyTavernContext,
   currentMessageText: string,
   contextMessageCount: number,
-  settings: AutoIllustratorSettings
+  settings: AutoIllustratorSettings,
+  worldInfoSection = ''
 ): string {
   // Get recent chat history (last N messages, excluding current)
   const chat = context.chat || [];
@@ -182,7 +250,7 @@ function buildUserPromptWithContext(
 
   const characterInfo = buildCharacterInfoSection(context, settings);
 
-  return `${characterInfo}=== CONTEXT ===
+  return `${characterInfo}${worldInfoSection}=== CONTEXT ===
 ${contextText}
 
 === CURRENT MESSAGE ===
@@ -307,7 +375,8 @@ function parsePromptSuggestions(llmResponse: string): PromptSuggestion[] {
 export async function generatePromptsForMessage(
   messageText: string,
   context: SillyTavernContext,
-  settings: AutoIllustratorSettings
+  settings: AutoIllustratorSettings,
+  metadata?: AutoIllustratorChatMetadata
 ): Promise<PromptSuggestion[]> {
   logger.info('Generating image prompts using separate LLM call');
   logger.debug(`Message length: ${messageText.length} characters`);
@@ -346,11 +415,16 @@ export async function generatePromptsForMessage(
 
   // Build user prompt with context and cleaned current message
   const contextMessageCount = settings.contextMessageCount || 10;
+
+  // Build world info section (async — must be done before building user prompt)
+  const worldInfoSection = await buildWorldInfoSection(settings, metadata);
+
   const userPrompt = buildUserPromptWithContext(
     context,
     cleanedMessageText,
     contextMessageCount,
-    settings
+    settings,
+    worldInfoSection
   );
 
   logger.debug('Calling LLM for prompt generation');
