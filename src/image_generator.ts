@@ -108,15 +108,25 @@ export function updateMinInterval(minInterval: number): void {
 // Current subfolder label for image storage (set per-chat)
 let currentSubfolderLabel: string | null = null;
 
+// When true, ch_name is fully replaced (not appended) — used by standalone generation
+let overrideChNameFully = false;
+
 /**
  * Sets the subfolder label used for image storage.
  * When set, images will be saved to /user/images/{CharName}_{label}/ instead of /user/images/{CharName}/
  * @param label - Subfolder label, or null/empty to use default behavior
+ * @param fullOverride - If true, ch_name is replaced entirely with label (no CharName prefix)
  */
-export function setImageSubfolderLabel(label: string | null): void {
+export function setImageSubfolderLabel(
+  label: string | null,
+  fullOverride = false
+): void {
   currentSubfolderLabel = label?.trim() || null;
+  overrideChNameFully = fullOverride;
   if (currentSubfolderLabel) {
-    logger.info(`Image subfolder label set: "${currentSubfolderLabel}"`);
+    logger.info(
+      `Image subfolder label set: "${currentSubfolderLabel}" (fullOverride: ${fullOverride})`
+    );
   } else {
     logger.info('Image subfolder label cleared, using default');
   }
@@ -155,7 +165,13 @@ function installImageUploadInterceptor(): () => void {
         const body = JSON.parse(init.body as string);
         if (body.ch_name) {
           const originalName = body.ch_name;
-          body.ch_name = `${originalName}_${label}`;
+          if (overrideChNameFully) {
+            // Standalone mode: replace ch_name entirely
+            body.ch_name = label;
+          } else {
+            // Normal mode: append label to ch_name
+            body.ch_name = `${originalName}_${label}`;
+          }
           logger.debug(
             `Intercepted image upload: ch_name "${originalName}" -> "${body.ch_name}"`
           );

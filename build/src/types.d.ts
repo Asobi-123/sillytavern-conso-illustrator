@@ -172,6 +172,11 @@ export interface CharacterFixedTagEntry {
     /** Whether this entry is enabled */
     enabled: boolean;
 }
+/** Standalone prompt generation result (no INSERT_AFTER/INSERT_BEFORE) */
+export interface StandalonePromptResult {
+    text: string;
+    reasoning?: string;
+}
 /** Per-book entry override state */
 export interface PluginWorldBookOverrides {
     /** uid -> enabled. Absent = off (default off) */

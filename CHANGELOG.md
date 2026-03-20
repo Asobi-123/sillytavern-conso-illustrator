@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-03-21
+
+### Added
+
+- **Standalone Generation Workbench** - New independent image generation panel, available as the first feature in the settings drawer list. Two modes:
+  - **AI Generation Mode**: Enter a scene description → LLM generates multiple prompt suggestions → edit and generate images individually or in batch ("Auto Generate" one-click flow)
+  - **Manual Input Mode**: Directly enter NovelAI prompts and generate images without LLM involvement
+  - Configurable prompt count (1-10), character info injection toggle, world info injection toggle
+  - Dedicated storage folder (`/images/auto_illustrator_standalone/` or `/images/auto_illustrator_standalone_{label}/`) — completely separate from per-chat character folders
+  - Character fixed tags and common style tags are automatically applied to all standalone prompts
+  - Works in both Shared API mode (via `generateRaw`) and Independent API mode (via configured LLM)
+
+### Fixed
+
+- **Standalone injection independence** - Standalone generation's "Include Character Info" and "Include World Info" checkboxes now work independently of the Independent API mode's injection toggles. Previously, world info injection silently failed in Shared API mode because `settings.injectWorldInfo` defaulted to `false`.
+- **API routing respects prompt generation mode** - Standalone generation now correctly uses `context.generateRaw()` (SillyTavern's main API) when in Shared API mode. Previously it always used the independent LLM API if configured, regardless of the user's mode selection.
+
+### Changed
+
+- **Settings drawer order** - Reorganized second-level drawer order for better workflow: Prompt Generation Mode → Meta Prompt & Display → Prompt Detection & Style → Standalone Generation → Character Fixed Tags → Generation Performance → Image Cleanup → Widget Visibility → Log Level
+
 ## [1.4.0] - 2026-03-21
 
 ### Added

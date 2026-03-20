@@ -262,6 +262,88 @@
 }
 /* ===== End Character Fixed Tags Panel ===== */
 
+/* ===== Standalone Generation ===== */
+.standalone-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.standalone-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.standalone-status {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--SmartThemeQuoteColor, #e49e2c);
+  margin-bottom: 0.25rem;
+}
+
+.standalone-prompt-card {
+  border: 1px solid var(--SmartThemeBorderColor, #333);
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: var(--SmartThemeBlurTintColor, rgba(30, 30, 40, 0.5));
+}
+
+.standalone-prompt-card textarea {
+  width: 100%;
+  font-size: 0.85em;
+  resize: vertical;
+}
+
+.standalone-reasoning {
+  font-size: 0.8em;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.standalone-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.standalone-image-container {
+  margin-top: 0.5rem;
+}
+
+.standalone-image-container img {
+  max-width: 100%;
+  border-radius: 6px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.standalone-image-container img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(155, 89, 182, 0.5);
+}
+
+.standalone-generating-spinner {
+  padding: 0.5rem;
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.standalone-error {
+  padding: 0.5rem;
+  text-align: center;
+  color: #e57373;
+  font-size: 0.9em;
+}
+
+.standalone-mode-panel {
+  margin-top: 0.5rem;
+}
+/* ===== End Standalone Generation ===== */
+
 .mes_text img[title^='AI generated image'] {
   cursor: pointer;
   transition:

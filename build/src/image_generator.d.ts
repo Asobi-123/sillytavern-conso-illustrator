@@ -29,8 +29,9 @@ export declare function updateMinInterval(minInterval: number): void;
  * Sets the subfolder label used for image storage.
  * When set, images will be saved to /user/images/{CharName}_{label}/ instead of /user/images/{CharName}/
  * @param label - Subfolder label, or null/empty to use default behavior
+ * @param fullOverride - If true, ch_name is replaced entirely with label (no CharName prefix)
  */
-export declare function setImageSubfolderLabel(label: string | null): void;
+export declare function setImageSubfolderLabel(label: string | null, fullOverride?: boolean): void;
 /**
  * Generates an image using the SD slash command
  * All image generation goes through the global rate limiter

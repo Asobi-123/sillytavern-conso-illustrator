@@ -6,6 +6,7 @@
  * constants to avoid magic numbers scattered throughout the codebase.
  */
 import type { CharacterFixedTagEntry } from './types';
+import type { StyleTagPosition } from './types';
 /**
  * Extension identifier used for settings storage
  */
@@ -13,7 +14,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.4.0";
+export declare const EXTENSION_VERSION = "1.5.0";
 /**
  * GitHub repository for update checks
  */
@@ -192,6 +193,15 @@ export declare const DEFAULT_CONTENT_FILTER_TAGS: string[];
  */
 export declare const DEFAULT_PROMPT_DETECTION_PATTERNS: string[];
 /**
+ * Standalone prompt count configuration
+ */
+export declare const STANDALONE_PROMPT_COUNT: {
+    readonly DEFAULT: 3;
+    readonly MIN: 1;
+    readonly MAX: 10;
+    readonly STEP: 1;
+};
+/**
  * Default settings for the extension
  * These values are used when no saved settings exist or when resetting
  */
@@ -207,7 +217,7 @@ export declare const DEFAULT_SETTINGS: {
     manualGenerationMode: "append";
     promptDetectionPatterns: string[];
     commonStyleTags: string;
-    commonStyleTagsPosition: "prefix";
+    commonStyleTagsPosition: StyleTagPosition;
     showGalleryWidget: boolean;
     showProgressWidget: boolean;
     showStreamingPreviewWidget: boolean;
@@ -236,6 +246,7 @@ export declare const DEFAULT_SETTINGS: {
     apiProfiles: ApiProfile[];
     currentApiProfileId: string;
     characterFixedTags: Record<string, CharacterFixedTagEntry>;
+    standalonePromptCount: 3;
 };
 /**
  * UI element IDs for settings controls
@@ -318,4 +329,19 @@ export declare const UI_ELEMENT_IDS: {
     readonly CHARACTER_TAG_ADD_NAME: "auto_illustrator_conso_character_tag_add_name";
     readonly CHARACTER_TAG_ADD_BTN: "auto_illustrator_conso_character_tag_add_btn";
     readonly CHARACTER_TAG_RESET_ALL: "auto_illustrator_conso_character_tag_reset_all";
+    readonly STANDALONE_MODE_AI: "auto_illustrator_conso_standalone_mode_ai";
+    readonly STANDALONE_MODE_MANUAL: "auto_illustrator_conso_standalone_mode_manual";
+    readonly STANDALONE_SCENE_INPUT: "auto_illustrator_conso_standalone_scene_input";
+    readonly STANDALONE_PROMPT_COUNT: "auto_illustrator_conso_standalone_prompt_count";
+    readonly STANDALONE_INCLUDE_CHAR_INFO: "auto_illustrator_conso_standalone_include_char_info";
+    readonly STANDALONE_INCLUDE_WORLD_INFO: "auto_illustrator_conso_standalone_include_world_info";
+    readonly STANDALONE_GENERATE_PROMPTS_BTN: "auto_illustrator_conso_standalone_generate_prompts";
+    readonly STANDALONE_AUTO_BTN: "auto_illustrator_conso_standalone_auto";
+    readonly STANDALONE_RESULTS: "auto_illustrator_conso_standalone_results";
+    readonly STANDALONE_GENERATE_ALL_BTN: "auto_illustrator_conso_standalone_generate_all";
+    readonly STANDALONE_CLEAR_BTN: "auto_illustrator_conso_standalone_clear";
+    readonly STANDALONE_MANUAL_PROMPT_INPUT: "auto_illustrator_conso_standalone_manual_prompt";
+    readonly STANDALONE_MANUAL_GENERATE_BTN: "auto_illustrator_conso_standalone_manual_generate";
+    readonly STANDALONE_MANUAL_IMAGE: "auto_illustrator_conso_standalone_manual_image";
+    readonly STANDALONE_SUBFOLDER_LABEL: "auto_illustrator_conso_standalone_subfolder_label";
 };

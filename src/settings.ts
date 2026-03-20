@@ -5,6 +5,7 @@
 
 import {getDefaultMetaPrompt, getPresetById} from './meta_prompt_presets';
 import {getIndependentLlmPresetById} from './independent_llm_presets';
+import {createStandaloneGenerationContent} from './standalone_generation_ui';
 import {
   EXTENSION_NAME,
   DEFAULT_SETTINGS,
@@ -564,11 +565,12 @@ export function createSettingsUI(): string {
             <input id="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}" class="text_pole" type="text" placeholder="${t('settings.imageSubfolderLabelPlaceholder')}" />
           </label>
 
-          ${drawer(t('drawer.metaPromptAndDisplay'), metaPromptAndDisplayContent)}
-          ${drawer(t('drawer.generationPerformance'), generationPerformanceContent)}
-          ${drawer(t('drawer.promptDetectionAndStyle'), promptDetectionAndStyleContent)}
-          ${drawer(t('drawer.characterFixedTags'), characterFixedTagsContent)}
           ${drawer(t('drawer.promptGenerationMode'), promptGenerationModeContent)}
+          ${drawer(t('drawer.metaPromptAndDisplay'), metaPromptAndDisplayContent)}
+          ${drawer(t('drawer.promptDetectionAndStyle'), promptDetectionAndStyleContent)}
+          ${drawer(t('drawer.standaloneGeneration'), createStandaloneGenerationContent())}
+          ${drawer(t('drawer.characterFixedTags'), characterFixedTagsContent)}
+          ${drawer(t('drawer.generationPerformance'), generationPerformanceContent)}
           ${drawer(t('drawer.imageCleanup'), imageCleanupContent)}
           ${drawer(t('drawer.widgetVisibility'), widgetVisibilityContent)}
           ${drawer(t('drawer.logLevel'), logLevelContent)}

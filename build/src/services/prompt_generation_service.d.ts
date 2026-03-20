@@ -3,7 +3,7 @@
  * Generates image prompts using a separate LLM call
  */
 import type { PromptSuggestion } from '../prompt_insertion';
-import type { AutoIllustratorChatMetadata } from '../types';
+import type { AutoIllustratorChatMetadata, StandalonePromptResult } from '../types';
 /**
  * Cleans message text for LLM consumption by removing noise content.
  * Strips HTML comments, user-specified tag blocks, CSS noise, and remaining HTML tags (keeping text content).
@@ -13,6 +13,16 @@ import type { AutoIllustratorChatMetadata } from '../types';
  * @returns Cleaned plain text suitable for LLM analysis
  */
 export declare function cleanMessageTextForLlm(text: string, filterTags?: string[]): string;
+/**
+ * Builds the CHARACTER INFO section from SillyTavern context.
+ * Includes character description/personality, user persona, and scenario
+ * based on settings flags.
+ *
+ * @param context - SillyTavern context
+ * @param settings - Extension settings
+ * @returns Formatted character info section, or empty string if nothing to include
+ */
+export declare function buildCharacterInfoSection(context: SillyTavernContext, settings: AutoIllustratorSettings): string;
 /**
  * Builds the WORLD INFO section from selected world book entries.
  * Only includes entries explicitly enabled by the user (default off).
@@ -46,3 +56,24 @@ export declare function buildWorldInfoSection(settings: AutoIllustratorSettings,
  * // }]
  */
 export declare function generatePromptsForMessage(messageText: string, context: SillyTavernContext, settings: AutoIllustratorSettings, metadata?: AutoIllustratorChatMetadata): Promise<PromptSuggestion[]>;
+/**
+ * Parses LLM response for standalone prompt generation.
+ * Only extracts TEXT and REASONING fields (no INSERT_AFTER/INSERT_BEFORE).
+ *
+ * @param response - Raw LLM response text
+ * @returns Array of parsed standalone prompt results
+ */
+export declare function parseStandalonePromptSuggestions(response: string): StandalonePromptResult[];
+/**
+ * Generates standalone image prompts from a scene description using LLM.
+ *
+ * @param sceneDescription - User-provided scene description
+ * @param promptCount - Number of prompts to generate
+ * @param includeCharInfo - Whether to include character info in context
+ * @param includeWorldInfo - Whether to include world info in context
+ * @param context - SillyTavern context
+ * @param settings - Extension settings
+ * @param metadata - Chat metadata (for world info config)
+ * @returns Array of standalone prompt results
+ */
+export declare function generateStandalonePrompts(sceneDescription: string, promptCount: number, includeCharInfo: boolean, includeWorldInfo: boolean, context: SillyTavernContext, settings: AutoIllustratorSettings, metadata?: AutoIllustratorChatMetadata): Promise<StandalonePromptResult[]>;

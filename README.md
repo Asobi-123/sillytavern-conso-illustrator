@@ -32,6 +32,7 @@
 | 世界书注入 | - | - | ✅ 支持 |
 | API 配置档案管理 | - | - | ✅ 支持 |
 | 角色固定Tag注入 | - | - | ✅ 支持 |
+| 独立生图工作台 | - | - | ✅ 支持 |
 | 折叠式设置面板 | - | - | ✅ 支持 |
 | 版本显示与更新检查 | - | - | ✅ 支持 |
 
@@ -82,6 +83,14 @@
 - **自动识别参与者**：自动检测当前聊天的角色和用户 Persona，无需手动添加
 - **手动添加NPC**：支持手动添加群聊中的其他NPC角色，按聊天保存
 - **独立开关**：每个角色可单独启用/禁用
+
+#### 🎨 独立生图工作台 (v1.5.0 新增)
+- **脱离聊天上下文的独立图片生成**：无需发送聊天消息，直接输入场景描述或 prompt 快速测试出图效果
+- **AI 生成模式**：输入场景描述 → LLM 生成多条提示词建议 → 可编辑后逐条或批量生图，支持「一键全自动」
+- **手动输入模式**：直接粘贴 NovelAI prompt → 一键生图
+- **复用插件全部能力**：通用样式 Tag、角色固定 Tag、世界书注入、角色信息注入均可用
+- **独立存储文件夹**：图片存到 `/images/auto_illustrator_standalone/` 或 `/images/auto_illustrator_standalone_{标签}/`，不与角色聊天图片混在一起
+- **两种 API 模式均可使用**：共享 API 模式走酒馆主 API，独立 API 模式走配置的独立 LLM
 
 #### 📂 折叠式设置面板 (v1.3.1 新增)
 - **三层折叠结构**：设置面板按功能分组为可折叠的手风琴区域
@@ -171,6 +180,7 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 | World Info Injection | - | - | ✅ Supported |
 | API Profile Management | - | - | ✅ Supported |
 | Character Fixed Tag Injection | - | - | ✅ Supported |
+| Standalone Generation Workbench | - | - | ✅ Supported |
 | Collapsible Settings Panel | - | - | ✅ Supported |
 | Version Display & Update Check | - | - | ✅ Supported |
 
@@ -221,6 +231,14 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 - **Auto-detect participants**: Automatically detects the current chat's character and user persona — no need to manually add them
 - **Manual NPC addition**: Manually add group chat NPCs, saved per-chat
 - **Per-character toggle**: Each character can be individually enabled/disabled
+
+#### 🎨 Standalone Generation Workbench (v1.5.0)
+- **Independent image generation without chat context**: Generate images directly from scene descriptions or prompts without sending chat messages
+- **AI Generation Mode**: Enter a scene description → LLM generates multiple prompt suggestions → edit and generate individually or batch, with "Auto Generate" one-click flow
+- **Manual Input Mode**: Paste NovelAI prompts directly → generate with one click
+- **Reuses all plugin capabilities**: Common style tags, character fixed tags, world info injection, and character info injection all available
+- **Dedicated storage folder**: Images saved to `/images/auto_illustrator_standalone/` or `/images/auto_illustrator_standalone_{label}/`, completely separate from per-chat character folders
+- **Works in both API modes**: Shared API mode uses SillyTavern's main API, Independent API mode uses the configured LLM
 
 #### 📂 Collapsible Settings Panel (v1.3.1)
 - **Three-Level Accordion**: Settings panel organized into collapsible sections by function group

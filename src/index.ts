@@ -76,6 +76,7 @@ import {
   registerWorldInfoEventListeners,
 } from './worldinfo_ui';
 import {initializeCharacterTagsPanel} from './character_tags_ui';
+import {initializeStandaloneGeneration} from './standalone_generation_ui';
 
 const logger = createLogger('Main');
 
@@ -2908,6 +2909,15 @@ function initialize(): void {
     initializeCharacterTagsPanel(settings, () =>
       saveSettings(settings, context)
     );
+
+    // Initialize standalone generation panel
+    try {
+      const standaloneMetadata = getMetadata();
+      initializeStandaloneGeneration(context, settings, standaloneMetadata);
+    } catch {
+      // No active chat - initialize without metadata
+      initializeStandaloneGeneration(context, settings, undefined);
+    }
   }
 
   logger.info('Extension initialized successfully');

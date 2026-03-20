@@ -5,12 +5,15 @@
 
 import {createLogger} from '../logger';
 import promptGenerationTemplate from '../presets/prompt_generation.md';
+import standalonePromptTemplate from '../presets/standalone_prompt_generation.md';
 import type {PromptSuggestion} from '../prompt_insertion';
 import {callIndependentLlmApi} from './independent_llm';
 import {fetchWorldBookEntries} from './worldinfo_service';
+import {isIndependentApiMode} from '../mode_utils';
 import type {
   AutoIllustratorChatMetadata,
   PluginWorldInfoConfig,
+  StandalonePromptResult,
 } from '../types';
 
 const logger = createLogger('PromptGenService');
@@ -82,7 +85,7 @@ export function cleanMessageTextForLlm(
  * @param settings - Extension settings
  * @returns Formatted character info section, or empty string if nothing to include
  */
-function buildCharacterInfoSection(
+export function buildCharacterInfoSection(
   context: SillyTavernContext,
   settings: AutoIllustratorSettings
 ): string {
@@ -489,4 +492,186 @@ export async function generatePromptsForMessage(
   });
 
   return suggestions;
+}
+
+/**
+ * Parses LLM response for standalone prompt generation.
+ * Only extracts TEXT and REASONING fields (no INSERT_AFTER/INSERT_BEFORE).
+ *
+ * @param response - Raw LLM response text
+ * @returns Array of parsed standalone prompt results
+ */
+export function parseStandalonePromptSuggestions(
+  response: string
+): StandalonePromptResult[] {
+  try {
+    let cleanedResponse = response.trim();
+    if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse.replace(/^```[a-z]*\s*\n?/, '');
+      cleanedResponse = cleanedResponse.replace(/\n?```\s*$/, '');
+      cleanedResponse = cleanedResponse.trim();
+    }
+
+    const promptBlocks = cleanedResponse.split('---PROMPT---');
+    const results: StandalonePromptResult[] = [];
+
+    for (const block of promptBlocks) {
+      if (!block.trim() || !block.includes('TEXT:')) {
+        continue;
+      }
+
+      const blockContent = block.split('---END---')[0];
+      const textMatch = blockContent.match(/^TEXT:[^\S\n]*(.+?)$/m);
+      const reasoningMatch = blockContent.match(/^REASONING:[^\S\n]*(.+?)$/m);
+
+      if (!textMatch) {
+        logger.warn('Skipping standalone prompt block with missing TEXT field');
+        continue;
+      }
+
+      const text = textMatch[1].trim();
+      if (!text) {
+        logger.warn('Skipping standalone prompt block with empty TEXT');
+        continue;
+      }
+
+      results.push({
+        text,
+        reasoning: reasoningMatch ? reasoningMatch[1].trim() : undefined,
+      });
+    }
+
+    logger.info(
+      `Parsed ${results.length} standalone prompt results from LLM response`
+    );
+    return results;
+  } catch (error) {
+    logger.error('Failed to parse standalone LLM response:', error);
+    return [];
+  }
+}
+
+/**
+ * Generates standalone image prompts from a scene description using LLM.
+ *
+ * @param sceneDescription - User-provided scene description
+ * @param promptCount - Number of prompts to generate
+ * @param includeCharInfo - Whether to include character info in context
+ * @param includeWorldInfo - Whether to include world info in context
+ * @param context - SillyTavern context
+ * @param settings - Extension settings
+ * @param metadata - Chat metadata (for world info config)
+ * @returns Array of standalone prompt results
+ */
+export async function generateStandalonePrompts(
+  sceneDescription: string,
+  promptCount: number,
+  includeCharInfo: boolean,
+  includeWorldInfo: boolean,
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings,
+  metadata?: AutoIllustratorChatMetadata
+): Promise<StandalonePromptResult[]> {
+  logger.info('Generating standalone prompts');
+  logger.debug(`Scene description length: ${sceneDescription.length}`);
+
+  // Standalone generation is always an independent LLM call (not chat injection),
+  // so always use the standalone template + independent LLM guidelines preset.
+  // The shared API mode's meta prompt is designed for embedding <!--img-prompt-->
+  // tags in chat responses — completely different output format, not usable here.
+  let systemPrompt = standalonePromptTemplate;
+
+  const countInstruction = `Generate exactly ${promptCount} image prompt(s) for the described scene. Each prompt should capture a different visual interpretation or angle of the scene.`;
+  systemPrompt = systemPrompt.replace(
+    '{{FREQUENCY_GUIDELINES}}',
+    countInstruction
+  );
+  systemPrompt = systemPrompt.replace(
+    '{{PROMPT_WRITING_GUIDELINES}}',
+    settings.llmPromptWritingGuidelines || ''
+  );
+
+  // Build user prompt
+  const sections: string[] = [];
+
+  if (includeCharInfo) {
+    // Override injection toggles — standalone UI checkbox is the sole authority,
+    // don't let independent API mode's individual toggles block injection
+    const charSettings = {
+      ...settings,
+      injectCharacterDescription: true,
+      injectUserPersona: true,
+      injectScenario: true,
+    };
+    const charInfo = buildCharacterInfoSection(context, charSettings);
+    if (charInfo) {
+      sections.push(charInfo);
+    }
+  }
+
+  if (includeWorldInfo) {
+    // Override injectWorldInfo — standalone checkbox already controls this,
+    // don't require the independent API mode's toggle to also be on
+    const worldSettings = {...settings, injectWorldInfo: true};
+    const worldInfo = await buildWorldInfoSection(worldSettings, metadata);
+    if (worldInfo) {
+      sections.push(worldInfo);
+    }
+  }
+
+  sections.push(`=== SCENE DESCRIPTION ===\n${sceneDescription}`);
+  const userPrompt = sections.join('');
+
+  logger.debug('Standalone user prompt length:', userPrompt.length);
+  logger.trace('Standalone user prompt:', userPrompt);
+
+  // Call LLM — respect prompt generation mode setting:
+  // Only use independent LLM when user is in independent API mode AND has it enabled.
+  // Shared API mode → always use SillyTavern's generateRaw (main API).
+  const useIndependentLlm =
+    isIndependentApiMode(settings.promptGenerationMode) &&
+    settings.useIndependentLlmApi;
+
+  let llmResponse: string;
+  try {
+    if (useIndependentLlm) {
+      logger.debug(
+        'Using independent LLM API for standalone prompt generation'
+      );
+      llmResponse = await callIndependentLlmApi(
+        systemPrompt,
+        userPrompt,
+        settings
+      );
+    } else {
+      if (!context.generateRaw) {
+        throw new Error('LLM generation not available');
+      }
+      logger.debug(
+        'Using SillyTavern API (generateRaw) for standalone prompt generation'
+      );
+      llmResponse = await context.generateRaw({
+        systemPrompt,
+        prompt: userPrompt,
+      });
+    }
+
+    logger.debug('Standalone LLM response received');
+    logger.trace('Raw standalone LLM response:', llmResponse);
+  } catch (error) {
+    logger.error('Standalone LLM generation failed:', error);
+    return [];
+  }
+
+  // Parse — always use standalone parser (extracts TEXT + REASONING,
+  // ignores INSERT_AFTER/INSERT_BEFORE that shared mode might produce)
+  const results = parseStandalonePromptSuggestions(llmResponse);
+
+  if (results.length === 0) {
+    logger.warn('Standalone LLM returned no valid prompts');
+  } else {
+    logger.info(`Generated ${results.length} standalone prompts`);
+  }
+
+  return results;
 }
