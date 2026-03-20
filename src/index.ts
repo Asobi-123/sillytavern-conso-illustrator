@@ -75,6 +75,7 @@ import {
   toggleWorldInfoPanelVisibility,
   registerWorldInfoEventListeners,
 } from './worldinfo_ui';
+import {initializeCharacterTagsPanel} from './character_tags_ui';
 
 const logger = createLogger('Main');
 
@@ -2902,6 +2903,11 @@ function initialize(): void {
     initializeWorldInfoPanel().catch(error => {
       logger.warn('World info panel initialization failed:', error);
     });
+
+    // Initialize character fixed tags panel
+    initializeCharacterTagsPanel(settings, () =>
+      saveSettings(settings, context)
+    );
   }
 
   logger.info('Extension initialized successfully');

@@ -5,6 +5,7 @@
  * This module provides a single source of truth for all settings-related
  * constants to avoid magic numbers scattered throughout the codebase.
  */
+import type { CharacterFixedTagEntry } from './types';
 /**
  * Extension identifier used for settings storage
  */
@@ -12,7 +13,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.3.1";
+export declare const EXTENSION_VERSION = "1.4.0";
 /**
  * GitHub repository for update checks
  */
@@ -234,6 +235,7 @@ export declare const DEFAULT_SETTINGS: {
     injectWorldInfo: boolean;
     apiProfiles: ApiProfile[];
     currentApiProfileId: string;
+    characterFixedTags: Record<string, CharacterFixedTagEntry>;
 };
 /**
  * UI element IDs for settings controls
@@ -311,4 +313,9 @@ export declare const UI_ELEMENT_IDS: {
     readonly API_PROFILE_DELETE: "auto_illustrator_conso_api_profile_delete";
     readonly VERSION_DISPLAY: "auto_illustrator_conso_version_display";
     readonly VERSION_STATUS: "auto_illustrator_conso_version_status";
+    readonly CHARACTER_FIXED_TAGS_LIST: "auto_illustrator_conso_character_fixed_tags_list";
+    readonly CHARACTER_TAG_SEARCH: "auto_illustrator_conso_character_tag_search";
+    readonly CHARACTER_TAG_ADD_NAME: "auto_illustrator_conso_character_tag_add_name";
+    readonly CHARACTER_TAG_ADD_BTN: "auto_illustrator_conso_character_tag_add_btn";
+    readonly CHARACTER_TAG_RESET_ALL: "auto_illustrator_conso_character_tag_reset_all";
 };

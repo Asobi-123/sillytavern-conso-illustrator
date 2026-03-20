@@ -517,6 +517,24 @@ export function createSettingsUI(): string {
       </select>
     </label>`;
 
+  const characterFixedTagsContent = `
+    <div class="character-tag-desc">${t('settings.characterFixedTags.desc')}</div>
+    <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+      <input id="${UI_ELEMENT_IDS.CHARACTER_TAG_SEARCH}" class="text_pole" type="text"
+             placeholder="${t('settings.characterFixedTags.searchPlaceholder')}" style="flex: 1;" />
+    </div>
+    <div id="${UI_ELEMENT_IDS.CHARACTER_FIXED_TAGS_LIST}" class="character-tag-list"></div>
+    <div class="character-tag-add-row">
+      <input id="${UI_ELEMENT_IDS.CHARACTER_TAG_ADD_NAME}" class="text_pole" type="text"
+             placeholder="${t('settings.characterFixedTags.addPlaceholder')}" />
+      <button id="${UI_ELEMENT_IDS.CHARACTER_TAG_ADD_BTN}" class="menu_button">
+        <i class="fa-solid fa-plus"></i> ${t('settings.characterFixedTags.addCharacter')}
+      </button>
+    </div>
+    <button id="${UI_ELEMENT_IDS.CHARACTER_TAG_RESET_ALL}" class="menu_button" style="margin-top:0.5rem;">
+      <i class="fa-solid fa-trash"></i> ${t('settings.characterFixedTags.resetAll')}
+    </button>`;
+
   return `
     <div class="auto-illustrator-settings">
       <div class="inline-drawer">
@@ -549,6 +567,7 @@ export function createSettingsUI(): string {
           ${drawer(t('drawer.metaPromptAndDisplay'), metaPromptAndDisplayContent)}
           ${drawer(t('drawer.generationPerformance'), generationPerformanceContent)}
           ${drawer(t('drawer.promptDetectionAndStyle'), promptDetectionAndStyleContent)}
+          ${drawer(t('drawer.characterFixedTags'), characterFixedTagsContent)}
           ${drawer(t('drawer.promptGenerationMode'), promptGenerationModeContent)}
           ${drawer(t('drawer.imageCleanup'), imageCleanupContent)}
           ${drawer(t('drawer.widgetVisibility'), widgetVisibilityContent)}

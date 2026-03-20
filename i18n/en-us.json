@@ -303,5 +303,22 @@
   "drawer.contextInjection": "Context Injection",
   "drawer.worldInfoInjection": "World Info Injection",
   "drawer.guidelinesPreset": "Guidelines Preset",
-  "drawer.independentLlmApi": "Independent LLM API"
+  "drawer.independentLlmApi": "Independent LLM API",
+  "drawer.characterFixedTags": "Character Fixed Tags",
+  "settings.characterFixedTags.desc": "Lock visual tags per character. Tags are auto-injected when the character appears in a scene. Format: name (English/pinyin), gender, tag1, tag2... Each character's tags will be wrapped in {} to prevent confusion in multi-character scenes.",
+  "settings.characterFixedTags.names": "Name Aliases",
+  "settings.characterFixedTags.namesPlaceholder": "Add alias...",
+  "settings.characterFixedTags.tags": "Fixed Tags",
+  "settings.characterFixedTags.tagsPlaceholder": "name (pinyin/english), gender, tag1, tag2...",
+  "settings.characterFixedTags.enabled": "Enabled",
+  "settings.characterFixedTags.save": "Save",
+  "settings.characterFixedTags.delete": "Delete",
+  "settings.characterFixedTags.addCharacter": "Add Character",
+  "settings.characterFixedTags.addPlaceholder": "Character name...",
+  "settings.characterFixedTags.resetAll": "Reset All Character Tags",
+  "settings.characterFixedTags.resetConfirm": "Clear all character fixed tag configurations?",
+  "settings.characterFixedTags.autoDetected": "Auto-detected",
+  "settings.characterFixedTags.manual": "Manual",
+  "settings.characterFixedTags.searchPlaceholder": "Search characters...",
+  "settings.characterFixedTags.noMatch": "No characters match the search"
 }

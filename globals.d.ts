@@ -216,6 +216,11 @@ declare global {
     apiProfiles: ApiProfile[];
     /** Currently selected API profile ID (empty = manual configuration) */
     currentApiProfileId: string;
+    /** Character fixed tags: key = primary name, value = entry config */
+    characterFixedTags: Record<
+      string,
+      import('./src/types').CharacterFixedTagEntry
+    >;
   }
 
   interface ImagePromptMatch {

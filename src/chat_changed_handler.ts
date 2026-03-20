@@ -19,6 +19,7 @@ import {reloadGalleryForNewChat} from './gallery_widget';
 import {setImageSubfolderLabel} from './image_generator';
 import {reloadWorldInfoForChat} from './worldinfo_ui';
 import {clearWorldBookCache} from './services/worldinfo_service';
+import {reloadCharacterTagsForChat} from './character_tags_ui';
 
 const logger = createLogger('ChatChangedHandler');
 
@@ -45,6 +46,10 @@ function handleChatChanged(): void {
     logger.debug('1.6. Reloading world info panel');
     clearWorldBookCache();
     reloadWorldInfoForChat();
+
+    // Step 1.7: Reload character fixed tags panel for new chat
+    logger.debug('1.7. Reloading character tags panel');
+    reloadCharacterTagsForChat();
 
     // Step 2: Cancel all active streaming sessions
     logger.debug('2. Cancelling all active streaming sessions');

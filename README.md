@@ -31,6 +31,7 @@
 | 提示词指南预设管理 | - | - | ✅ 支持 |
 | 世界书注入 | - | - | ✅ 支持 |
 | API 配置档案管理 | - | - | ✅ 支持 |
+| 角色固定Tag注入 | - | - | ✅ 支持 |
 | 折叠式设置面板 | - | - | ✅ 支持 |
 | 版本显示与更新检查 | - | - | ✅ 支持 |
 
@@ -71,6 +72,16 @@
 - **保存/切换/删除**：将当前独立 LLM 的 API 地址、密钥、模型、Max Tokens 保存为命名档案
 - **一键切换**：下拉选择已保存的档案，自动填充所有 API 字段
 - **手动模式**：选择"手动配置"可自由编辑，不绑定任何档案
+
+#### 🏷️ 角色固定Tag注入 (v1.4.0 新增)
+- **为每个角色锁定固定外貌Tag**：配置后，当角色出现在故事场景中时，自动将其外貌Tag注入到图片生成提示词
+- **多人场景防混乱**：每个角色的Tag用 `{}` 包裹隔离，例如 `{lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}`，AI 不会把不同角色的特征搞混
+- **推荐Tag格式**：`名字(英文名或拼音), 性别, 外貌tag1, 外貌tag2...`
+- **智能检测注入**：仅在消息正文中提到该角色名 **且** 提示词包含人物指示Tag（如 `1girl`、`1boy`）时注入，纯风景场景不会误注入
+- **名称别名匹配**：支持多个别名（如中文名、英文名、日文名），大小写不敏感
+- **自动识别参与者**：自动检测当前聊天的角色和用户 Persona，无需手动添加
+- **手动添加NPC**：支持手动添加群聊中的其他NPC角色，按聊天保存
+- **独立开关**：每个角色可单独启用/禁用
 
 #### 📂 折叠式设置面板 (v1.3.1 新增)
 - **三层折叠结构**：设置面板按功能分组为可折叠的手风琴区域
@@ -159,6 +170,7 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 | Guidelines Preset Management | - | - | ✅ Supported |
 | World Info Injection | - | - | ✅ Supported |
 | API Profile Management | - | - | ✅ Supported |
+| Character Fixed Tag Injection | - | - | ✅ Supported |
 | Collapsible Settings Panel | - | - | ✅ Supported |
 | Version Display & Update Check | - | - | ✅ Supported |
 
@@ -199,6 +211,16 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 - **Save/Switch/Delete**: Save the current independent LLM's API URL, key, model, and max tokens as a named profile
 - **One-Click Switch**: Select a saved profile from dropdown to auto-fill all API fields
 - **Manual Mode**: Select "Manual Configuration" to freely edit fields without binding to any profile
+
+#### 🏷️ Character Fixed Tag Injection (v1.4.0)
+- **Lock visual tags per character**: Configure fixed appearance tags that are automatically injected into image prompts when the character appears in a scene
+- **Multi-character isolation**: Each character's tags are wrapped in `{}` to prevent confusion, e.g. `{lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}` — the AI won't mix up different characters' features
+- **Recommended tag format**: `name (English/pinyin), gender, visual_tag1, visual_tag2...`
+- **Smart injection**: Only injects when the character's name appears in message text **and** the prompt contains person-indicator tags (e.g. `1girl`, `1boy`). Pure scenery prompts are not affected
+- **Name alias matching**: Supports multiple aliases (Chinese name, English name, Japanese name, etc.), case-insensitive
+- **Auto-detect participants**: Automatically detects the current chat's character and user persona — no need to manually add them
+- **Manual NPC addition**: Manually add group chat NPCs, saved per-chat
+- **Per-character toggle**: Each character can be individually enabled/disabled
 
 #### 📂 Collapsible Settings Panel (v1.3.1)
 - **Three-Level Accordion**: Settings panel organized into collapsible sections by function group

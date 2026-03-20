@@ -93,6 +93,8 @@ export interface AutoIllustratorChatMetadata {
     imageSubfolderLabel?: string;
     /** World info injection configuration (per-chat) */
     worldInfoConfig?: PluginWorldInfoConfig;
+    /** Manually added character tag keys for this chat (per-chat) */
+    manualCharacterTagKeys?: string[];
 }
 /**
  * Gallery widget state stored in chat metadata
@@ -160,6 +162,15 @@ export interface WorldInfoEntry {
     disable: boolean;
     /** Whether the entry is constant/always-active */
     constant: boolean;
+}
+/** Character fixed tag entry for locking visual tags per character */
+export interface CharacterFixedTagEntry {
+    /** All name aliases for this character (any match triggers injection) */
+    names: string[];
+    /** Comma-separated fixed tags */
+    tags: string;
+    /** Whether this entry is enabled */
+    enabled: boolean;
 }
 /** Per-book entry override state */
 export interface PluginWorldBookOverrides {

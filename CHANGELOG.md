@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-21
+
+### Added
+
+- **Character Fixed Tag Injection** - Lock visual appearance tags per character. Each character's tags are wrapped in `{}` for multi-character scene isolation (e.g. `{lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}`). Smart injection only triggers when the character's name appears in the story text and the prompt contains person-indicator tags. Supports name aliases (case-insensitive), auto-detection of chat participants, manual NPC addition (per-chat), and per-character enable/disable toggle. Settings panel available under "Character Fixed Tags" drawer in Independent API mode.
+
+### Fixed
+
+- **Common tags breaking character tag groups** - Fixed `applyCommonTags()` splitting `{}`-wrapped character tag groups by comma. Character groups are now extracted and preserved intact before common tag processing.
+
 ## [1.3.1] - 2026-03-20
 
 ### Added

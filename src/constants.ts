@@ -7,6 +7,7 @@
  */
 
 import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
+import type {CharacterFixedTagEntry} from './types';
 
 /**
  * Extension identifier used for settings storage
@@ -16,7 +17,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.3.1';
+export const EXTENSION_VERSION = '1.4.0';
 
 /**
  * GitHub repository for update checks
@@ -268,6 +269,7 @@ export const DEFAULT_SETTINGS = {
   injectWorldInfo: false,
   apiProfiles: [] as ApiProfile[],
   currentApiProfileId: '',
+  characterFixedTags: {} as Record<string, CharacterFixedTagEntry>,
 };
 
 /**
@@ -368,4 +370,9 @@ export const UI_ELEMENT_IDS = {
   API_PROFILE_DELETE: 'auto_illustrator_conso_api_profile_delete',
   VERSION_DISPLAY: 'auto_illustrator_conso_version_display',
   VERSION_STATUS: 'auto_illustrator_conso_version_status',
+  CHARACTER_FIXED_TAGS_LIST: 'auto_illustrator_conso_character_fixed_tags_list',
+  CHARACTER_TAG_SEARCH: 'auto_illustrator_conso_character_tag_search',
+  CHARACTER_TAG_ADD_NAME: 'auto_illustrator_conso_character_tag_add_name',
+  CHARACTER_TAG_ADD_BTN: 'auto_illustrator_conso_character_tag_add_btn',
+  CHARACTER_TAG_RESET_ALL: 'auto_illustrator_conso_character_tag_reset_all',
 } as const;

@@ -142,6 +142,126 @@
 
 /* ===== End World Info Panel ===== */
 
+/* ===== Character Fixed Tags Panel ===== */
+.character-tag-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+
+.character-tag-item {
+  border: 1px solid var(--SmartThemeBorderColor, #333);
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.character-tag-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.character-tag-header .character-tag-name {
+  font-weight: bold;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.character-tag-header .character-tag-badge {
+  display: inline-block;
+  font-size: 0.7em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--SmartThemeQuoteColor, #9b59b6);
+  color: white;
+  flex-shrink: 0;
+}
+
+.character-tag-aliases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+
+.character-tag-aliases .alias-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.8em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--SmartThemeBlurTintColor, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--SmartThemeBorderColor, #555);
+}
+
+.character-tag-aliases .alias-chip .alias-remove {
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 0.9em;
+}
+
+.character-tag-aliases .alias-chip .alias-remove:hover {
+  opacity: 1;
+}
+
+.character-tag-aliases .alias-add-input {
+  font-size: 0.8em;
+  padding: 1px 4px;
+  width: 80px;
+  border: 1px solid var(--SmartThemeBorderColor, #555);
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+}
+
+.character-tag-tags-row {
+  margin-bottom: 0.4rem;
+}
+
+.character-tag-tags-row textarea {
+  width: 100%;
+  font-size: 0.85em;
+  resize: vertical;
+}
+
+.character-tag-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.character-tag-add-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.character-tag-add-row input {
+  flex: 1;
+}
+
+.character-tag-desc {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+}
+
+.character-tag-empty {
+  padding: 0.5rem;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 0.9em;
+}
+/* ===== End Character Fixed Tags Panel ===== */
+
 .mes_text img[title^='AI generated image'] {
   cursor: pointer;
   transition:

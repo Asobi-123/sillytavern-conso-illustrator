@@ -351,8 +351,21 @@ export function applyCommonTags(
     return prompt;
   }
 
-  // Parse both prompt and common tags
-  const promptTags = parseCommonTags(prompt);
+  // Extract {}-wrapped character tag groups before parsing
+  // These must be preserved intact (not split by comma or deduplicated)
+  const charGroupRegex = /\{[^}]+\}/g;
+  const charGroups: string[] = [];
+  let promptWithoutGroups = prompt.replace(charGroupRegex, match => {
+    charGroups.push(match);
+    return '';
+  });
+  // Clean up leading/trailing commas and whitespace left by extraction
+  promptWithoutGroups = promptWithoutGroups
+    .replace(/^[\s,]+|[\s,]+$/g, '')
+    .replace(/,\s*,/g, ',');
+
+  // Parse remaining prompt tags and common style tags
+  const promptTags = parseCommonTags(promptWithoutGroups);
   const styleTags = parseCommonTags(commonTags);
 
   // Combine based on position
@@ -363,7 +376,13 @@ export function applyCommonTags(
 
   // Deduplicate and join
   const deduplicated = deduplicateTags(combined);
-  return deduplicated.join(', ');
+  const flatPart = deduplicated.join(', ');
+
+  // Prepend character groups back (they always go first)
+  if (charGroups.length > 0) {
+    return `${charGroups.join(', ')}, ${flatPart}`;
+  }
+  return flatPart;
 }
 
 /**

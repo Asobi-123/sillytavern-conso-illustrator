@@ -303,5 +303,22 @@
   "drawer.contextInjection": "上下文注入",
   "drawer.worldInfoInjection": "世界书注入",
   "drawer.guidelinesPreset": "指南预设",
-  "drawer.independentLlmApi": "独立 LLM API"
+  "drawer.independentLlmApi": "独立 LLM API",
+  "drawer.characterFixedTags": "角色固定Tag",
+  "settings.characterFixedTags.desc": "为角色锁定固定外貌tag，场景中出现该角色时自动注入到提示词。格式：名字（英文名或拼音）, 性别, tag1, tag2... 每个角色的tag会用 {} 包裹，防止多人场景混乱。",
+  "settings.characterFixedTags.names": "名称别名",
+  "settings.characterFixedTags.namesPlaceholder": "添加别名...",
+  "settings.characterFixedTags.tags": "固定Tag",
+  "settings.characterFixedTags.tagsPlaceholder": "名字(拼音/英文), 性别, tag1, tag2...",
+  "settings.characterFixedTags.enabled": "启用",
+  "settings.characterFixedTags.save": "保存",
+  "settings.characterFixedTags.delete": "删除",
+  "settings.characterFixedTags.addCharacter": "添加角色",
+  "settings.characterFixedTags.addPlaceholder": "角色名...",
+  "settings.characterFixedTags.resetAll": "重置所有角色Tag",
+  "settings.characterFixedTags.resetConfirm": "确定清空所有角色的固定tag配置？",
+  "settings.characterFixedTags.autoDetected": "自动识别",
+  "settings.characterFixedTags.manual": "手动添加",
+  "settings.characterFixedTags.searchPlaceholder": "搜索角色...",
+  "settings.characterFixedTags.noMatch": "没有匹配的角色"
 }

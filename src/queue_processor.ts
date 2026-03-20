@@ -6,6 +6,7 @@
 import {ImageGenerationQueue} from './streaming_image_queue';
 import {generateImage} from './image_generator';
 import {createPlaceholderUrl} from './placeholder';
+import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
 import type {QueuedPrompt, DeferredImage} from './types';
 import {createLogger} from './logger';
 import {progressManager} from './progress_manager';
@@ -159,8 +160,17 @@ export class QueueProcessor {
         throw new Error('Failed to get SillyTavern context');
       }
 
-      const imageUrl = await generateImage(
+      // Inject character fixed tags based on message text
+      const message = context.chat?.[this.messageId];
+      const messageText = message?.mes || '';
+      const injectedPrompt = applyCharacterFixedTags(
         prompt.prompt,
+        messageText,
+        this.settings.characterFixedTags
+      );
+
+      const imageUrl = await generateImage(
+        injectedPrompt,
         context,
         this.settings.commonStyleTags,
         this.settings.commonStyleTagsPosition
