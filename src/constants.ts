@@ -14,6 +14,16 @@ import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
 export const EXTENSION_NAME = 'auto_illustrator_conso';
 
 /**
+ * Extension version (single source of truth)
+ */
+export const EXTENSION_VERSION = '1.3.1';
+
+/**
+ * GitHub repository for update checks
+ */
+export const GITHUB_REPO = 'Asobi-123/sillytavern-conso-illustrator';
+
+/**
  * Streaming poll interval configuration (milliseconds)
  * Controls how frequently the extension checks for new prompts during streaming
  */
@@ -88,7 +98,7 @@ export const MIN_GENERATION_INTERVAL = {
  */
 export const PROMPT_GENERATION_MODE = {
   SHARED_API: 'shared-api', // AI embeds prompts in main response (default)
-  INDEPENDENT_API: 'independent-api', // Separate API call after response (experimental)
+  INDEPENDENT_API: 'independent-api', // Separate API call after response
   // Legacy aliases for backward compatibility
   REGEX: 'shared-api',
   LLM_POST: 'independent-api',
@@ -256,6 +266,8 @@ export const DEFAULT_SETTINGS = {
   injectScenario: true,
   contentFilterTags: DEFAULT_CONTENT_FILTER_TAGS,
   injectWorldInfo: false,
+  apiProfiles: [] as ApiProfile[],
+  currentApiProfileId: '',
 };
 
 /**
@@ -351,4 +363,9 @@ export const UI_ELEMENT_IDS = {
   WORLD_INFO_REFRESH: 'auto_illustrator_conso_world_info_refresh',
   WORLD_INFO_BOOK_LIST: 'auto_illustrator_conso_world_info_book_list',
   WORLD_INFO_ENTRY_PANEL: 'auto_illustrator_conso_world_info_entry_panel',
+  API_PROFILE_SELECT: 'auto_illustrator_conso_api_profile_select',
+  API_PROFILE_SAVE: 'auto_illustrator_conso_api_profile_save',
+  API_PROFILE_DELETE: 'auto_illustrator_conso_api_profile_delete',
+  VERSION_DISPLAY: 'auto_illustrator_conso_version_display',
+  VERSION_STATUS: 'auto_illustrator_conso_version_status',
 } as const;

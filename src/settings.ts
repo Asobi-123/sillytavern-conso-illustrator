@@ -18,6 +18,7 @@ import {
   IMAGE_RETENTION_DAYS,
   INDEPENDENT_LLM_MAX_TOKENS,
   UI_ELEMENT_IDS,
+  EXTENSION_VERSION,
 } from './constants';
 import {t} from './i18n';
 import {createLogger} from './logger';
@@ -105,10 +106,417 @@ export function saveSettings(
 }
 
 /**
+ * Creates a collapsible inline-drawer section
+ * @param title - Section title
+ * @param content - HTML content inside the drawer
+ * @param open - Whether the drawer starts open (default: false)
+ * @returns HTML string for the drawer
+ */
+function drawer(title: string, content: string, open = false): string {
+  return `<div class="inline-drawer">
+    <div class="inline-drawer-toggle inline-drawer-header">
+      <b>${title}</b>
+      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+    </div>
+    <div class="inline-drawer-content"${open ? '' : ' style="display:none;"'}>${content}</div>
+  </div>`;
+}
+
+/**
  * Creates the settings UI HTML
  * @returns HTML string for settings panel
  */
 export function createSettingsUI(): string {
+  // === Section contents ===
+
+  const metaPromptAndDisplayContent = `
+    <div class="preset-management">
+      <label>${t('settings.metaPromptPreset')}</label>
+      <div class="preset-toolbar">
+        <select id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_SELECT}" class="text_pole flex_fill">
+          <optgroup label="${t('settings.predefinedPresets')}">
+            <option value="default">Default</option>
+            <option value="nai-4.5-full">NAI 4.5 Full</option>
+          </optgroup>
+          <optgroup label="${t('settings.customPresets')}" id="custom_presets_group">
+          </optgroup>
+        </select>
+        <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_EDIT}" class="menu_button menu_button_icon" title="${t('settings.editPreset')}">
+          <i class="fa-solid fa-edit"></i>
+        </button>
+        <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_DELETE}" class="menu_button menu_button_icon" title="${t('settings.deletePreset')}">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+
+      <div id="${UI_ELEMENT_IDS.PRESET_EDITOR}" style="display:none">
+        <label for="${UI_ELEMENT_IDS.META_PROMPT}">
+          <span>${t('settings.metaPromptTemplate')}</span>
+          <small>${t('settings.editingPresetHint')}</small>
+          <textarea id="${UI_ELEMENT_IDS.META_PROMPT}" class="text_pole textarea_compact" rows="10" readonly></textarea>
+        </label>
+        <div class="preset-edit-actions">
+          <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_SAVE}" class="menu_button">
+            <i class="fa-solid fa-save"></i> ${t('settings.save')}
+          </button>
+          <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_SAVE_AS}" class="menu_button">
+            <i class="fa-solid fa-copy"></i> ${t('settings.saveAs')}
+          </button>
+          <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_CANCEL}" class="menu_button">
+            <i class="fa-solid fa-times"></i> ${t('settings.cancel')}
+          </button>
+        </div>
+      </div>
+
+      <div id="${UI_ELEMENT_IDS.PRESET_VIEWER}" class="preset-content-preview">
+        <label>${t('settings.presetContentPreview')}</label>
+        <pre id="${UI_ELEMENT_IDS.PRESET_PREVIEW}" class="preset-preview-text"></pre>
+      </div>
+
+      <div id="${UI_ELEMENT_IDS.PATTERN_VALIDATION_STATUS}" class="pattern-validation-status"></div>
+
+      <label for="${UI_ELEMENT_IDS.META_PROMPT_DEPTH}">
+        <span>${t('settings.metaPromptDepth')}</span>
+        <small>${t('settings.metaPromptDepthDesc')}</small>
+        <input id="${UI_ELEMENT_IDS.META_PROMPT_DEPTH}" class="text_pole" type="number" min="${META_PROMPT_DEPTH.MIN}" max="${META_PROMPT_DEPTH.MAX}" step="${META_PROMPT_DEPTH.STEP}" />
+      </label>
+
+      <label for="${UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH}">
+        <span>${t('settings.imageDisplayWidth')}</span>
+        <small>${t('settings.imageDisplayWidthDesc')}</small>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input id="${UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH}" type="range"
+                 min="${IMAGE_DISPLAY_WIDTH.MIN}"
+                 max="${IMAGE_DISPLAY_WIDTH.MAX}"
+                 step="${IMAGE_DISPLAY_WIDTH.STEP}"
+                 style="flex: 1;" />
+          <span id="${UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH_VALUE}" style="min-width: 50px; text-align: right;">100%</span>
+        </div>
+      </label>
+    </div>`;
+
+  const generationPerformanceContent = `
+    <label for="${UI_ELEMENT_IDS.STREAMING_POLL_INTERVAL}">
+      <span>${t('settings.streamingPollInterval')}</span>
+      <small>${t('settings.streamingPollIntervalDesc')}</small>
+      <input id="${UI_ELEMENT_IDS.STREAMING_POLL_INTERVAL}" class="text_pole" type="number" min="${STREAMING_POLL_INTERVAL.MIN}" max="${STREAMING_POLL_INTERVAL.MAX}" step="${STREAMING_POLL_INTERVAL.STEP}" />
+    </label>
+
+    <label for="${UI_ELEMENT_IDS.MAX_CONCURRENT}">
+      <span>${t('settings.maxConcurrent')}</span>
+      <small>${t('settings.maxConcurrentDesc')}</small>
+      <input id="${UI_ELEMENT_IDS.MAX_CONCURRENT}" class="text_pole" type="number" min="${MAX_CONCURRENT_GENERATIONS.MIN}" max="${MAX_CONCURRENT_GENERATIONS.MAX}" step="${MAX_CONCURRENT_GENERATIONS.STEP}" />
+    </label>
+
+    <label for="${UI_ELEMENT_IDS.MIN_GENERATION_INTERVAL}">
+      <span>${t('settings.minGenerationInterval')}</span>
+      <small>${t('settings.minGenerationIntervalDesc')}</small>
+      <input id="${UI_ELEMENT_IDS.MIN_GENERATION_INTERVAL}" class="text_pole" type="number" min="${MIN_GENERATION_INTERVAL.MIN}" max="${MIN_GENERATION_INTERVAL.MAX}" step="${MIN_GENERATION_INTERVAL.STEP}" />
+    </label>`;
+
+  const promptDetectionAndStyleContent = `
+    <label for="${UI_ELEMENT_IDS.PROMPT_PATTERNS}">
+      <span>${t('settings.promptPatterns')}</span>
+      <small>${t('settings.promptPatternsDesc')}</small>
+      <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+        <textarea id="${UI_ELEMENT_IDS.PROMPT_PATTERNS}" class="text_pole textarea_compact" rows="5" style="flex: 1;"></textarea>
+        <button id="${UI_ELEMENT_IDS.PROMPT_PATTERNS_RESET}" class="menu_button menu_button_icon" title="${t('settings.promptPatternsReset')}">
+          <i class="fa-solid fa-undo"></i>
+        </button>
+      </div>
+    </label>
+
+    <label for="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS}">
+      <span>${t('settings.commonStyleTags')}</span>
+      <small>${t('settings.commonStyleTagsDesc')}</small>
+      <textarea id="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS}" class="text_pole textarea_compact" rows="3" placeholder="${t('settings.commonStyleTagsPlaceholder')}"></textarea>
+    </label>
+
+    <label for="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS_POSITION}">
+      <span>${t('settings.commonStyleTagsPosition')}</span>
+      <select id="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS_POSITION}" class="text_pole">
+        <option value="prefix">${t('settings.commonStyleTagsPrefix')}</option>
+        <option value="suffix">${t('settings.commonStyleTagsSuffix')}</option>
+      </select>
+    </label>
+
+    <label for="${UI_ELEMENT_IDS.MANUAL_GEN_MODE}">
+      <span>${t('settings.manualGenerationMode')}</span>
+      <small>${t('settings.manualGenerationModeDesc')}</small>
+      <select id="${UI_ELEMENT_IDS.MANUAL_GEN_MODE}" class="text_pole">
+        <option value="append">${t('settings.manualGenerationModeAppend')}</option>
+        <option value="replace">${t('settings.manualGenerationModeReplace')}</option>
+      </select>
+    </label>`;
+
+  const promptGenerationModeContent = `
+    <div>
+      <label>
+        <span>${t('settings.promptGenerationMode')}</span>
+        <small>${t('settings.promptGenerationModeDesc')}</small>
+      </label>
+
+      <label class="checkbox_label" for="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_SHARED}">
+        <input id="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_SHARED}" type="radio" name="prompt_generation_mode" value="shared-api" />
+        <span>${t('settings.promptGenerationModeShared')}</span>
+        <small>${t('settings.promptGenerationModeSharedDesc')}</small>
+      </label>
+
+      <label class="checkbox_label" for="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_INDEPENDENT}">
+        <input id="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_INDEPENDENT}" type="radio" name="prompt_generation_mode" value="independent-api" />
+        <span>${t('settings.promptGenerationModeIndependent')}</span>
+        <small>${t('settings.promptGenerationModeIndependentDesc')}</small>
+      </label>
+    </div>
+
+    <div id="${UI_ELEMENT_IDS.INDEPENDENT_API_SETTINGS_CONTAINER}" style="display: none;">
+      <label for="${UI_ELEMENT_IDS.MAX_PROMPTS_PER_MESSAGE}">
+        <span>${t('settings.maxPromptsPerMessage')}</span>
+        <small>${t('settings.maxPromptsPerMessageDesc')}</small>
+        <input id="${UI_ELEMENT_IDS.MAX_PROMPTS_PER_MESSAGE}" class="text_pole" type="number" min="${MAX_PROMPTS_PER_MESSAGE.MIN}" max="${MAX_PROMPTS_PER_MESSAGE.MAX}" step="${MAX_PROMPTS_PER_MESSAGE.STEP}" />
+      </label>
+
+      <label for="${UI_ELEMENT_IDS.CONTEXT_MESSAGE_COUNT}">
+        <span>${t('settings.contextMessageCount')}</span>
+        <small>${t('settings.contextMessageCountDesc')}</small>
+        <input id="${UI_ELEMENT_IDS.CONTEXT_MESSAGE_COUNT}" class="text_pole" type="number" min="${CONTEXT_MESSAGE_COUNT.MIN}" max="${CONTEXT_MESSAGE_COUNT.MAX}" step="${CONTEXT_MESSAGE_COUNT.STEP}" />
+      </label>
+
+      ${drawer(
+        t('drawer.contextInjection'),
+        `
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}">
+          <input id="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}" type="checkbox" />
+          <span>${t('settings.injectCharacterDescription')}</span>
+          <small>${t('settings.injectCharacterDescriptionDesc')}</small>
+        </label>
+
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_USER_PERSONA}">
+          <input id="${UI_ELEMENT_IDS.INJECT_USER_PERSONA}" type="checkbox" />
+          <span>${t('settings.injectUserPersona')}</span>
+          <small>${t('settings.injectUserPersonaDesc')}</small>
+        </label>
+
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_SCENARIO}">
+          <input id="${UI_ELEMENT_IDS.INJECT_SCENARIO}" type="checkbox" />
+          <span>${t('settings.injectScenario')}</span>
+          <small>${t('settings.injectScenarioDesc')}</small>
+        </label>
+
+        <label for="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}">
+          <span>${t('settings.contentFilterTags')}</span>
+          <small>${t('settings.contentFilterTagsDesc')}</small>
+          <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+            <textarea id="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}" class="text_pole textarea_compact" rows="3" style="flex: 1; font-family: monospace; font-size: 0.9em;" placeholder="${t('settings.contentFilterTagsPlaceholder')}"></textarea>
+            <button id="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
+              <i class="fa-solid fa-undo"></i>
+            </button>
+          </div>
+        </label>
+      `
+      )}
+
+      ${drawer(
+        t('drawer.worldInfoInjection'),
+        `
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}">
+          <input id="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}" type="checkbox" />
+          <span>${t('settings.injectWorldInfo')}</span>
+          <small>${t('settings.injectWorldInfoDesc')}</small>
+        </label>
+
+        <div id="${UI_ELEMENT_IDS.WORLD_INFO_PANEL}" style="display: none; margin-top: 0.5rem;">
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+            <input id="${UI_ELEMENT_IDS.WORLD_INFO_SEARCH}" class="text_pole" type="text" placeholder="${t('settings.worldInfoSearchPlaceholder')}" style="flex: 1;" />
+            <button id="${UI_ELEMENT_IDS.WORLD_INFO_REFRESH}" class="menu_button menu_button_icon" title="${t('settings.worldInfoRefresh')}">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+          <div id="${UI_ELEMENT_IDS.WORLD_INFO_BOOK_LIST}" class="world-info-book-list">
+            <div class="world-info-empty">${t('settings.worldInfoLoading')}</div>
+          </div>
+          <div id="${UI_ELEMENT_IDS.WORLD_INFO_ENTRY_PANEL}"></div>
+        </div>
+      `
+      )}
+
+      ${drawer(
+        t('drawer.guidelinesPreset'),
+        `
+        <div class="preset-management">
+          <div class="preset-toolbar">
+            <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT}" class="text_pole flex_fill">
+              <optgroup label="${t('settings.predefinedPresets')}">
+                <option value="default">Default</option>
+              </optgroup>
+              <optgroup label="${t('settings.customPresets')}" id="custom_independent_llm_presets_group">
+              </optgroup>
+            </select>
+            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDIT}" class="menu_button menu_button_icon" title="${t('settings.editPreset')}">
+              <i class="fa-solid fa-edit"></i>
+            </button>
+            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_DELETE}" class="menu_button menu_button_icon" title="${t('settings.deletePreset')}">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+
+          <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDITOR}" style="display:none">
+            <small>${t('settings.editingIndependentLlmPresetHint')}</small>
+            <div class="preset-edit-actions" style="margin-top: 0.5rem;">
+              <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE}" class="menu_button">
+                <i class="fa-solid fa-save"></i> ${t('settings.save')}
+              </button>
+              <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE_AS}" class="menu_button">
+                <i class="fa-solid fa-copy"></i> ${t('settings.saveAs')}
+              </button>
+              <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_CANCEL}" class="menu_button">
+                <i class="fa-solid fa-times"></i> ${t('settings.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <label for="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}">
+          <span>${t('settings.llmFrequencyGuidelines')}</span>
+          <small>${t('settings.llmFrequencyGuidelinesDesc')}</small>
+          <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+            <textarea id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}" class="text_pole textarea_compact" rows="4" style="flex: 1; font-family: monospace; font-size: 0.9em;" readonly></textarea>
+            <button id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
+              <i class="fa-solid fa-undo"></i>
+            </button>
+          </div>
+        </label>
+
+        <label for="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}">
+          <span>${t('settings.llmPromptWritingGuidelines')}</span>
+          <small>${t('settings.llmPromptWritingGuidelinesDesc')}</small>
+          <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+            <textarea id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}" class="text_pole textarea_compact" rows="15" style="flex: 1; font-family: monospace; font-size: 0.9em;" readonly></textarea>
+            <button id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
+              <i class="fa-solid fa-undo"></i>
+            </button>
+          </div>
+        </label>
+      `
+      )}
+
+      ${drawer(
+        t('drawer.independentLlmApi'),
+        `
+        <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_SETTINGS_CONTAINER}">
+          <small style="display: block; margin-bottom: 0.5rem;">${t('settings.independentLlmApiDesc')}</small>
+
+          <div style="margin-bottom: 0.75rem;">
+            <label>${t('settings.apiProfile')}</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <select id="${UI_ELEMENT_IDS.API_PROFILE_SELECT}" class="text_pole" style="flex: 1; min-width: 150px;">
+                <option value="">${t('settings.apiProfileManual')}</option>
+              </select>
+              <button id="${UI_ELEMENT_IDS.API_PROFILE_SAVE}" class="menu_button menu_button_icon" title="${t('settings.apiProfileSave')}">
+                <i class="fa-solid fa-save"></i>
+                <span>${t('settings.apiProfileSave')}</span>
+              </button>
+              <button id="${UI_ELEMENT_IDS.API_PROFILE_DELETE}" class="menu_button menu_button_icon" title="${t('settings.apiProfileDelete')}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <label class="checkbox_label" for="${UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API}">
+            <input id="${UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API}" type="checkbox" />
+            <span>${t('settings.useIndependentLlmApi')}</span>
+            <small>${t('settings.useIndependentLlmApiDesc')}</small>
+          </label>
+
+          <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL}">
+            <span>${t('settings.independentLlmApiUrl')}</span>
+            <small>${t('settings.independentLlmApiUrlDesc')}</small>
+            <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL}" class="text_pole" type="text" placeholder="https://api.openai.com/v1" />
+          </label>
+
+          <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}">
+            <span>${t('settings.independentLlmApiKey')}</span>
+            <small>${t('settings.independentLlmApiKeyDesc')}</small>
+            <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}" class="text_pole" type="password" placeholder="sk-..." />
+          </label>
+
+          <label>
+            <span>${t('settings.independentLlmModel')}</span>
+            <small>${t('settings.independentLlmModelDesc')}</small>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL_SELECT}" class="text_pole" style="flex: 0 0 auto; min-width: 150px;">
+                <option value="">${t('settings.independentLlmModelPlaceholder')}</option>
+              </select>
+              <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}" class="text_pole" type="text" placeholder="${t('settings.independentLlmModelPlaceholder')}" style="flex: 1; min-width: 200px;" />
+              <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_FETCH_MODELS}" class="menu_button menu_button_icon" title="${t('settings.fetchModels')}">
+                <i class="fa-solid fa-plug-circle-bolt"></i>
+                <span>${t('settings.fetchModels')}</span>
+              </button>
+            </div>
+          </label>
+
+          <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}">
+            <span>${t('settings.independentLlmMaxTokens')}</span>
+            <small>${t('settings.independentLlmMaxTokensDesc')}</small>
+            <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}" class="text_pole" type="number" min="${INDEPENDENT_LLM_MAX_TOKENS.MIN}" max="${INDEPENDENT_LLM_MAX_TOKENS.MAX}" step="${INDEPENDENT_LLM_MAX_TOKENS.STEP}" />
+          </label>
+
+          <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION}" class="menu_button">
+              <i class="fa-solid fa-plug"></i> ${t('settings.testConnection')}
+            </button>
+            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_VIEW_LAST_REQUEST}" class="menu_button">
+              <i class="fa-solid fa-eye"></i> ${t('settings.viewLastRequest')}
+            </button>
+          </div>
+        </div>
+      `
+      )}
+    </div>`;
+
+  const imageCleanupContent = `
+    <label for="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}">
+      <span>图片保留天数 / Image Retention Days</span>
+      <small>启动时自动清理超过此天数的图片 / Images older than this will be cleaned up on startup</small>
+      <input id="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}" class="text_pole" type="number"
+             min="${IMAGE_RETENTION_DAYS.MIN}"
+             max="${IMAGE_RETENTION_DAYS.MAX}"
+             step="${IMAGE_RETENTION_DAYS.STEP}" />
+    </label>`;
+
+  const widgetVisibilityContent = `
+    <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_PROGRESS_WIDGET}">
+      <input id="${UI_ELEMENT_IDS.SHOW_PROGRESS_WIDGET}" type="checkbox" />
+      <span>${t('settings.showProgressWidget')}</span>
+      <small>${t('settings.showProgressWidgetDesc')}</small>
+    </label>
+
+    <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_GALLERY_WIDGET}">
+      <input id="${UI_ELEMENT_IDS.SHOW_GALLERY_WIDGET}" type="checkbox" />
+      <span>${t('settings.showGalleryWidget')}</span>
+      <small>${t('settings.showGalleryWidgetDesc')}</small>
+    </label>
+
+    <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET}">
+      <input id="${UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET}" type="checkbox" />
+      <span>${t('settings.showStreamingPreviewWidget')}</span>
+      <small>${t('settings.showStreamingPreviewWidgetDesc')}</small>
+    </label>`;
+
+  const logLevelContent = `
+    <label for="${UI_ELEMENT_IDS.LOG_LEVEL}">
+      <span>${t('settings.logLevel')}</span>
+      <small>${t('settings.logLevelDesc')}</small>
+      <select id="${UI_ELEMENT_IDS.LOG_LEVEL}" class="text_pole">
+        <option value="trace">${t('settings.logLevel.trace')}</option>
+        <option value="debug">${t('settings.logLevel.debug')}</option>
+        <option value="info">${t('settings.logLevel.info')}</option>
+        <option value="warn">${t('settings.logLevel.warn')}</option>
+        <option value="error">${t('settings.logLevel.error')}</option>
+        <option value="silent">${t('settings.logLevel.silent')}</option>
+      </select>
+    </label>`;
+
   return `
     <div class="auto-illustrator-settings">
       <div class="inline-drawer">
@@ -117,6 +525,10 @@ export function createSettingsUI(): string {
           <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
         </div>
         <div class="inline-drawer-content">
+          <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" style="margin-bottom: 0.5rem; font-size: 0.85em; opacity: 0.7;">
+            v${EXTENSION_VERSION} <span id="${UI_ELEMENT_IDS.VERSION_STATUS}">${t('version.checking')}</span>
+          </div>
+
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <label class="checkbox_label" for="${UI_ELEMENT_IDS.ENABLED}">
               <input id="${UI_ELEMENT_IDS.ENABLED}" type="checkbox" />
@@ -134,385 +546,13 @@ export function createSettingsUI(): string {
             <input id="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}" class="text_pole" type="text" placeholder="${t('settings.imageSubfolderLabelPlaceholder')}" />
           </label>
 
-          <div class="preset-management">
-            <label>${t('settings.metaPromptPreset')}</label>
-            <div class="preset-toolbar">
-              <select id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_SELECT}" class="text_pole flex_fill">
-                <optgroup label="${t('settings.predefinedPresets')}">
-                  <option value="default">Default</option>
-                  <option value="nai-4.5-full">NAI 4.5 Full</option>
-                </optgroup>
-                <optgroup label="${t('settings.customPresets')}" id="custom_presets_group">
-                  <!-- populated by JavaScript -->
-                </optgroup>
-              </select>
-              <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_EDIT}" class="menu_button menu_button_icon" title="${t('settings.editPreset')}">
-                <i class="fa-solid fa-edit"></i>
-              </button>
-              <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_DELETE}" class="menu_button menu_button_icon" title="${t('settings.deletePreset')}">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
-
-            <div id="${UI_ELEMENT_IDS.PRESET_EDITOR}" style="display:none">
-              <label for="${UI_ELEMENT_IDS.META_PROMPT}">
-                <span>${t('settings.metaPromptTemplate')}</span>
-                <small>${t('settings.editingPresetHint')}</small>
-                <textarea id="${UI_ELEMENT_IDS.META_PROMPT}" class="text_pole textarea_compact" rows="10" readonly></textarea>
-              </label>
-              <div class="preset-edit-actions">
-                <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_SAVE}" class="menu_button">
-                  <i class="fa-solid fa-save"></i> ${t('settings.save')}
-                </button>
-                <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_SAVE_AS}" class="menu_button">
-                  <i class="fa-solid fa-copy"></i> ${t('settings.saveAs')}
-                </button>
-                <button id="${UI_ELEMENT_IDS.META_PROMPT_PRESET_CANCEL}" class="menu_button">
-                  <i class="fa-solid fa-times"></i> ${t('settings.cancel')}
-                </button>
-              </div>
-            </div>
-
-            <div id="${UI_ELEMENT_IDS.PRESET_VIEWER}" class="preset-content-preview">
-              <label>${t('settings.presetContentPreview')}</label>
-              <pre id="${UI_ELEMENT_IDS.PRESET_PREVIEW}" class="preset-preview-text"></pre>
-            </div>
-
-            <div id="${UI_ELEMENT_IDS.PATTERN_VALIDATION_STATUS}" class="pattern-validation-status">
-              <!-- Validation status will be populated by JavaScript -->
-            </div>
-
-            <label for="${UI_ELEMENT_IDS.META_PROMPT_DEPTH}">
-              <span>${t('settings.metaPromptDepth')}</span>
-              <small>${t('settings.metaPromptDepthDesc')}</small>
-              <input id="${UI_ELEMENT_IDS.META_PROMPT_DEPTH}" class="text_pole" type="number" min="${META_PROMPT_DEPTH.MIN}" max="${META_PROMPT_DEPTH.MAX}" step="${META_PROMPT_DEPTH.STEP}" />
-            </label>
-
-            <label for="${UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH}">
-              <span>${t('settings.imageDisplayWidth')}</span>
-              <small>${t('settings.imageDisplayWidthDesc')}</small>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <input id="${UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH}" type="range"
-                       min="${IMAGE_DISPLAY_WIDTH.MIN}"
-                       max="${IMAGE_DISPLAY_WIDTH.MAX}"
-                       step="${IMAGE_DISPLAY_WIDTH.STEP}"
-                       style="flex: 1;" />
-                <span id="${UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH_VALUE}" style="min-width: 50px; text-align: right;">100%</span>
-              </div>
-            </label>
-          </div>
-
-          <hr>
-
-          <label for="${UI_ELEMENT_IDS.STREAMING_POLL_INTERVAL}">
-            <span>${t('settings.streamingPollInterval')}</span>
-            <small>${t('settings.streamingPollIntervalDesc')}</small>
-            <input id="${UI_ELEMENT_IDS.STREAMING_POLL_INTERVAL}" class="text_pole" type="number" min="${STREAMING_POLL_INTERVAL.MIN}" max="${STREAMING_POLL_INTERVAL.MAX}" step="${STREAMING_POLL_INTERVAL.STEP}" />
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.MAX_CONCURRENT}">
-            <span>${t('settings.maxConcurrent')}</span>
-            <small>${t('settings.maxConcurrentDesc')}</small>
-            <input id="${UI_ELEMENT_IDS.MAX_CONCURRENT}" class="text_pole" type="number" min="${MAX_CONCURRENT_GENERATIONS.MIN}" max="${MAX_CONCURRENT_GENERATIONS.MAX}" step="${MAX_CONCURRENT_GENERATIONS.STEP}" />
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.MIN_GENERATION_INTERVAL}">
-            <span>${t('settings.minGenerationInterval')}</span>
-            <small>${t('settings.minGenerationIntervalDesc')}</small>
-            <input id="${UI_ELEMENT_IDS.MIN_GENERATION_INTERVAL}" class="text_pole" type="number" min="${MIN_GENERATION_INTERVAL.MIN}" max="${MIN_GENERATION_INTERVAL.MAX}" step="${MIN_GENERATION_INTERVAL.STEP}" />
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.PROMPT_PATTERNS}">
-            <span>${t('settings.promptPatterns')}</span>
-            <small>${t('settings.promptPatternsDesc')}</small>
-            <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-              <textarea id="${UI_ELEMENT_IDS.PROMPT_PATTERNS}" class="text_pole textarea_compact" rows="5" style="flex: 1;"></textarea>
-              <button id="${UI_ELEMENT_IDS.PROMPT_PATTERNS_RESET}" class="menu_button menu_button_icon" title="${t('settings.promptPatternsReset')}">
-                <i class="fa-solid fa-undo"></i>
-              </button>
-            </div>
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS}">
-            <span>${t('settings.commonStyleTags')}</span>
-            <small>${t('settings.commonStyleTagsDesc')}</small>
-            <textarea id="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS}" class="text_pole textarea_compact" rows="3" placeholder="${t('settings.commonStyleTagsPlaceholder')}"></textarea>
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS_POSITION}">
-            <span>${t('settings.commonStyleTagsPosition')}</span>
-            <select id="${UI_ELEMENT_IDS.COMMON_STYLE_TAGS_POSITION}" class="text_pole">
-              <option value="prefix">${t('settings.commonStyleTagsPrefix')}</option>
-              <option value="suffix">${t('settings.commonStyleTagsSuffix')}</option>
-            </select>
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.MANUAL_GEN_MODE}">
-            <span>${t('settings.manualGenerationMode')}</span>
-            <small>${t('settings.manualGenerationModeDesc')}</small>
-            <select id="${UI_ELEMENT_IDS.MANUAL_GEN_MODE}" class="text_pole">
-              <option value="append">${t('settings.manualGenerationModeAppend')}</option>
-              <option value="replace">${t('settings.manualGenerationModeReplace')}</option>
-            </select>
-          </label>
-
-          <hr>
-
-          <div>
-            <label>
-              <span>${t('settings.promptGenerationMode')}</span>
-              <small>${t('settings.promptGenerationModeDesc')}</small>
-            </label>
-
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_SHARED}">
-              <input id="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_SHARED}" type="radio" name="prompt_generation_mode" value="shared-api" />
-              <span>${t('settings.promptGenerationModeShared')}</span>
-              <small>${t('settings.promptGenerationModeSharedDesc')}</small>
-            </label>
-
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_INDEPENDENT}">
-              <input id="${UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_INDEPENDENT}" type="radio" name="prompt_generation_mode" value="independent-api" />
-              <span>
-                ${t('settings.promptGenerationModeIndependent')}
-                <i class="fa-solid fa-exclamation-triangle" style="color: orange;" title="${t('toast.warning')}"></i>
-              </span>
-              <small>${t('settings.promptGenerationModeIndependentDesc')}</small>
-            </label>
-          </div>
-
-          <div id="${UI_ELEMENT_IDS.INDEPENDENT_API_SETTINGS_CONTAINER}" style="display: none;">
-            <label for="${UI_ELEMENT_IDS.MAX_PROMPTS_PER_MESSAGE}">
-              <span>${t('settings.maxPromptsPerMessage')}</span>
-              <small>${t('settings.maxPromptsPerMessageDesc')}</small>
-              <input id="${UI_ELEMENT_IDS.MAX_PROMPTS_PER_MESSAGE}" class="text_pole" type="number" min="${MAX_PROMPTS_PER_MESSAGE.MIN}" max="${MAX_PROMPTS_PER_MESSAGE.MAX}" step="${MAX_PROMPTS_PER_MESSAGE.STEP}" />
-            </label>
-
-            <label for="${UI_ELEMENT_IDS.CONTEXT_MESSAGE_COUNT}">
-              <span>${t('settings.contextMessageCount')}</span>
-              <small>${t('settings.contextMessageCountDesc')}</small>
-              <input id="${UI_ELEMENT_IDS.CONTEXT_MESSAGE_COUNT}" class="text_pole" type="number" min="${CONTEXT_MESSAGE_COUNT.MIN}" max="${CONTEXT_MESSAGE_COUNT.MAX}" step="${CONTEXT_MESSAGE_COUNT.STEP}" />
-            </label>
-
-            <div style="margin-top: 0.75rem; margin-bottom: 0.5rem;">
-              <strong>${t('settings.contextInjectionTitle')}</strong>
-            </div>
-
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}">
-              <input id="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}" type="checkbox" />
-              <span>${t('settings.injectCharacterDescription')}</span>
-              <small>${t('settings.injectCharacterDescriptionDesc')}</small>
-            </label>
-
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_USER_PERSONA}">
-              <input id="${UI_ELEMENT_IDS.INJECT_USER_PERSONA}" type="checkbox" />
-              <span>${t('settings.injectUserPersona')}</span>
-              <small>${t('settings.injectUserPersonaDesc')}</small>
-            </label>
-
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_SCENARIO}">
-              <input id="${UI_ELEMENT_IDS.INJECT_SCENARIO}" type="checkbox" />
-              <span>${t('settings.injectScenario')}</span>
-              <small>${t('settings.injectScenarioDesc')}</small>
-            </label>
-
-            <div style="margin-top: 0.75rem; margin-bottom: 0.5rem;">
-              <strong>${t('settings.worldInfoTitle')}</strong>
-            </div>
-
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}">
-              <input id="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}" type="checkbox" />
-              <span>${t('settings.injectWorldInfo')}</span>
-              <small>${t('settings.injectWorldInfoDesc')}</small>
-            </label>
-
-            <div id="${UI_ELEMENT_IDS.WORLD_INFO_PANEL}" style="display: none; margin-top: 0.5rem;">
-              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
-                <input id="${UI_ELEMENT_IDS.WORLD_INFO_SEARCH}" class="text_pole" type="text" placeholder="${t('settings.worldInfoSearchPlaceholder')}" style="flex: 1;" />
-                <button id="${UI_ELEMENT_IDS.WORLD_INFO_REFRESH}" class="menu_button menu_button_icon" title="${t('settings.worldInfoRefresh')}">
-                  <i class="fa-solid fa-rotate-right"></i>
-                </button>
-              </div>
-              <div id="${UI_ELEMENT_IDS.WORLD_INFO_BOOK_LIST}" class="world-info-book-list">
-                <div class="world-info-empty">${t('settings.worldInfoLoading')}</div>
-              </div>
-              <div id="${UI_ELEMENT_IDS.WORLD_INFO_ENTRY_PANEL}"></div>
-            </div>
-
-            <div class="preset-management" style="margin-top: 1rem;">
-              <label>${t('settings.independentLlmPreset')}</label>
-              <div class="preset-toolbar">
-                <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT}" class="text_pole flex_fill">
-                  <optgroup label="${t('settings.predefinedPresets')}">
-                    <option value="default">Default</option>
-                  </optgroup>
-                  <optgroup label="${t('settings.customPresets')}" id="custom_independent_llm_presets_group">
-                    <!-- populated by JavaScript -->
-                  </optgroup>
-                </select>
-                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDIT}" class="menu_button menu_button_icon" title="${t('settings.editPreset')}">
-                  <i class="fa-solid fa-edit"></i>
-                </button>
-                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_DELETE}" class="menu_button menu_button_icon" title="${t('settings.deletePreset')}">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-
-              <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_EDITOR}" style="display:none">
-                <small>${t('settings.editingIndependentLlmPresetHint')}</small>
-                <div class="preset-edit-actions" style="margin-top: 0.5rem;">
-                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE}" class="menu_button">
-                    <i class="fa-solid fa-save"></i> ${t('settings.save')}
-                  </button>
-                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SAVE_AS}" class="menu_button">
-                    <i class="fa-solid fa-copy"></i> ${t('settings.saveAs')}
-                  </button>
-                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_CANCEL}" class="menu_button">
-                    <i class="fa-solid fa-times"></i> ${t('settings.cancel')}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <label for="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}">
-              <span>${t('settings.llmFrequencyGuidelines')}</span>
-              <small>${t('settings.llmFrequencyGuidelinesDesc')}</small>
-              <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                <textarea id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES}" class="text_pole textarea_compact" rows="4" style="flex: 1; font-family: monospace; font-size: 0.9em;" readonly></textarea>
-                <button id="${UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
-                  <i class="fa-solid fa-undo"></i>
-                </button>
-              </div>
-            </label>
-
-            <label for="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}">
-              <span>${t('settings.llmPromptWritingGuidelines')}</span>
-              <small>${t('settings.llmPromptWritingGuidelinesDesc')}</small>
-              <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                <textarea id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES}" class="text_pole textarea_compact" rows="15" style="flex: 1; font-family: monospace; font-size: 0.9em;" readonly></textarea>
-                <button id="${UI_ELEMENT_IDS.LLM_PROMPT_WRITING_GUIDELINES_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
-                  <i class="fa-solid fa-undo"></i>
-                </button>
-              </div>
-            </label>
-
-            <label for="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}">
-              <span>${t('settings.contentFilterTags')}</span>
-              <small>${t('settings.contentFilterTagsDesc')}</small>
-              <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                <textarea id="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}" class="text_pole textarea_compact" rows="3" style="flex: 1; font-family: monospace; font-size: 0.9em;" placeholder="${t('settings.contentFilterTagsPlaceholder')}"></textarea>
-                <button id="${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS_RESET}" class="menu_button menu_button_icon" title="${t('settings.resetToDefault')}">
-                  <i class="fa-solid fa-undo"></i>
-                </button>
-              </div>
-            </label>
-
-            <hr style="margin: 1.5rem 0;">
-
-            <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_SETTINGS_CONTAINER}">
-              <div style="margin-bottom: 1rem;">
-                <strong>${t('settings.independentLlmApiTitle')}</strong>
-                <small style="display: block; margin-top: 0.25rem;">${t('settings.independentLlmApiDesc')}</small>
-              </div>
-
-              <label class="checkbox_label" for="${UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API}">
-                <input id="${UI_ELEMENT_IDS.USE_INDEPENDENT_LLM_API}" type="checkbox" />
-                <span>${t('settings.useIndependentLlmApi')}</span>
-                <small>${t('settings.useIndependentLlmApiDesc')}</small>
-              </label>
-
-              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL}">
-                <span>${t('settings.independentLlmApiUrl')}</span>
-                <small>${t('settings.independentLlmApiUrlDesc')}</small>
-                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL}" class="text_pole" type="text" placeholder="https://api.openai.com/v1" />
-              </label>
-
-              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}">
-                <span>${t('settings.independentLlmApiKey')}</span>
-                <small>${t('settings.independentLlmApiKeyDesc')}</small>
-                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY}" class="text_pole" type="password" placeholder="sk-..." />
-              </label>
-
-              <label>
-                <span>${t('settings.independentLlmModel')}</span>
-                <small>${t('settings.independentLlmModelDesc')}</small>
-                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                  <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL_SELECT}" class="text_pole" style="flex: 0 0 auto; min-width: 150px;">
-                    <option value="">${t('settings.independentLlmModelPlaceholder')}</option>
-                  </select>
-                  <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}" class="text_pole" type="text" placeholder="${t('settings.independentLlmModelPlaceholder')}" style="flex: 1; min-width: 200px;" />
-                  <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_FETCH_MODELS}" class="menu_button menu_button_icon" title="${t('settings.fetchModels')}">
-                    <i class="fa-solid fa-plug-circle-bolt"></i>
-                    <span>${t('settings.fetchModels')}</span>
-                  </button>
-                </div>
-              </label>
-
-              <label for="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}">
-                <span>${t('settings.independentLlmMaxTokens')}</span>
-                <small>${t('settings.independentLlmMaxTokensDesc')}</small>
-                <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}" class="text_pole" type="number" min="${INDEPENDENT_LLM_MAX_TOKENS.MIN}" max="${INDEPENDENT_LLM_MAX_TOKENS.MAX}" step="${INDEPENDENT_LLM_MAX_TOKENS.STEP}" />
-              </label>
-
-              <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION}" class="menu_button">
-                  <i class="fa-solid fa-plug"></i> ${t('settings.testConnection')}
-                </button>
-                <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_VIEW_LAST_REQUEST}" class="menu_button">
-                  <i class="fa-solid fa-eye"></i> ${t('settings.viewLastRequest')}
-                </button>
-              </div>
-            </div>
-          </div>
-          <hr>
-
-          <div style="margin-top: 1rem;">
-            <strong>图片清理 / Image Cleanup</strong>
-          </div>
-
-          <label for="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}">
-            <span>图片保留天数 / Image Retention Days</span>
-            <small>启动时自动清理超过此天数的图片 / Images older than this will be cleaned up on startup</small>
-            <input id="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}" class="text_pole" type="number" 
-                   min="${IMAGE_RETENTION_DAYS.MIN}" 
-                   max="${IMAGE_RETENTION_DAYS.MAX}" 
-                   step="${IMAGE_RETENTION_DAYS.STEP}" />
-          </label>
-          <hr>
-
-          <div style="margin-top: 1rem;">
-            <strong>${t('settings.widgetVisibility')}</strong>
-          </div>
-
-          <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_PROGRESS_WIDGET}">
-            <input id="${UI_ELEMENT_IDS.SHOW_PROGRESS_WIDGET}" type="checkbox" />
-            <span>${t('settings.showProgressWidget')}</span>
-            <small>${t('settings.showProgressWidgetDesc')}</small>
-          </label>
-
-          <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_GALLERY_WIDGET}">
-            <input id="${UI_ELEMENT_IDS.SHOW_GALLERY_WIDGET}" type="checkbox" />
-            <span>${t('settings.showGalleryWidget')}</span>
-            <small>${t('settings.showGalleryWidgetDesc')}</small>
-          </label>
-
-          <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET}">
-            <input id="${UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET}" type="checkbox" />
-            <span>${t('settings.showStreamingPreviewWidget')}</span>
-            <small>${t('settings.showStreamingPreviewWidgetDesc')}</small>
-          </label>
-
-          <label for="${UI_ELEMENT_IDS.LOG_LEVEL}">
-            <span>${t('settings.logLevel')}</span>
-            <small>${t('settings.logLevelDesc')}</small>
-            <select id="${UI_ELEMENT_IDS.LOG_LEVEL}" class="text_pole">
-              <option value="trace">${t('settings.logLevel.trace')}</option>
-              <option value="debug">${t('settings.logLevel.debug')}</option>
-              <option value="info">${t('settings.logLevel.info')}</option>
-              <option value="warn">${t('settings.logLevel.warn')}</option>
-              <option value="error">${t('settings.logLevel.error')}</option>
-              <option value="silent">${t('settings.logLevel.silent')}</option>
-            </select>
-          </label>
+          ${drawer(t('drawer.metaPromptAndDisplay'), metaPromptAndDisplayContent)}
+          ${drawer(t('drawer.generationPerformance'), generationPerformanceContent)}
+          ${drawer(t('drawer.promptDetectionAndStyle'), promptDetectionAndStyleContent)}
+          ${drawer(t('drawer.promptGenerationMode'), promptGenerationModeContent)}
+          ${drawer(t('drawer.imageCleanup'), imageCleanupContent)}
+          ${drawer(t('drawer.widgetVisibility'), widgetVisibilityContent)}
+          ${drawer(t('drawer.logLevel'), logLevelContent)}
         </div>
       </div>
     </div>

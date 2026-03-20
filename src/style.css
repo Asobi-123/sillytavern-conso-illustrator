@@ -1,5 +1,26 @@
 /* Clickable AI-generated images */
 
+/* ===== Nested Drawer Styling ===== */
+/* Level 2 drawers: indented inside the main extension drawer */
+.auto-illustrator-settings > .inline-drawer > .inline-drawer-content > .inline-drawer {
+  margin-left: 0.75rem;
+  border-left: 3px solid var(--SmartThemeQuoteColor, #e49e2c);
+  padding-left: 0.75rem;
+}
+
+/* Level 3 drawers: further indented inside level 2 */
+.auto-illustrator-settings > .inline-drawer > .inline-drawer-content > .inline-drawer .inline-drawer-content .inline-drawer {
+  margin-left: 0.5rem;
+  border-left: 2px solid var(--SmartThemeBorderColor, #555);
+  padding-left: 0.5rem;
+}
+
+.auto-illustrator-settings > .inline-drawer > .inline-drawer-content > .inline-drawer .inline-drawer-content .inline-drawer > .inline-drawer-header b {
+  font-size: 0.9em;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
 /* ===== World Info Panel ===== */
 .world-info-book-list {
   max-height: 400px;

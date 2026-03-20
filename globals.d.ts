@@ -129,6 +129,16 @@ declare global {
 
   // Extension-specific types
 
+  // API profile for saving/switching independent LLM configurations
+  interface ApiProfile {
+    id: string;
+    name: string;
+    apiUrl: string;
+    apiKey: string;
+    model: string;
+    maxTokens: number;
+  }
+
   // Meta prompt preset interface
   interface MetaPromptPreset {
     id: string;
@@ -202,6 +212,10 @@ declare global {
     contentFilterTags: string[];
     /** Inject world info entries into LLM context */
     injectWorldInfo: boolean;
+    /** Saved API profiles for independent LLM */
+    apiProfiles: ApiProfile[];
+    /** Currently selected API profile ID (empty = manual configuration) */
+    currentApiProfileId: string;
   }
 
   interface ImagePromptMatch {

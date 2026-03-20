@@ -30,6 +30,9 @@
 | Max Tokens 控制 | - | - | ✅ 支持 |
 | 提示词指南预设管理 | - | - | ✅ 支持 |
 | 世界书注入 | - | - | ✅ 支持 |
+| API 配置档案管理 | - | - | ✅ 支持 |
+| 折叠式设置面板 | - | - | ✅ 支持 |
+| 版本显示与更新检查 | - | - | ✅ 支持 |
 
 ### ✨ Conso 版新增特性
 
@@ -63,6 +66,21 @@
 - **默认全部关闭**：选中世界书后条目默认关闭，用户主动启用需要的条目
 - **自动初始化**：新聊天自动添加当前角色绑定的主世界书
 - **全选/全部取消**：批量操作条目开关
+
+#### 💾 API 配置档案管理 (v1.3.1 新增)
+- **保存/切换/删除**：将当前独立 LLM 的 API 地址、密钥、模型、Max Tokens 保存为命名档案
+- **一键切换**：下拉选择已保存的档案，自动填充所有 API 字段
+- **手动模式**：选择"手动配置"可自由编辑，不绑定任何档案
+
+#### 📂 折叠式设置面板 (v1.3.1 新增)
+- **三层折叠结构**：设置面板按功能分组为可折叠的手风琴区域
+- **层级清晰**：第一层（自动插画）→ 第二层（功能分组）→ 第三层（独立API子功能）
+- **视觉区分**：不同层级使用不同缩进和边框样式
+
+#### 🔄 版本显示与更新检查 (v1.3.1 新增)
+- **版本号显示**：设置面板顶部显示当前版本号
+- **自动检查更新**：启动时异步检查 GitHub 最新 Release
+- **更新提示**：有新版本时显示可点击的更新链接
 
 #### 🤖 独立 LLM API 支持
 - 支持 OpenAI 兼容的任何 LLM 服务（本地或云端）
@@ -140,6 +158,9 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 | Max Tokens Control | - | - | ✅ Supported |
 | Guidelines Preset Management | - | - | ✅ Supported |
 | World Info Injection | - | - | ✅ Supported |
+| API Profile Management | - | - | ✅ Supported |
+| Collapsible Settings Panel | - | - | ✅ Supported |
+| Version Display & Update Check | - | - | ✅ Supported |
 
 ### ✨ New Features in Conso Edition
 
@@ -173,6 +194,21 @@ Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) 
 - **Default Off**: After selecting a world book, all entries are off by default — users enable what they need
 - **Auto-Initialization**: New chats automatically add the current character's bound world book
 - **Bulk Actions**: Select All / Deselect All for entry toggles
+
+#### 💾 API Profile Management (v1.3.1)
+- **Save/Switch/Delete**: Save the current independent LLM's API URL, key, model, and max tokens as a named profile
+- **One-Click Switch**: Select a saved profile from dropdown to auto-fill all API fields
+- **Manual Mode**: Select "Manual Configuration" to freely edit fields without binding to any profile
+
+#### 📂 Collapsible Settings Panel (v1.3.1)
+- **Three-Level Accordion**: Settings panel organized into collapsible sections by function group
+- **Clear Hierarchy**: Level 1 (Auto Illustrator) → Level 2 (feature groups) → Level 3 (independent API sub-features)
+- **Visual Distinction**: Different levels use distinct indentation and border styles
+
+#### 🔄 Version Display & Update Check (v1.3.1)
+- **Version Number**: Displayed at the top of the settings panel
+- **Auto Update Check**: Asynchronously checks GitHub Releases on startup
+- **Update Link**: Shows a clickable link when a new version is available
 
 #### 🤖 Independent LLM API Support
 - Support any OpenAI-compatible LLM service (local or cloud-based)

@@ -10,6 +10,14 @@
  */
 export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
+ * Extension version (single source of truth)
+ */
+export declare const EXTENSION_VERSION = "1.3.1";
+/**
+ * GitHub repository for update checks
+ */
+export declare const GITHUB_REPO = "Asobi-123/sillytavern-conso-illustrator";
+/**
  * Streaming poll interval configuration (milliseconds)
  * Controls how frequently the extension checks for new prompts during streaming
  */
@@ -224,6 +232,8 @@ export declare const DEFAULT_SETTINGS: {
     injectScenario: boolean;
     contentFilterTags: string[];
     injectWorldInfo: boolean;
+    apiProfiles: ApiProfile[];
+    currentApiProfileId: string;
 };
 /**
  * UI element IDs for settings controls
@@ -296,4 +306,9 @@ export declare const UI_ELEMENT_IDS: {
     readonly WORLD_INFO_REFRESH: "auto_illustrator_conso_world_info_refresh";
     readonly WORLD_INFO_BOOK_LIST: "auto_illustrator_conso_world_info_book_list";
     readonly WORLD_INFO_ENTRY_PANEL: "auto_illustrator_conso_world_info_entry_panel";
+    readonly API_PROFILE_SELECT: "auto_illustrator_conso_api_profile_select";
+    readonly API_PROFILE_SAVE: "auto_illustrator_conso_api_profile_save";
+    readonly API_PROFILE_DELETE: "auto_illustrator_conso_api_profile_delete";
+    readonly VERSION_DISPLAY: "auto_illustrator_conso_version_display";
+    readonly VERSION_STATUS: "auto_illustrator_conso_version_status";
 };

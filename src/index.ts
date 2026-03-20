@@ -37,6 +37,8 @@ import {
   DEFAULT_LLM_PROMPT_WRITING_GUIDELINES,
   DEFAULT_CONTENT_FILTER_TAGS,
   PROMPT_GENERATION_MODE,
+  EXTENSION_VERSION,
+  GITHUB_REPO,
 } from './constants';
 import {
   getPresetById,
@@ -477,6 +479,9 @@ function updateUI(): void {
 
   if (ilmPresetEditor) ilmPresetEditor.style.display = 'none';
   isEditingIndependentLlmPreset = false;
+
+  // Update API profile dropdown
+  populateApiProfileDropdown();
 
   // Update validation status
   updateValidationStatus();
@@ -2021,6 +2026,207 @@ function exitIndependentLlmEditMode(): void {
   isEditingIndependentLlmPreset = false;
 }
 
+// ===== API Profile Handlers =====
+
+/**
+ * Populates the API profile dropdown with saved profiles
+ */
+function populateApiProfileDropdown(): void {
+  const select = document.getElementById(
+    UI_ELEMENT_IDS.API_PROFILE_SELECT
+  ) as HTMLSelectElement;
+  if (!select) return;
+
+  // Preserve manual option, clear the rest
+  const manualOption = select.querySelector('option[value=""]');
+  select.innerHTML = '';
+  if (manualOption) {
+    select.appendChild(manualOption);
+  } else {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = t('settings.apiProfileManual');
+    select.appendChild(opt);
+  }
+
+  // Add saved profiles
+  (settings.apiProfiles || []).forEach(profile => {
+    const opt = document.createElement('option');
+    opt.value = profile.id;
+    opt.textContent = profile.name;
+    select.appendChild(opt);
+  });
+
+  select.value = settings.currentApiProfileId || '';
+}
+
+/**
+ * Handles API profile selection change - fills fields with profile data
+ */
+function handleApiProfileChange(): void {
+  const select = document.getElementById(
+    UI_ELEMENT_IDS.API_PROFILE_SELECT
+  ) as HTMLSelectElement;
+  if (!select) return;
+
+  const profileId = select.value;
+  settings.currentApiProfileId = profileId;
+
+  if (profileId) {
+    const profile = (settings.apiProfiles || []).find(p => p.id === profileId);
+    if (profile) {
+      // Fill fields with profile data
+      const urlInput = document.getElementById(
+        UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+      ) as HTMLInputElement;
+      const keyInput = document.getElementById(
+        UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+      ) as HTMLInputElement;
+      const modelInput = document.getElementById(
+        UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+      ) as HTMLInputElement;
+      const maxTokensInput = document.getElementById(
+        UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS
+      ) as HTMLInputElement;
+
+      if (urlInput) urlInput.value = profile.apiUrl;
+      if (keyInput) keyInput.value = profile.apiKey;
+      if (modelInput) modelInput.value = profile.model;
+      if (maxTokensInput) maxTokensInput.value = String(profile.maxTokens);
+
+      // Update settings
+      settings.independentLlmApiUrl = profile.apiUrl;
+      settings.independentLlmApiKey = profile.apiKey;
+      settings.independentLlmModel = profile.model;
+      settings.independentLlmMaxTokens = profile.maxTokens;
+    }
+  }
+
+  saveSettings(settings, context);
+}
+
+/**
+ * Handles saving current API config as a profile
+ */
+function handleApiProfileSave(): void {
+  const urlInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_URL
+  ) as HTMLInputElement;
+  const keyInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_API_KEY
+  ) as HTMLInputElement;
+  const modelInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL
+  ) as HTMLInputElement;
+  const maxTokensInput = document.getElementById(
+    UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS
+  ) as HTMLInputElement;
+
+  const name = prompt(t('prompt.enterApiProfileName'));
+  if (!name || name.trim() === '') return;
+
+  const trimmedName = name.trim();
+
+  if (!settings.apiProfiles) {
+    settings.apiProfiles = [];
+  }
+
+  // Check if name already exists - overwrite if so
+  const existing = settings.apiProfiles.find(p => p.name === trimmedName);
+  if (existing) {
+    existing.apiUrl = urlInput?.value || '';
+    existing.apiKey = keyInput?.value || '';
+    existing.model = modelInput?.value || '';
+    existing.maxTokens = parseInt(maxTokensInput?.value || '4096', 10);
+    settings.currentApiProfileId = existing.id;
+  } else {
+    const newProfile: ApiProfile = {
+      id: `profile-${Date.now()}`,
+      name: trimmedName,
+      apiUrl: urlInput?.value || '',
+      apiKey: keyInput?.value || '',
+      model: modelInput?.value || '',
+      maxTokens: parseInt(maxTokensInput?.value || '4096', 10),
+    };
+    settings.apiProfiles.push(newProfile);
+    settings.currentApiProfileId = newProfile.id;
+  }
+
+  saveSettings(settings, context);
+  populateApiProfileDropdown();
+
+  toastr.success(
+    t('toast.apiProfileSaved', {name: trimmedName}),
+    t('extensionName')
+  );
+  logger.info('API profile saved:', trimmedName);
+}
+
+/**
+ * Handles deleting the selected API profile
+ */
+function handleApiProfileDelete(): void {
+  const select = document.getElementById(
+    UI_ELEMENT_IDS.API_PROFILE_SELECT
+  ) as HTMLSelectElement;
+  if (!select || !select.value) {
+    toastr.warning(t('toast.apiProfileSelectToDelete'), t('extensionName'));
+    return;
+  }
+
+  const profile = (settings.apiProfiles || []).find(p => p.id === select.value);
+  if (!profile) return;
+
+  const confirmDelete = confirm(
+    t('prompt.deleteApiProfileConfirm', {name: profile.name})
+  );
+  if (!confirmDelete) return;
+
+  settings.apiProfiles = settings.apiProfiles.filter(p => p.id !== profile.id);
+  settings.currentApiProfileId = '';
+
+  saveSettings(settings, context);
+  populateApiProfileDropdown();
+
+  toastr.success(
+    t('toast.apiProfileDeleted', {name: profile.name}),
+    t('extensionName')
+  );
+  logger.info('API profile deleted:', profile.name);
+}
+
+/**
+ * Checks for extension updates from GitHub releases API
+ */
+async function checkForUpdates(): Promise<void> {
+  const statusEl = document.getElementById(UI_ELEMENT_IDS.VERSION_STATUS);
+  if (!statusEl) return;
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
+      {signal: AbortSignal.timeout(10000)}
+    );
+
+    if (!response.ok) {
+      statusEl.textContent = t('version.checkFailed');
+      return;
+    }
+
+    const data = await response.json();
+    const latestVersion = (data.tag_name || '').replace(/^v/, '');
+
+    if (latestVersion && latestVersion !== EXTENSION_VERSION) {
+      statusEl.innerHTML = `→ <a href="${data.html_url}" target="_blank" style="color: var(--SmartThemeQuoteColor, #e49e2c);">${t('version.updateAvailable', {version: latestVersion})}</a>`;
+    } else {
+      statusEl.textContent = `✓ ${t('version.latest')}`;
+      statusEl.style.color = 'var(--SmartThemeGreenColor, #4caf50)';
+    }
+  } catch {
+    statusEl.textContent = t('version.checkFailed');
+  }
+}
+
 /**
  * Cancels all active streaming sessions
  * Used when chat is cleared or reset
@@ -2641,6 +2847,20 @@ function initialize(): void {
       handleViewLastRequest
     );
 
+    // API Profile management
+    const apiProfileSelect = document.getElementById(
+      UI_ELEMENT_IDS.API_PROFILE_SELECT
+    );
+    const apiProfileSaveButton = document.getElementById(
+      UI_ELEMENT_IDS.API_PROFILE_SAVE
+    );
+    const apiProfileDeleteButton = document.getElementById(
+      UI_ELEMENT_IDS.API_PROFILE_DELETE
+    );
+    apiProfileSelect?.addEventListener('change', handleApiProfileChange);
+    apiProfileSaveButton?.addEventListener('click', handleApiProfileSave);
+    apiProfileDeleteButton?.addEventListener('click', handleApiProfileDelete);
+
     // Image display width slider
     const imageDisplayWidthInput = document.getElementById(
       UI_ELEMENT_IDS.IMAGE_DISPLAY_WIDTH
@@ -2671,6 +2891,11 @@ function initialize(): void {
 
     // Update UI with loaded settings
     updateUI();
+
+    // Check for updates (non-blocking)
+    checkForUpdates().catch(error => {
+      logger.debug('Update check failed:', error);
+    });
 
     // Register world info event listeners and initialize panel (non-blocking)
     registerWorldInfoEventListeners();
