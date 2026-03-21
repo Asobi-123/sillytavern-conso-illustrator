@@ -2,6 +2,7 @@
   "extensionName": "自动插画",
   "settings.enable": "启用自动插画",
   "settings.resetDefaults": "重置为默认值",
+  "settings.tutorialLink": "使用教程",
   "settings.metaPromptPreset": "元提示预设",
   "settings.predefinedPresets": "预定义预设",
   "settings.customPresets": "自定义预设",

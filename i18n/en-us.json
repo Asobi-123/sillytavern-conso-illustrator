@@ -2,6 +2,7 @@
   "extensionName": "Auto Illustrator",
   "settings.enable": "Enable Auto Illustrator",
   "settings.resetDefaults": "Reset to Defaults",
+  "settings.tutorialLink": "Tutorial",
   "settings.metaPromptPreset": "Meta Prompt Preset",
   "settings.predefinedPresets": "Predefined Presets",
   "settings.customPresets": "Custom Presets",

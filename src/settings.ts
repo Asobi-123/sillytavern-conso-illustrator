@@ -20,6 +20,7 @@ import {
   INDEPENDENT_LLM_MAX_TOKENS,
   UI_ELEMENT_IDS,
   EXTENSION_VERSION,
+  TUTORIAL_URL,
 } from './constants';
 import {t} from './i18n';
 import {createLogger} from './logger';
@@ -544,8 +545,16 @@ export function createSettingsUI(): string {
           <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
         </div>
         <div class="inline-drawer-content">
-          <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" style="margin-bottom: 0.5rem; font-size: 0.85em; opacity: 0.7;">
-            v${EXTENSION_VERSION} <span id="${UI_ELEMENT_IDS.VERSION_STATUS}">${t('version.checking')}</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+            <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" style="font-size: 0.85em; opacity: 0.7;">
+              v${EXTENSION_VERSION} <span id="${UI_ELEMENT_IDS.VERSION_STATUS}">${t('version.checking')}</span>
+            </div>
+            <a id="${UI_ELEMENT_IDS.TUTORIAL_LINK}" href="${TUTORIAL_URL}" target="_blank"
+               class="menu_button menu_button_icon" title="${t('settings.tutorialLink')}"
+               style="height: auto; padding: 2px 8px; font-size: 0.85em;">
+              <i class="fa-solid fa-book"></i>
+              <span>${t('settings.tutorialLink')}</span>
+            </a>
           </div>
 
           <div style="display: flex; align-items: center; justify-content: space-between;">

@@ -1,301 +1,170 @@
-# 🎨 SillyTavern Auto Illustrator - Conso Edition
+# SillyTavern Auto Illustrator - Conso Edition
 
-**Fork from:** [Hao19911125/sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator)
+[中文](README_CN.md)
 
-[English](#english) | [中文](#中文)
+A SillyTavern extension that **automatically generates images while you chat**. The LLM reads your conversation, extracts visual descriptions, converts them into image generation prompts, and produces illustrations — all in real-time as the story unfolds.
 
----
-
-## 中文
-
-### 📖 简介
-
-本项目是在 **gamer-mitsuha** 的 [sillytavern-auto-illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)（原版）和 **Hao19911125** 的 [sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator)（简化版）两个项目基础上的进一步开发版本。
-
-感谢原作者 **gamer-mitsuha** 和分支作者 **Hao19911125** 的优秀工作！
-
-### 📊 三个版本对比
-
-| 功能 | 原版 (auto-illustrator) | 简化版 (simplified) | Conso 版 |
-|------|------------------------|-------------------|----------|
-| 提示词更新方式 | AI 优化（输入修改描述 → AI 生成新提示词） | 手动直编（直接编辑提示词文本） | **双模式：AI 优化 + 手动直编** |
-| 进度提示 | 右下角悬浮窗 | 顶部简洁提示条 | 顶部简洁提示条 |
-| 开关切换 | 需要刷新页面 | 立即生效 | 立即生效 |
-| 配置隔离 | - | 独立配置 ID | 独立配置 ID |
-| 独立 LLM API | - | - | ✅ 支持 |
-| 角色卡/Persona 注入 | - | - | ✅ 支持 |
-| 消息内容过滤 | - | - | ✅ 支持 |
-| 图片子文件夹标签 | - | - | ✅ 支持 |
-| 自动模型获取 | - | - | ✅ 支持 |
-| Max Tokens 控制 | - | - | ✅ 支持 |
-| 提示词指南预设管理 | - | - | ✅ 支持 |
-| 世界书注入 | - | - | ✅ 支持 |
-| API 配置档案管理 | - | - | ✅ 支持 |
-| 角色固定Tag注入 | - | - | ✅ 支持 |
-| 独立生图工作台 | - | - | ✅ 支持 |
-| 折叠式设置面板 | - | - | ✅ 支持 |
-| 版本显示与更新检查 | - | - | ✅ 支持 |
-
-### ✨ Conso 版新增特性
-
-#### ✏️ 双模式提示词编辑
-- **AI 优化模式**：输入修改描述 → LLM 自动生成优化后的提示词（继承自原版）
-- **手动直编模式**：直接编辑提示词文本 → 确认后立即生成新图片（继承自简化版）
-- 两种模式自由切换，满足不同场景需求
-
-#### 🧩 角色卡上下文注入 (v1.1.0 新增)
-- **角色描述注入**：自动将角色卡中的外貌描述、性格设定发送给 LLM，确保生成的图片准确反映角色外观
-- **用户 Persona 注入**：将用户的 Persona 描述发送给 LLM，包含用户角色在场景中时更准确
-- **场景设定注入**：将角色卡或聊天级别的场景设定发送给 LLM，提供环境背景信息
-- 三项均默认开启，可在设置中独立控制
-
-#### 🧹 消息内容过滤 (v1.1.0 新增)
-- **自定义 HTML 标签过滤**：输入标签名（一行一个）即可自动移除整个标签块，如 `<style>`、`<status>` 等
-- **内置 CSS 噪音清洗**：自动移除 `@keyframes`、`@media`、CSS 选择器规则块等无关内容
-- 大幅减少发给 LLM 的无效 token，提升 prompt 生成质量
-
-#### 📋 提示词指南预设管理 (v1.2.0 新增)
-- **预设保存/切换/删除**：为独立 API 模式的频率指南和提示词编写指南提供完整的预设管理功能
-- 支持预定义预设（Default）和自定义预设
-- 切换预设自动更新两个指南文本框
-- 与共享 API 的元提示预设功能完全一致的操作体验
-
-#### 🌐 世界书注入 (v1.3.0 新增)
-- **插件独立开关**：不影响也不依赖酒馆原生的世界书启用/禁用状态
-- **按聊天保存配置**：不同聊天可以有不同的世界书选择方案
-- **跨角色选择世界书**：可选系统中任意世界书，不限于当前角色
-- **搜索功能**：支持世界书名称搜索和条目内容搜索
-- **默认全部关闭**：选中世界书后条目默认关闭，用户主动启用需要的条目
-- **自动初始化**：新聊天自动添加当前角色绑定的主世界书
-- **全选/全部取消**：批量操作条目开关
-
-#### 💾 API 配置档案管理 (v1.3.1 新增)
-- **保存/切换/删除**：将当前独立 LLM 的 API 地址、密钥、模型、Max Tokens 保存为命名档案
-- **一键切换**：下拉选择已保存的档案，自动填充所有 API 字段
-- **手动模式**：选择"手动配置"可自由编辑，不绑定任何档案
-
-#### 🏷️ 角色固定Tag注入 (v1.4.0 新增)
-- **为每个角色锁定固定外貌Tag**：配置后，当角色出现在故事场景中时，自动将其外貌Tag注入到图片生成提示词
-- **多人场景防混乱**：每个角色的Tag用 `{}` 包裹隔离，例如 `{lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}`，AI 不会把不同角色的特征搞混
-- **推荐Tag格式**：`名字(英文名或拼音), 性别, 外貌tag1, 外貌tag2...`
-- **智能检测注入**：仅在消息正文中提到该角色名 **且** 提示词包含人物指示Tag（如 `1girl`、`1boy`）时注入，纯风景场景不会误注入
-- **名称别名匹配**：支持多个别名（如中文名、英文名、日文名），大小写不敏感
-- **自动识别参与者**：自动检测当前聊天的角色和用户 Persona，无需手动添加
-- **手动添加NPC**：支持手动添加群聊中的其他NPC角色，按聊天保存
-- **独立开关**：每个角色可单独启用/禁用
-
-#### 🎨 独立生图工作台 (v1.5.0 新增)
-- **脱离聊天上下文的独立图片生成**：无需发送聊天消息，直接输入场景描述或 prompt 快速测试出图效果
-- **AI 生成模式**：输入场景描述 → LLM 生成多条提示词建议 → 可编辑后逐条或批量生图，支持「一键全自动」
-- **手动输入模式**：直接粘贴 NovelAI prompt → 一键生图
-- **复用插件全部能力**：通用样式 Tag、角色固定 Tag、世界书注入、角色信息注入均可用
-- **独立存储文件夹**：图片存到 `/images/auto_illustrator_standalone/` 或 `/images/auto_illustrator_standalone_{标签}/`，不与角色聊天图片混在一起
-- **两种 API 模式均可使用**：共享 API 模式走酒馆主 API，独立 API 模式走配置的独立 LLM
-
-#### 📂 折叠式设置面板 (v1.3.1 新增)
-- **三层折叠结构**：设置面板按功能分组为可折叠的手风琴区域
-- **层级清晰**：第一层（自动插画）→ 第二层（功能分组）→ 第三层（独立API子功能）
-- **视觉区分**：不同层级使用不同缩进和边框样式
-
-#### 🔄 版本显示与更新检查 (v1.3.1 新增)
-- **版本号显示**：设置面板顶部显示当前版本号
-- **自动检查更新**：启动时异步检查 GitHub 最新 Release
-- **更新提示**：有新版本时显示可点击的更新链接
-
-#### 🤖 独立 LLM API 支持
-- 支持 OpenAI 兼容的任何 LLM 服务（本地或云端）
-- **自动模型获取**：一键从 API 拉取可用模型列表
-- **模型选择器**：下拉选择 + 手动输入，灵活配置
-- **Max Tokens 控制**：独立配置提示词生成的 Token 限制（256-32000）
-- **模型持久化**：自动保存选中的模型，下次启动自动加载
-- **连接测试**：验证 API 配置是否可用
-- **请求快照查看**：查看最近一次独立 LLM 的完整请求内容（URL、模型、messages），方便确认角色设定和上下文是否正确传入
-
-#### 🛡️ 稳健的 LLM 回退机制
-- 独立 LLM 开关打开但配置不完整时，自动回退到酒馆共享 API，不再硬失败
-- 仅在两条路径都不可用时才报错
-
-#### 📁 图片子文件夹标签
-- 为每个聊天配置独立的图片存储子文件夹标签
-- 图片存储路径：`/user/images/{角色名}_{标签}/`
-- 方便管理不同聊天的生成图片，避免混乱
-
-#### 💾 独立配置
-- 使用独立的配置 ID（`auto_illustrator_conso`）
-- 可与原版或简化版插件共存，互不干扰
+**Fork from:** [Hao19911125/sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator), originally based on [gamer-mitsuha/sillytavern-auto-illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)
 
 ---
 
-### 🚀 安装方法
+## How It Works
 
-1. 在 SillyTavern 中打开 **扩展** → **下载扩展和资源**
-2. 输入本仓库地址安装
-3. 重启 SillyTavern
-
-或者手动安装：
-```bash
-cd SillyTavern/public/scripts/extensions/third-party
-git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
+```
+You send a message
+       ↓
+LLM generates a reply (streamed)
+       ↓
+Plugin detects visual scenes in the reply
+       ↓
+LLM converts scenes into image prompts (e.g. NovelAI tags)
+       ↓
+Image generation API creates the picture
+       ↓
+Image appears inline in the chat
 ```
 
 ---
 
-### 🙏 致谢
+## Quick Start
 
-- 原作者：[gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)（SillyTavern Auto Illustrator）
-- 分支作者：[Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator)（sillytavern-simplified-illustrator）
-- 本项目在上述两个项目的基础上进行了功能增强和改进
+### Prerequisites
+
+- SillyTavern installed and running
+- Image generation configured and working (e.g. NovelAI — test with `/sd` command first)
+
+### Install
+
+**Option A** — From SillyTavern UI (recommended):
+
+1. Go to **Extensions** → **Install Extension**
+2. Enter: `https://github.com/Asobi-123/sillytavern-conso-illustrator`
+3. Reload the page
+
+**Option B** — Manual:
+
+```bash
+cd SillyTavern/data/default-user/extensions/
+git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
+```
+
+### Start Generating
+
+1. Open **Extensions** → expand **Auto Illustrator** → check **Enable**
+2. Pick a Meta Prompt Preset (recommended: **NAI 4.5 Full** for NovelAI users)
+3. Send a chat message — images will appear automatically!
 
 ---
 
-### 📄 许可证
+## Features
 
-遵循原项目的 AGPL-3.0 许可证
+### Core
+
+| Feature | Description |
+|---------|-------------|
+| **Auto Illustration** | Detects visual scenes during streaming and generates images in real-time |
+| **Dual Prompt Editing** | AI-assisted optimization or manual direct editing — switch freely |
+| **Standalone Workbench** | Generate images without chat context — describe a scene or paste prompts directly |
+| **Streaming Preview** | Live preview widget showing streamed text and generated images |
+| **Image Viewer** | Full modal viewer with zoom, pan, rotate, navigate, and download |
+| **Gallery Widget** | Floating gallery of all generated images, grouped by message |
+
+### Prompt Enhancement
+
+| Feature | Description |
+|---------|-------------|
+| **Character Card Injection** | Auto-sends character appearance, personality, and persona to the LLM |
+| **Character Fixed Tags** | Lock visual tags per character — auto-injected with `{}` isolation in multi-character scenes |
+| **World Info Injection** | Plugin-independent world book selection per chat |
+| **Common Style Tags** | Global prefix/suffix tags applied to all generated prompts |
+| **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
+| **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
+
+### Configuration & Management
+
+| Feature | Description |
+|---------|-------------|
+| **Two Generation Modes** | Shared API (zero config) or Independent API (cleaner AI replies) |
+| **Independent LLM API** | Use any OpenAI-compatible API with auto model discovery and connection test |
+| **API Profile Management** | Save/switch/delete named API configurations |
+| **Guidelines Presets** | Manage frequency and prompt writing guidelines for independent API mode |
+| **Per-Chat Image Folders** | Organize images by chat with subfolder labels |
+| **Image Cleanup** | Auto-delete old images after configurable retention days |
+| **Collapsible Settings** | Three-level accordion panel, organized by function group |
+| **Version Check** | Auto-check for updates from GitHub Releases |
+| **Bilingual UI** | Full English and Chinese interface |
 
 ---
 
-## English
+## Two Modes: Which One Should I Use?
 
-### 📖 About
+| | Shared API (Default) | Independent API |
+|---|---|---|
+| **How it works** | Plugin embeds instructions in the main chat → LLM includes prompts in its reply | Plugin makes a separate API call after the reply |
+| **Setup** | Zero config — just enable the plugin | Need to configure a separate LLM API endpoint |
+| **Impact on main API** | Image generation instructions consume attention and tokens | No impact on main API at all |
+| **AI replies** | May occasionally contain prompt artifacts | Clean, unaffected by image generation |
+| **API cost** | No extra calls | +1 API call per message |
+| **Best for** | Getting started quickly | Users who don't want image gen interfering with main API |
+| **Which preset** | Meta Prompt Preset | Guidelines Preset |
 
-This project is a further developed version based on **gamer-mitsuha**'s [sillytavern-auto-illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) (original) and **Hao19911125**'s [sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator) (simplified edition).
+> **Recommendation:** Start with Shared API mode. Switch to Independent API if you don't want image generation consuming your main API's attention and tokens.
 
-Thanks to **gamer-mitsuha** (original author) and **Hao19911125** (fork author) for their excellent work!
+---
 
-### 📊 Version Comparison
+## Troubleshooting
+
+| Problem | Quick Fix |
+|---------|-----------|
+| No images generated | Make sure `/sd` command works first — the plugin depends on SillyTavern's Image Generation extension |
+| Images appear then disappear | Check browser console for errors; verify image storage path exists |
+| Wrong character appearance | Use **Character Fixed Tags** to lock visual tags per character |
+| Prompts are inaccurate | Try **Independent API mode** with **NAI 4.5 Full** preset |
+| Too many console logs | Adjust **Log Level** in settings (default: INFO) |
+
+For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+
+---
+
+## Links
+
+- **Beginner Tutorial (Chinese)** — [docs/QUICKSTART_CN.md](docs/QUICKSTART_CN.md)
+- **Troubleshooting** — [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- **Changelog** — [CHANGELOG.md](CHANGELOG.md)
+
+---
+
+## Version Comparison
 
 | Feature | Original (auto-illustrator) | Simplified | Conso Edition |
 |---------|---------------------------|------------|---------------|
-| Prompt Update | AI-assisted (describe changes → AI generates new prompt) | Manual direct editing | **Dual mode: AI-assisted + Manual editing** |
+| Prompt Update | AI-assisted only | Manual direct editing only | **Dual mode: AI + Manual** |
 | Progress Indicator | Bottom-right floating widget | Top toast notification | Top toast notification |
 | Toggle Switch | Requires page reload | Instant effect | Instant effect |
 | Config Isolation | - | Independent config ID | Independent config ID |
-| Independent LLM API | - | - | ✅ Supported |
-| Character Card/Persona Injection | - | - | ✅ Supported |
-| Message Content Filtering | - | - | ✅ Supported |
-| Image Subfolder Label | - | - | ✅ Supported |
-| Auto Model Discovery | - | - | ✅ Supported |
-| Max Tokens Control | - | - | ✅ Supported |
-| Guidelines Preset Management | - | - | ✅ Supported |
-| World Info Injection | - | - | ✅ Supported |
-| API Profile Management | - | - | ✅ Supported |
-| Character Fixed Tag Injection | - | - | ✅ Supported |
-| Standalone Generation Workbench | - | - | ✅ Supported |
-| Collapsible Settings Panel | - | - | ✅ Supported |
-| Version Display & Update Check | - | - | ✅ Supported |
-
-### ✨ New Features in Conso Edition
-
-#### ✏️ Dual-Mode Prompt Editing
-- **AI-Assisted Mode**: Describe your changes → LLM generates an optimized prompt (inherited from original)
-- **Manual Direct Edit Mode**: Directly edit prompt text → Confirm to generate immediately (inherited from simplified)
-- Freely switch between both modes for different scenarios
-
-#### 🧩 Character Card Context Injection (v1.1.0)
-- **Character Description Injection**: Automatically sends character appearance and personality from the character card to the LLM, ensuring generated images accurately reflect the character's look
-- **User Persona Injection**: Sends user persona description to the LLM for more accurate scenes involving the user character
-- **Scenario Injection**: Sends scenario settings from the character card or chat to the LLM for environmental context
-- All three enabled by default, individually toggleable in settings
-
-#### 🧹 Message Content Filtering (v1.1.0)
-- **Custom HTML Tag Filter**: Enter tag names (one per line) to automatically strip entire tag blocks like `<style>`, `<status>`, etc.
-- **Built-in CSS Noise Cleaning**: Automatically removes `@keyframes`, `@media`, and CSS selector rule blocks
-- Significantly reduces wasted tokens sent to the LLM, improving prompt generation quality
-
-#### 📋 Guidelines Preset Management (v1.2.0)
-- **Preset Save/Switch/Delete**: Full preset management for frequency guidelines and prompt writing guidelines in independent API mode
-- Supports predefined presets (Default) and custom presets
-- Switching presets automatically updates both guideline textareas
-- Same UX as the meta prompt preset system in shared API mode
-
-#### 🌐 World Info Injection (v1.3.0)
-- **Plugin-Independent Toggle**: Does not affect or depend on SillyTavern's native world info enable/disable state
-- **Per-Chat Configuration**: Different chats can have different world book selections
-- **Cross-Character Selection**: Select any world book in the system, not limited to the current character
-- **Search**: Search by world book name and entry content
-- **Default Off**: After selecting a world book, all entries are off by default — users enable what they need
-- **Auto-Initialization**: New chats automatically add the current character's bound world book
-- **Bulk Actions**: Select All / Deselect All for entry toggles
-
-#### 💾 API Profile Management (v1.3.1)
-- **Save/Switch/Delete**: Save the current independent LLM's API URL, key, model, and max tokens as a named profile
-- **One-Click Switch**: Select a saved profile from dropdown to auto-fill all API fields
-- **Manual Mode**: Select "Manual Configuration" to freely edit fields without binding to any profile
-
-#### 🏷️ Character Fixed Tag Injection (v1.4.0)
-- **Lock visual tags per character**: Configure fixed appearance tags that are automatically injected into image prompts when the character appears in a scene
-- **Multi-character isolation**: Each character's tags are wrapped in `{}` to prevent confusion, e.g. `{lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}` — the AI won't mix up different characters' features
-- **Recommended tag format**: `name (English/pinyin), gender, visual_tag1, visual_tag2...`
-- **Smart injection**: Only injects when the character's name appears in message text **and** the prompt contains person-indicator tags (e.g. `1girl`, `1boy`). Pure scenery prompts are not affected
-- **Name alias matching**: Supports multiple aliases (Chinese name, English name, Japanese name, etc.), case-insensitive
-- **Auto-detect participants**: Automatically detects the current chat's character and user persona — no need to manually add them
-- **Manual NPC addition**: Manually add group chat NPCs, saved per-chat
-- **Per-character toggle**: Each character can be individually enabled/disabled
-
-#### 🎨 Standalone Generation Workbench (v1.5.0)
-- **Independent image generation without chat context**: Generate images directly from scene descriptions or prompts without sending chat messages
-- **AI Generation Mode**: Enter a scene description → LLM generates multiple prompt suggestions → edit and generate individually or batch, with "Auto Generate" one-click flow
-- **Manual Input Mode**: Paste NovelAI prompts directly → generate with one click
-- **Reuses all plugin capabilities**: Common style tags, character fixed tags, world info injection, and character info injection all available
-- **Dedicated storage folder**: Images saved to `/images/auto_illustrator_standalone/` or `/images/auto_illustrator_standalone_{label}/`, completely separate from per-chat character folders
-- **Works in both API modes**: Shared API mode uses SillyTavern's main API, Independent API mode uses the configured LLM
-
-#### 📂 Collapsible Settings Panel (v1.3.1)
-- **Three-Level Accordion**: Settings panel organized into collapsible sections by function group
-- **Clear Hierarchy**: Level 1 (Auto Illustrator) → Level 2 (feature groups) → Level 3 (independent API sub-features)
-- **Visual Distinction**: Different levels use distinct indentation and border styles
-
-#### 🔄 Version Display & Update Check (v1.3.1)
-- **Version Number**: Displayed at the top of the settings panel
-- **Auto Update Check**: Asynchronously checks GitHub Releases on startup
-- **Update Link**: Shows a clickable link when a new version is available
-
-#### 🤖 Independent LLM API Support
-- Support any OpenAI-compatible LLM service (local or cloud-based)
-- **Auto Model Discovery**: One-click fetch of available models from API
-- **Model Selector**: Dropdown selection + manual input for flexible configuration
-- **Max Tokens Control**: Independent Token limit for prompt generation (256-32000)
-- **Model Persistence**: Automatically save and restore selected model across sessions
-- **Connection Test**: Verify API configuration
-- **Request Snapshot Viewer**: Inspect the full content of the last independent LLM request (URL, model, messages) to verify that character definitions and context are being sent correctly
-
-#### 🛡️ Robust LLM Fallback
-- When the independent LLM toggle is on but configuration is incomplete, automatically falls back to SillyTavern's shared API instead of hard-failing
-- Only errors when both paths are unavailable
-
-#### 📁 Image Subfolder Label
-- Configure independent image storage subfolder labels per chat
-- Image storage path: `/user/images/{CharName}_{label}/`
-- Easy management of generated images across different chats
-
-#### 💾 Independent Configuration
-- Uses separate config ID (`auto_illustrator_conso`)
-- Can coexist with original or simplified plugin without conflicts
+| Independent LLM API | - | - | Supported |
+| Character Card Injection | - | - | Supported |
+| Message Content Filtering | - | - | Supported |
+| World Info Injection | - | - | Supported |
+| API Profile Management | - | - | Supported |
+| Character Fixed Tags | - | - | Supported |
+| Standalone Workbench | - | - | Supported |
+| Guidelines Presets | - | - | Supported |
+| Collapsible Settings | - | - | Supported |
+| Version Check | - | - | Supported |
+| Bilingual UI (EN/CN) | - | - | Supported |
 
 ---
 
-### 🚀 Installation
+## Credits
 
-1. In SillyTavern, go to **Extensions** → **Download Extensions & Assets**
-2. Enter this repository URL to install
-3. Restart SillyTavern
+This project stands on the shoulders of two excellent predecessors:
 
-Or manual installation:
-```bash
-cd SillyTavern/public/scripts/extensions/third-party
-git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
-```
+- **Original Author:** [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) — SillyTavern Auto Illustrator
+- **Fork Author:** [Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator) — SillyTavern Simplified Illustrator
 
----
+Thank you for your pioneering work that made this project possible!
 
-### 🙏 Credits
+## License
 
-- Original author: [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) (SillyTavern Auto Illustrator)
-- Fork author: [Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator) (sillytavern-simplified-illustrator)
-- This project builds upon both projects with feature enhancements and improvements
-
----
-
-### 📄 License
-
-Follows the original project's AGPL-3.0 license
+AGPL-3.0 — following the original project's license.

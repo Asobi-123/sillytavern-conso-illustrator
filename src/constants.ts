@@ -18,12 +18,17 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.5.0';
+export const EXTENSION_VERSION = '1.5.1';
 
 /**
  * GitHub repository for update checks
  */
 export const GITHUB_REPO = 'Asobi-123/sillytavern-conso-illustrator';
+
+/**
+ * URL to the quickstart tutorial on GitHub
+ */
+export const TUTORIAL_URL = `https://github.com/${GITHUB_REPO}/blob/main/docs/QUICKSTART_CN.md`;
 
 /**
  * Streaming poll interval configuration (milliseconds)
@@ -382,6 +387,7 @@ export const UI_ELEMENT_IDS = {
   API_PROFILE_DELETE: 'auto_illustrator_conso_api_profile_delete',
   VERSION_DISPLAY: 'auto_illustrator_conso_version_display',
   VERSION_STATUS: 'auto_illustrator_conso_version_status',
+  TUTORIAL_LINK: 'auto_illustrator_conso_tutorial_link',
   CHARACTER_FIXED_TAGS_LIST: 'auto_illustrator_conso_character_fixed_tags_list',
   CHARACTER_TAG_SEARCH: 'auto_illustrator_conso_character_tag_search',
   CHARACTER_TAG_ADD_NAME: 'auto_illustrator_conso_character_tag_add_name',
