@@ -1,170 +1,172 @@
-# SillyTavern Auto Illustrator - Conso Edition
+# SillyTavern 自动插画 - Conso 版
 
-[中文](README_CN.md)
+[English](README_EN.md)
 
-A SillyTavern extension that **automatically generates images while you chat**. The LLM reads your conversation, extracts visual descriptions, converts them into image generation prompts, and produces illustrations — all in real-time as the story unfolds.
+一款 SillyTavern 扩展，让你**边聊天边自动生成插图**。LLM 读取你的对话，提取画面描述，转换为图片生成提示词，实时生成插图——故事推进的同时，画面也跟着出来。
 
-**Fork from:** [Hao19911125/sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator), originally based on [gamer-mitsuha/sillytavern-auto-illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)
-
----
-
-## How It Works
-
-```
-You send a message
-       ↓
-LLM generates a reply (streamed)
-       ↓
-Plugin detects visual scenes in the reply
-       ↓
-LLM converts scenes into image prompts (e.g. NovelAI tags)
-       ↓
-Image generation API creates the picture
-       ↓
-Image appears inline in the chat
-```
+**Fork 自：** [Hao19911125/sillytavern-simplified-illustrator](https://github.com/Hao19911125/sillytavern-simplified-illustrator)，原始项目为 [gamer-mitsuha/sillytavern-auto-illustrator](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator)
 
 ---
 
-## Quick Start
+## 工作原理
 
-### Prerequisites
+```
+你发送一条消息
+       ↓
+LLM 生成回复（流式输出）
+       ↓
+插件检测回复中的画面场景
+       ↓
+LLM 将场景转化为图片提示词（如 NovelAI 标签）
+       ↓
+图片生成 API 生成图片
+       ↓
+图片内嵌显示在聊天中
+```
 
-- SillyTavern installed and running
-- Image generation configured and working (e.g. NovelAI — test with `/sd` command first)
+---
 
-### Install
+## 快速开始
 
-**Option A** — From SillyTavern UI (recommended):
+### 前置条件
 
-1. Go to **Extensions** → **Install Extension**
-2. Enter: `https://github.com/Asobi-123/sillytavern-conso-illustrator`
-3. Reload the page
+- SillyTavern 已安装运行
+- 图片生成已配置好（如 NovelAI —— 先用 `/sd` 命令测试能否出图）
 
-**Option B** — Manual:
+> 还没配过？看这里：[从零开始配置教程](docs/QUICKSTART_CN.md)
+
+### 安装
+
+**方法一** — 从酒馆界面安装（推荐）：
+
+1. 打开 **扩展** → **安装扩展**
+2. 输入：`https://github.com/Asobi-123/sillytavern-conso-illustrator`
+3. 刷新页面
+
+**方法二** — 手动安装：
 
 ```bash
 cd SillyTavern/data/default-user/extensions/
 git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 ```
 
-### Start Generating
+### 开始出图
 
-1. Open **Extensions** → expand **Auto Illustrator** → check **Enable**
-2. Pick a Meta Prompt Preset (recommended: **NAI 4.5 Full** for NovelAI users)
-3. Send a chat message — images will appear automatically!
-
----
-
-## Features
-
-### Core
-
-| Feature | Description |
-|---------|-------------|
-| **Auto Illustration** | Detects visual scenes during streaming and generates images in real-time |
-| **Dual Prompt Editing** | AI-assisted optimization or manual direct editing — switch freely |
-| **Standalone Workbench** | Generate images without chat context — describe a scene or paste prompts directly |
-| **Streaming Preview** | Live preview widget showing streamed text and generated images |
-| **Image Viewer** | Full modal viewer with zoom, pan, rotate, navigate, and download |
-| **Gallery Widget** | Floating gallery of all generated images, grouped by message |
-
-### Prompt Enhancement
-
-| Feature | Description |
-|---------|-------------|
-| **Character Card Injection** | Auto-sends character appearance, personality, and persona to the LLM |
-| **Character Fixed Tags** | Lock visual tags per character — auto-injected with `{}` isolation in multi-character scenes |
-| **World Info Injection** | Plugin-independent world book selection per chat |
-| **Common Style Tags** | Global prefix/suffix tags applied to all generated prompts |
-| **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
-| **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
-
-### Configuration & Management
-
-| Feature | Description |
-|---------|-------------|
-| **Two Generation Modes** | Shared API (zero config) or Independent API (cleaner AI replies) |
-| **Independent LLM API** | Use any OpenAI-compatible API with auto model discovery and connection test |
-| **API Profile Management** | Save/switch/delete named API configurations |
-| **Guidelines Presets** | Manage frequency and prompt writing guidelines for independent API mode |
-| **Per-Chat Image Folders** | Organize images by chat with subfolder labels |
-| **Image Cleanup** | Auto-delete old images after configurable retention days |
-| **Collapsible Settings** | Three-level accordion panel, organized by function group |
-| **Version Check** | Auto-check for updates from GitHub Releases |
-| **Bilingual UI** | Full English and Chinese interface |
+1. 打开 **扩展** → 展开 **Auto Illustrator** → 勾选 **启用自动插画**
+2. 选择元提示预设（推荐：**NAI 4.5 Full**，适合 NovelAI 用户）
+3. 随便发一条聊天消息——图片会自动出现！
 
 ---
 
-## Two Modes: Which One Should I Use?
+## 功能一览
 
-| | Shared API (Default) | Independent API |
+### 核心功能
+
+| 功能 | 说明 |
+|------|------|
+| **自动插画** | 流式输出时实时检测画面场景并生成图片 |
+| **双模式提示词编辑** | AI 优化 或 手动直编，自由切换 |
+| **独立生图工作台** | 脱离聊天上下文——描述场景或直接粘贴提示词即可出图 |
+| **流式预览** | 实时预览控件，展示流式文本和内联图片 |
+| **图像查看器** | 全功能查看器：缩放、平移、旋转、导航、下载 |
+| **图库控件** | 悬浮图库，按消息分组展示所有已生成图片 |
+
+### 提示词增强
+
+| 功能 | 说明 |
+|------|------|
+| **角色卡注入** | 自动将角色外貌、性格、用户 Persona 发送给 LLM |
+| **角色固定 Tag** | 为每个角色锁定外貌标签——多人场景用 `{}` 隔离，不会混淆 |
+| **世界书注入** | 插件独立的世界书选择，按聊天保存 |
+| **通用样式 Tag** | 全局前缀/后缀标签，应用到所有生成的提示词 |
+| **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
+| **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
+
+### 配置与管理
+
+| 功能 | 说明 |
+|------|------|
+| **两种生成模式** | 共享 API（零配置）或 独立 API（更干净的 AI 回复） |
+| **独立 LLM API** | 支持任何 OpenAI 兼容 API，自动获取模型列表、连接测试 |
+| **API 配置档案** | 保存/切换/删除命名的 API 配置方案 |
+| **指南预设** | 管理独立 API 模式的频率指南和提示词编写指南 |
+| **图片子文件夹** | 按聊天整理图片，使用子文件夹标签 |
+| **图片清理** | 自动删除超期图片（可配置保留天数） |
+| **折叠式设置面板** | 三层手风琴结构，按功能分组 |
+| **版本检查** | 自动检查 GitHub Releases 是否有新版本 |
+| **双语界面** | 完整的英文和中文界面 |
+
+---
+
+## 两种模式：该用哪个？
+
+| | 共享 API（默认） | 独立 API |
 |---|---|---|
-| **How it works** | Plugin embeds instructions in the main chat → LLM includes prompts in its reply | Plugin makes a separate API call after the reply |
-| **Setup** | Zero config — just enable the plugin | Need to configure a separate LLM API endpoint |
-| **Impact on main API** | Image generation instructions consume attention and tokens | No impact on main API at all |
-| **AI replies** | May occasionally contain prompt artifacts | Clean, unaffected by image generation |
-| **API cost** | No extra calls | +1 API call per message |
-| **Best for** | Getting started quickly | Users who don't want image gen interfering with main API |
-| **Which preset** | Meta Prompt Preset | Guidelines Preset |
+| **原理** | 把指令嵌入主聊天 → LLM 在回复中包含提示词 | 回复结束后单独发一次 API 调用 |
+| **配置** | 零配置，启用就能用 | 需要额外配一个 LLM API 地址 |
+| **对主 API 的影响** | 生图指令占用注意力和 token | 完全不影响主 API |
+| **AI 回复** | 偶尔会出现提示词残留 | 干净，完全不受影响 |
+| **API 开销** | 不增加调用次数 | 每条消息 +1 次 API 调用 |
+| **适合** | 入门、想最快跑起来 | 不想生图干扰主 API 的用户 |
+| **用哪个预设** | 元提示预设 | 指南预设 |
 
-> **Recommendation:** Start with Shared API mode. Switch to Independent API if you don't want image generation consuming your main API's attention and tokens.
-
----
-
-## Troubleshooting
-
-| Problem | Quick Fix |
-|---------|-----------|
-| No images generated | Make sure `/sd` command works first — the plugin depends on SillyTavern's Image Generation extension |
-| Images appear then disappear | Check browser console for errors; verify image storage path exists |
-| Wrong character appearance | Use **Character Fixed Tags** to lock visual tags per character |
-| Prompts are inaccurate | Try **Independent API mode** with **NAI 4.5 Full** preset |
-| Too many console logs | Adjust **Log Level** in settings (default: INFO) |
-
-For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+> **建议：** 先用共享 API 模式。如果不想让生图占用主 API 的注意力和 token，再切到独立 API。
 
 ---
 
-## Links
+## 常见问题
 
-- **Beginner Tutorial (Chinese)** — [docs/QUICKSTART_CN.md](docs/QUICKSTART_CN.md)
-- **Troubleshooting** — [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- **Changelog** — [CHANGELOG.md](CHANGELOG.md)
+| 问题 | 快速解决 |
+|------|----------|
+| 图片不生成 | 先确认 `/sd` 命令能用——插件依赖酒馆的图像生成扩展 |
+| 图片出现后消失 | 检查浏览器控制台报错；确认图片存储路径存在 |
+| 角色外貌不对 | 使用 **角色固定 Tag** 锁定每个角色的外貌标签 |
+| 提示词不准确 | 试试 **独立 API 模式** + **NAI 4.5 Full** 预设 |
+| 控制台日志太多 | 调整设置中的 **日志级别**（默认：INFO） |
 
----
-
-## Version Comparison
-
-| Feature | Original (auto-illustrator) | Simplified | Conso Edition |
-|---------|---------------------------|------------|---------------|
-| Prompt Update | AI-assisted only | Manual direct editing only | **Dual mode: AI + Manual** |
-| Progress Indicator | Bottom-right floating widget | Top toast notification | Top toast notification |
-| Toggle Switch | Requires page reload | Instant effect | Instant effect |
-| Config Isolation | - | Independent config ID | Independent config ID |
-| Independent LLM API | - | - | Supported |
-| Character Card Injection | - | - | Supported |
-| Message Content Filtering | - | - | Supported |
-| World Info Injection | - | - | Supported |
-| API Profile Management | - | - | Supported |
-| Character Fixed Tags | - | - | Supported |
-| Standalone Workbench | - | - | Supported |
-| Guidelines Presets | - | - | Supported |
-| Collapsible Settings | - | - | Supported |
-| Version Check | - | - | Supported |
-| Bilingual UI (EN/CN) | - | - | Supported |
+详细故障排查见 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)。
 
 ---
 
-## Credits
+## 相关链接
 
-This project stands on the shoulders of two excellent predecessors:
+- **从零开始教程** — [docs/QUICKSTART_CN.md](docs/QUICKSTART_CN.md)
+- **故障排查** — [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- **更新日志** — [CHANGELOG.md](CHANGELOG.md)
 
-- **Original Author:** [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) — SillyTavern Auto Illustrator
-- **Fork Author:** [Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator) — SillyTavern Simplified Illustrator
+---
 
-Thank you for your pioneering work that made this project possible!
+## 版本对比
 
-## License
+| 功能 | 原版 (auto-illustrator) | 简化版 (simplified) | Conso 版 |
+|------|------------------------|-------------------|----------|
+| 提示词更新方式 | AI 优化（描述修改 → AI 生成新提示词） | 手动直编（直接编辑提示词） | **双模式：AI 优化 + 手动直编** |
+| 进度提示 | 右下角悬浮窗 | 顶部简洁提示条 | 顶部简洁提示条 |
+| 开关切换 | 需要刷新页面 | 立即生效 | 立即生效 |
+| 配置隔离 | - | 独立配置 ID | 独立配置 ID |
+| 独立 LLM API | - | - | 支持 |
+| 角色卡注入 | - | - | 支持 |
+| 消息内容过滤 | - | - | 支持 |
+| 世界书注入 | - | - | 支持 |
+| API 配置档案 | - | - | 支持 |
+| 角色固定 Tag | - | - | 支持 |
+| 独立生图工作台 | - | - | 支持 |
+| 指南预设 | - | - | 支持 |
+| 折叠式设置面板 | - | - | 支持 |
+| 版本检查 | - | - | 支持 |
+| 双语界面 | - | - | 支持 |
 
-AGPL-3.0 — following the original project's license.
+---
+
+## 致谢
+
+本项目建立在两位前辈优秀作品的基础上：
+
+- **原作者：** [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) — SillyTavern Auto Illustrator
+- **分支作者：** [Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator) — SillyTavern Simplified Illustrator
+
+感谢两位的开创性工作，没有他们就没有这个项目！
+
+## 许可证
+
+AGPL-3.0 — 遵循原项目许可证。
