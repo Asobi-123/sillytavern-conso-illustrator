@@ -297,7 +297,12 @@ function parsePromptSuggestions(llmResponse: string): PromptSuggestion[] {
       const blockContent = block.split('---END---')[0];
 
       // Extract fields using regex - more robust than split
-      const textMatch = blockContent.match(/^TEXT:\s*(.+?)$/m);
+      // TEXT supports multi-line content (e.g. Scene/Character/UC structure)
+      // Falls back to single-line capture for backward compatibility
+      const textMatch =
+        blockContent.match(
+          /^TEXT:\s*([\s\S]+?)(?=\n\s*(?:INSERT_AFTER|INSERT_BEFORE|REASONING):)/m
+        ) || blockContent.match(/^TEXT:\s*(.+?)$/m);
       const insertAfterMatch = blockContent.match(/^INSERT_AFTER:\s*(.+?)$/m);
       const insertBeforeMatch = blockContent.match(/^INSERT_BEFORE:\s*(.+?)$/m);
       const reasoningMatch = blockContent.match(/^REASONING:\s*(.+?)$/m);
