@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-03-24
+
+### Added
+
+- **Floating panel UI** - Added a new floating workbench with four top-level pages: Main, Prompt Settings, Gallery, and Standalone Generation. The panel reuses the extension's existing controls instead of duplicating settings logic.
+- **Panel themes** - Added multiple built-in panel theme presets, including both dark and light palettes, with live switching from the main dashboard.
+- **Fullscreen text editor** - Added fullscreen editing/preview for long text areas used by meta prompts, independent API guideline text, and standalone prompt cards.
+- **Drawer fallback entry** - Added a settings-page button to reopen the floating panel even when the floating launcher icon is hidden.
+
+### Changed
+
+- **Version and tutorial moved to main dashboard** - Version status and tutorial link now live in the floating panel's main dashboard instead of the old drawer header.
+- **Launcher behavior** - The floating panel now starts closed by default. The launcher icon is smaller, draggable, and can be hidden entirely via settings.
+- **Prompt settings layout** - Independent API mode is now split into clearer submodules (base parameters, context injection, world info injection, guideline presets, and independent LLM API) to reduce visual clutter.
+- **Standalone page layout** - Standalone generation now uses a more workbench-like structure with clearer action groups and inline result previews.
+
+### Fixed
+
+- **Character Fixed Tags participant refresh** - Switching from one character chat to another no longer leaves the previous persona name in the auto-detected Character Fixed Tags list. The panel now retries participant refreshes after chat changes to pick up late-updating `name1` values.
+- **Standalone injection toggle semantics** - The standalone page's context/world toggles now control standalone-specific include options instead of incorrectly mutating the independent API mode's global injection toggles.
+- **Theme consistency in overlays** - Light themes now correctly apply to overlay panels, secondary cards, switches, and text fields instead of leaving dark hardcoded surfaces behind.
+
 ## [1.5.2] - 2026-03-22
 
 ### Fixed

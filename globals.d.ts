@@ -174,6 +174,7 @@ declare global {
     showGalleryWidget: boolean;
     showProgressWidget: boolean;
     showStreamingPreviewWidget: boolean;
+    showFloatingPanelLauncher: boolean;
     enableClickToRegenerate: boolean;
     promptGenerationMode:
       | 'shared-api'

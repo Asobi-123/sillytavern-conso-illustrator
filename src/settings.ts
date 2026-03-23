@@ -19,6 +19,7 @@ import {
   IMAGE_RETENTION_DAYS,
   INDEPENDENT_LLM_MAX_TOKENS,
   UI_ELEMENT_IDS,
+  UI_SECTION_IDS,
   EXTENSION_VERSION,
   TUTORIAL_URL,
 } from './constants';
@@ -122,6 +123,10 @@ function drawer(title: string, content: string, open = false): string {
     </div>
     <div class="inline-drawer-content"${open ? '' : ' style="display:none;"'}>${content}</div>
   </div>`;
+}
+
+function floatingSourceSection(id: string, content: string): string {
+  return `<div id="${id}" class="auto-illustrator-panel-source-section">${content}</div>`;
 }
 
 /**
@@ -251,7 +256,7 @@ export function createSettingsUI(): string {
       </select>
     </label>`;
 
-  const promptGenerationModeContent = `
+  const promptGenerationModeSelectorContent = `
     <div>
       <label>
         <span>${t('settings.promptGenerationMode')}</span>
@@ -269,8 +274,9 @@ export function createSettingsUI(): string {
         <span>${t('settings.promptGenerationModeIndependent')}</span>
         <small>${t('settings.promptGenerationModeIndependentDesc')}</small>
       </label>
-    </div>
+    </div>`;
 
+  const independentApiBaseContent = `
     <div id="${UI_ELEMENT_IDS.INDEPENDENT_API_SETTINGS_CONTAINER}" style="display: none;">
       <label for="${UI_ELEMENT_IDS.MAX_PROMPTS_PER_MESSAGE}">
         <span>${t('settings.maxPromptsPerMessage')}</span>
@@ -283,10 +289,9 @@ export function createSettingsUI(): string {
         <small>${t('settings.contextMessageCountDesc')}</small>
         <input id="${UI_ELEMENT_IDS.CONTEXT_MESSAGE_COUNT}" class="text_pole" type="number" min="${CONTEXT_MESSAGE_COUNT.MIN}" max="${CONTEXT_MESSAGE_COUNT.MAX}" step="${CONTEXT_MESSAGE_COUNT.STEP}" />
       </label>
+    </div>`;
 
-      ${drawer(
-        t('drawer.contextInjection'),
-        `
+  const contextInjectionContent = `
         <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}">
           <input id="${UI_ELEMENT_IDS.INJECT_CHARACTER_DESCRIPTION}" type="checkbox" />
           <span>${t('settings.injectCharacterDescription')}</span>
@@ -315,12 +320,9 @@ export function createSettingsUI(): string {
             </button>
           </div>
         </label>
-      `
-      )}
+      `;
 
-      ${drawer(
-        t('drawer.worldInfoInjection'),
-        `
+  const worldInfoInjectionContent = `
         <label class="checkbox_label" for="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}">
           <input id="${UI_ELEMENT_IDS.INJECT_WORLD_INFO}" type="checkbox" />
           <span>${t('settings.injectWorldInfo')}</span>
@@ -339,12 +341,9 @@ export function createSettingsUI(): string {
           </div>
           <div id="${UI_ELEMENT_IDS.WORLD_INFO_ENTRY_PANEL}"></div>
         </div>
-      `
-      )}
+      `;
 
-      ${drawer(
-        t('drawer.guidelinesPreset'),
-        `
+  const guidelinesPresetContent = `
         <div class="preset-management">
           <div class="preset-toolbar">
             <select id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_PRESET_SELECT}" class="text_pole flex_fill">
@@ -399,12 +398,9 @@ export function createSettingsUI(): string {
             </button>
           </div>
         </label>
-      `
-      )}
+      `;
 
-      ${drawer(
-        t('drawer.independentLlmApi'),
-        `
+  const independentLlmApiContent = `
         <div id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_SETTINGS_CONTAINER}">
           <small style="display: block; margin-bottom: 0.5rem;">${t('settings.independentLlmApiDesc')}</small>
 
@@ -472,9 +468,7 @@ export function createSettingsUI(): string {
             </button>
           </div>
         </div>
-      `
-      )}
-    </div>`;
+      `;
 
   const imageCleanupContent = `
     <label for="${UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS}">
@@ -545,45 +539,99 @@ export function createSettingsUI(): string {
           <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
         </div>
         <div class="inline-drawer-content">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-            <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" style="font-size: 0.85em; opacity: 0.7;">
-              v${EXTENSION_VERSION} <span id="${UI_ELEMENT_IDS.VERSION_STATUS}">${t('version.checking')}</span>
-            </div>
-            <a id="${UI_ELEMENT_IDS.TUTORIAL_LINK}" href="${TUTORIAL_URL}" target="_blank"
-               class="menu_button menu_button_icon" title="${t('settings.tutorialLink')}"
-               style="height: auto; padding: 2px 8px; font-size: 0.85em;">
-              <i class="fa-solid fa-book"></i>
-              <span>${t('settings.tutorialLink')}</span>
-            </a>
-          </div>
-
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <label class="checkbox_label" for="${UI_ELEMENT_IDS.ENABLED}">
-              <input id="${UI_ELEMENT_IDS.ENABLED}" type="checkbox" />
-              <span>${t('settings.enable')}</span>
-            </label>
+            <button id="${UI_ELEMENT_IDS.OPEN_FLOATING_PANEL}" class="menu_button menu_button_icon">
+              <i class="fa-solid fa-up-right-from-square"></i>
+              <span>${t('panel.open')}</span>
+            </button>
             <div id="${UI_ELEMENT_IDS.RESET_BUTTON}" class="menu_button menu_button_icon">
               <i class="fa-solid fa-undo"></i>
               <span>${t('settings.resetDefaults')}</span>
             </div>
           </div>
 
-          <label for="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}">
-            <span>${t('settings.imageSubfolderLabel')}</span>
-            <small>${t('settings.imageSubfolderLabelDesc')}</small>
-            <input id="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}" class="text_pole" type="text" placeholder="${t('settings.imageSubfolderLabelPlaceholder')}" />
+          <label class="checkbox_label" for="${UI_ELEMENT_IDS.SHOW_FLOATING_PANEL_LAUNCHER}">
+            <input id="${UI_ELEMENT_IDS.SHOW_FLOATING_PANEL_LAUNCHER}" type="checkbox" />
+            <span>${t('settings.showFloatingPanelLauncher')}</span>
+            <small>${t('settings.showFloatingPanelLauncherDesc')}</small>
           </label>
 
-          ${drawer(t('drawer.promptGenerationMode'), promptGenerationModeContent)}
-          ${drawer(t('drawer.metaPromptAndDisplay'), metaPromptAndDisplayContent)}
-          ${drawer(t('drawer.promptDetectionAndStyle'), promptDetectionAndStyleContent)}
-          ${drawer(t('drawer.standaloneGeneration'), createStandaloneGenerationContent())}
-          ${drawer(t('drawer.characterFixedTags'), characterFixedTagsContent)}
           ${drawer(t('drawer.generationPerformance'), generationPerformanceContent)}
           ${drawer(t('drawer.imageCleanup'), imageCleanupContent)}
           ${drawer(t('drawer.widgetVisibility'), widgetVisibilityContent)}
           ${drawer(t('drawer.logLevel'), logLevelContent)}
         </div>
+      </div>
+      <div id="${UI_SECTION_IDS.FLOATING_PANEL_SOURCE}" style="display:none">
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_ENABLED,
+          `<label class="checkbox_label" for="${UI_ELEMENT_IDS.ENABLED}">
+            <input id="${UI_ELEMENT_IDS.ENABLED}" type="checkbox" />
+            <span>${t('settings.enable')}</span>
+          </label>`
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_IMAGE_SUBFOLDER,
+          `<label for="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}">
+            <span>${t('settings.imageSubfolderLabel')}</span>
+            <small>${t('settings.imageSubfolderLabelDesc')}</small>
+            <input id="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}" class="text_pole" type="text" placeholder="${t('settings.imageSubfolderLabelPlaceholder')}" />
+          </label>`
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_INFO,
+          `<div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+            <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" style="font-size:0.85em; opacity:0.75;">
+              v${EXTENSION_VERSION} <span id="${UI_ELEMENT_IDS.VERSION_STATUS}">${t('version.checking')}</span>
+            </div>
+            <a id="${UI_ELEMENT_IDS.TUTORIAL_LINK}" href="${TUTORIAL_URL}" target="_blank"
+               class="menu_button menu_button_icon" title="${t('settings.tutorialLink')}"
+               style="height:auto; padding:2px 8px; font-size:0.85em;">
+              <i class="fa-solid fa-book"></i>
+              <span>${t('settings.tutorialLink')}</span>
+            </a>
+          </div>`
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.PROMPT_MODE_SELECTOR,
+          promptGenerationModeSelectorContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.SHARED_META_DISPLAY,
+          metaPromptAndDisplayContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.INDEPENDENT_BASE,
+          independentApiBaseContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.CONTEXT_INJECTION,
+          contextInjectionContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.WORLD_INFO,
+          worldInfoInjectionContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.GUIDELINES,
+          guidelinesPresetContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.INDEPENDENT_LLM,
+          independentLlmApiContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.PROMPT_STYLE,
+          promptDetectionAndStyleContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.STANDALONE,
+          createStandaloneGenerationContent()
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.CHARACTER_TAGS,
+          characterFixedTagsContent
+        )}
       </div>
     </div>
   `.trim();

@@ -18,7 +18,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.5.2';
+export const EXTENSION_VERSION = '1.6.0';
 
 /**
  * GitHub repository for update checks
@@ -261,6 +261,7 @@ export const DEFAULT_SETTINGS = {
   showGalleryWidget: true,
   showProgressWidget: true,
   showStreamingPreviewWidget: true,
+  showFloatingPanelLauncher: true,
   enableClickToRegenerate: true,
   promptGenerationMode: PROMPT_GENERATION_MODE.DEFAULT,
   metaPromptDepth: META_PROMPT_DEPTH.DEFAULT,
@@ -320,6 +321,9 @@ export const UI_ELEMENT_IDS = {
   SHOW_PROGRESS_WIDGET: 'auto_illustrator_conso_show_progress_widget',
   SHOW_STREAMING_PREVIEW_WIDGET:
     'auto_illustrator_conso_show_streaming_preview_widget',
+  SHOW_FLOATING_PANEL_LAUNCHER:
+    'auto_illustrator_conso_show_floating_panel_launcher',
+  OPEN_FLOATING_PANEL: 'auto_illustrator_conso_open_floating_panel',
   PROMPT_GENERATION_MODE_SHARED:
     'auto_illustrator_conso_prompt_gen_mode_shared',
   PROMPT_GENERATION_MODE_INDEPENDENT:
@@ -414,4 +418,25 @@ export const UI_ELEMENT_IDS = {
   STANDALONE_MANUAL_IMAGE: 'auto_illustrator_conso_standalone_manual_image',
   STANDALONE_SUBFOLDER_LABEL:
     'auto_illustrator_conso_standalone_subfolder_label',
+} as const;
+
+/**
+ * Stable DOM section IDs for the floating panel source area.
+ * These are not form control IDs; they identify movable UI fragments.
+ */
+export const UI_SECTION_IDS = {
+  FLOATING_PANEL_SOURCE: 'auto_illustrator_conso_floating_panel_source',
+  MAIN_ENABLED: 'auto_illustrator_conso_panel_main_enabled',
+  MAIN_IMAGE_SUBFOLDER: 'auto_illustrator_conso_panel_main_image_subfolder',
+  MAIN_INFO: 'auto_illustrator_conso_panel_main_info',
+  PROMPT_MODE_SELECTOR: 'auto_illustrator_conso_panel_prompt_mode_selector',
+  SHARED_META_DISPLAY: 'auto_illustrator_conso_panel_shared_meta_display',
+  INDEPENDENT_BASE: 'auto_illustrator_conso_panel_independent_base',
+  CONTEXT_INJECTION: 'auto_illustrator_conso_panel_context_injection',
+  WORLD_INFO: 'auto_illustrator_conso_panel_world_info',
+  GUIDELINES: 'auto_illustrator_conso_panel_guidelines',
+  INDEPENDENT_LLM: 'auto_illustrator_conso_panel_independent_llm',
+  PROMPT_STYLE: 'auto_illustrator_conso_panel_prompt_style',
+  STANDALONE: 'auto_illustrator_conso_panel_standalone',
+  CHARACTER_TAGS: 'auto_illustrator_conso_panel_character_tags',
 } as const;

@@ -52,7 +52,8 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 1. Open **Extensions** → expand **Auto Illustrator** → check **Enable**
 2. Pick a Meta Prompt Preset (recommended: **NAI 4.5 Full** for NovelAI users)
-3. Send a chat message — images will appear automatically!
+3. If you keep the floating panel enabled, a small launcher icon will appear on the right side; click it to open the workbench
+4. Send a chat message — images will appear automatically!
 
 ---
 
@@ -63,6 +64,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | Feature | Description |
 |---------|-------------|
 | **Auto Illustration** | Detects visual scenes during streaming and generates images in real-time |
+| **Floating Workbench** | Main dashboard, prompt settings, gallery, and standalone generation in one high-frequency UI |
 | **Dual Prompt Editing** | AI-assisted optimization or manual direct editing — switch freely |
 | **Standalone Workbench** | Generate images without chat context — describe a scene or paste prompts directly |
 | **Streaming Preview** | Live preview widget showing streamed text and generated images |
@@ -89,8 +91,11 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **API Profile Management** | Save/switch/delete named API configurations |
 | **Guidelines Presets** | Manage frequency and prompt writing guidelines for independent API mode |
 | **Per-Chat Image Folders** | Organize images by chat with subfolder labels |
+| **Panel Themes** | Switch the floating panel between multiple dark and light themes |
+| **Fullscreen Text Editing** | Fullscreen editing/preview for meta prompts, guideline text, and standalone prompts |
 | **Image Cleanup** | Auto-delete old images after configurable retention days |
 | **Collapsible Settings** | Three-level accordion panel, organized by function group |
+| **Launcher Toggle** | Hide the floating launcher icon and reopen the panel from the settings page |
 | **Version Check** | Auto-check for updates from GitHub Releases |
 | **Bilingual UI** | Full English and Chinese interface |
 
@@ -109,6 +114,45 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **Which preset** | Meta Prompt Preset | Guidelines Preset |
 
 > **Recommendation:** Start with Shared API mode. Switch to Independent API if you don't want image generation consuming your main API's attention and tokens.
+
+---
+
+## How Does the Floating Panel Work?
+
+Starting from `1.6.0`, the plugin includes a floating workbench that pulls high-frequency actions out of the old drawer.
+
+### Four Pages
+
+| Page | Purpose |
+|------|---------|
+| **Main** | Enable/disable auto illustration, switch prompt generation mode, edit the current chat's image folder label, and switch themes |
+| **Prompt Settings** | Configure shared API mode or independent API mode prompt generation behavior |
+| **Gallery** | View generated images from the current chat inside the panel |
+| **Standalone** | Test prompt generation and image output without sending chat messages |
+
+### When does it appear?
+
+- By default, the floating panel starts **closed**
+- A small launcher icon appears on the right side
+- You can drag the launcher to a different position
+
+### Can I hide the launcher?
+
+Yes. Use the old settings page and turn off **Show Floating Panel Launcher**.
+
+After that:
+- the launcher icon disappears
+- you can still reopen the panel from the settings page using **Open Floating Panel**
+
+### Which long text fields support fullscreen editing?
+
+The following areas support fullscreen editing/preview:
+
+- Meta prompt preview/editing
+- Independent API guideline text
+- Standalone prompt text
+
+> Note: the original image action dialog ("What would you like to do with this image?") is still unchanged and has not been merged into the floating panel.
 
 ---
 

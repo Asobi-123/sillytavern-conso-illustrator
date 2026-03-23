@@ -5,9 +5,25 @@ import {
   loadSettings,
   saveSettings,
   EXTENSION_NAME,
+  createSettingsUI,
 } from './settings';
+import {UI_SECTION_IDS, UI_ELEMENT_IDS} from './constants';
 
 describe('settings', () => {
+  describe('createSettingsUI', () => {
+    it('should render the floating panel source container with core sections', () => {
+      const html = createSettingsUI();
+
+      expect(html).toContain(UI_SECTION_IDS.FLOATING_PANEL_SOURCE);
+      expect(html).toContain(UI_SECTION_IDS.MAIN_ENABLED);
+      expect(html).toContain(UI_SECTION_IDS.PROMPT_MODE_SELECTOR);
+      expect(html).toContain(UI_SECTION_IDS.SHARED_META_DISPLAY);
+      expect(html).toContain(UI_SECTION_IDS.STANDALONE);
+      expect(html).toContain(UI_ELEMENT_IDS.ENABLED);
+      expect(html).toContain(UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL);
+    });
+  });
+
   describe('getDefaultSettings', () => {
     it('should return default settings with correct values', () => {
       const defaults = getDefaultSettings();

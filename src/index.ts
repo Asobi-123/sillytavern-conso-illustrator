@@ -77,6 +77,11 @@ import {
 } from './worldinfo_ui';
 import {initializeCharacterTagsPanel} from './character_tags_ui';
 import {initializeStandaloneGeneration} from './standalone_generation_ui';
+import {
+  initializeFloatingPanel,
+  openFloatingPanel,
+  setFloatingPanelLauncherVisible,
+} from './floating_panel_ui';
 
 const logger = createLogger('Main');
 
@@ -177,6 +182,9 @@ function updateUI(): void {
   const showStreamingPreviewWidgetCheckbox = document.getElementById(
     UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET
   ) as HTMLInputElement;
+  const showFloatingPanelLauncherCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.SHOW_FLOATING_PANEL_LAUNCHER
+  ) as HTMLInputElement;
   const promptGenModeRegexRadio = document.getElementById(
     UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_SHARED
   ) as HTMLInputElement;
@@ -228,6 +236,9 @@ function updateUI(): void {
   if (showStreamingPreviewWidgetCheckbox)
     showStreamingPreviewWidgetCheckbox.checked =
       settings.showStreamingPreviewWidget;
+  if (showFloatingPanelLauncherCheckbox)
+    showFloatingPanelLauncherCheckbox.checked =
+      settings.showFloatingPanelLauncher;
 
   // Update image display width
   const imageDisplayWidthInput = document.getElementById(
@@ -668,6 +679,9 @@ function handleSettingsChange(): void {
   const showStreamingPreviewWidgetCheckbox = document.getElementById(
     UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET
   ) as HTMLInputElement;
+  const showFloatingPanelLauncherCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.SHOW_FLOATING_PANEL_LAUNCHER
+  ) as HTMLInputElement;
   const promptGenModeRegexRadio = document.getElementById(
     UI_ELEMENT_IDS.PROMPT_GENERATION_MODE_SHARED
   ) as HTMLInputElement;
@@ -983,6 +997,9 @@ function handleSettingsChange(): void {
   settings.showStreamingPreviewWidget =
     showStreamingPreviewWidgetCheckbox?.checked ??
     settings.showStreamingPreviewWidget;
+  settings.showFloatingPanelLauncher =
+    showFloatingPanelLauncherCheckbox?.checked ??
+    settings.showFloatingPanelLauncher;
 
   // Image display width with validation
   if (imageDisplayWidthInput) {
@@ -1077,6 +1094,7 @@ function handleSettingsChange(): void {
   // Update concurrency limiter settings
   updateMaxConcurrent(settings.maxConcurrentGenerations);
   updateMinInterval(settings.minGenerationInterval);
+  setFloatingPanelLauncherVisible(settings.showFloatingPanelLauncher);
 
   saveSettings(settings, context);
 
@@ -2688,6 +2706,12 @@ function initialize(): void {
     const showStreamingPreviewWidgetCheckbox = document.getElementById(
       UI_ELEMENT_IDS.SHOW_STREAMING_PREVIEW_WIDGET
     ) as HTMLInputElement;
+    const showFloatingPanelLauncherCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.SHOW_FLOATING_PANEL_LAUNCHER
+    ) as HTMLInputElement;
+    const openFloatingPanelButton = document.getElementById(
+      UI_ELEMENT_IDS.OPEN_FLOATING_PANEL
+    );
     showGalleryWidgetCheckbox?.addEventListener('change', handleSettingsChange);
     showProgressWidgetCheckbox?.addEventListener(
       'change',
@@ -2697,6 +2721,13 @@ function initialize(): void {
       'change',
       handleSettingsChange
     );
+    showFloatingPanelLauncherCheckbox?.addEventListener(
+      'change',
+      handleSettingsChange
+    );
+    openFloatingPanelButton?.addEventListener('click', () => {
+      openFloatingPanel();
+    });
     // Image retention days
     const imageRetentionDaysInput = document.getElementById(
       UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
@@ -2918,6 +2949,10 @@ function initialize(): void {
       // No active chat - initialize without metadata
       initializeStandaloneGeneration(context, settings, undefined);
     }
+
+    // Mount the floating panel after all source controls and submodules are ready.
+    initializeFloatingPanel();
+    setFloatingPanelLauncherVisible(settings.showFloatingPanelLauncher);
   }
 
   logger.info('Extension initialized successfully');

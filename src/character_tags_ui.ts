@@ -21,6 +21,7 @@ const logger = createLogger('CharacterTagsUI');
 /** Reference to settings (set during initialization) */
 let settingsRef: AutoIllustratorSettings | null = null;
 let saveSettingsFn: (() => void) | null = null;
+let pendingReloadTimers: Array<ReturnType<typeof setTimeout>> = [];
 
 /**
  * Gets manual character keys from current chat metadata.
@@ -69,10 +70,23 @@ export function initializeCharacterTagsPanel(
  * name1 (persona) yet when CHAT_CHANGED fires.
  */
 export function reloadCharacterTagsForChat(): void {
+  // Cancel any pending retries from the previous chat switch.
+  pendingReloadTimers.forEach(timer => clearTimeout(timer));
+  pendingReloadTimers = [];
+
   // Immediate render with whatever is available now
   renderCharacterTagList();
-  // Deferred re-render to pick up persona (name1) once ST finishes loading
-  setTimeout(() => renderCharacterTagList(), 500);
+
+  // SillyTavern may update name1/name2 asynchronously after CHAT_CHANGED.
+  // Re-render a few times to pick up late-arriving participant names.
+  const retryDelaysMs = [150, 500, 1200, 2500];
+  for (const delayMs of retryDelaysMs) {
+    const timer = setTimeout(() => {
+      renderCharacterTagList();
+      pendingReloadTimers = pendingReloadTimers.filter(t => t !== timer);
+    }, delayMs);
+    pendingReloadTimers.push(timer);
+  }
 }
 
 /**
