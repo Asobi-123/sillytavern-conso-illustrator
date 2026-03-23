@@ -14,7 +14,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.5.2";
+export declare const EXTENSION_VERSION = "1.6.0";
 /**
  * GitHub repository for update checks
  */
@@ -225,6 +225,7 @@ export declare const DEFAULT_SETTINGS: {
     showGalleryWidget: boolean;
     showProgressWidget: boolean;
     showStreamingPreviewWidget: boolean;
+    showFloatingPanelLauncher: boolean;
     enableClickToRegenerate: boolean;
     promptGenerationMode: "shared-api";
     metaPromptDepth: 0;
@@ -281,6 +282,8 @@ export declare const UI_ELEMENT_IDS: {
     readonly SHOW_GALLERY_WIDGET: "auto_illustrator_conso_show_gallery_widget";
     readonly SHOW_PROGRESS_WIDGET: "auto_illustrator_conso_show_progress_widget";
     readonly SHOW_STREAMING_PREVIEW_WIDGET: "auto_illustrator_conso_show_streaming_preview_widget";
+    readonly SHOW_FLOATING_PANEL_LAUNCHER: "auto_illustrator_conso_show_floating_panel_launcher";
+    readonly OPEN_FLOATING_PANEL: "auto_illustrator_conso_open_floating_panel";
     readonly PROMPT_GENERATION_MODE_SHARED: "auto_illustrator_conso_prompt_gen_mode_shared";
     readonly PROMPT_GENERATION_MODE_INDEPENDENT: "auto_illustrator_conso_prompt_gen_mode_independent";
     readonly INDEPENDENT_API_SETTINGS_CONTAINER: "auto_illustrator_conso_independent_api_settings_container";
@@ -349,4 +352,24 @@ export declare const UI_ELEMENT_IDS: {
     readonly STANDALONE_MANUAL_GENERATE_BTN: "auto_illustrator_conso_standalone_manual_generate";
     readonly STANDALONE_MANUAL_IMAGE: "auto_illustrator_conso_standalone_manual_image";
     readonly STANDALONE_SUBFOLDER_LABEL: "auto_illustrator_conso_standalone_subfolder_label";
+};
+/**
+ * Stable DOM section IDs for the floating panel source area.
+ * These are not form control IDs; they identify movable UI fragments.
+ */
+export declare const UI_SECTION_IDS: {
+    readonly FLOATING_PANEL_SOURCE: "auto_illustrator_conso_floating_panel_source";
+    readonly MAIN_ENABLED: "auto_illustrator_conso_panel_main_enabled";
+    readonly MAIN_IMAGE_SUBFOLDER: "auto_illustrator_conso_panel_main_image_subfolder";
+    readonly MAIN_INFO: "auto_illustrator_conso_panel_main_info";
+    readonly PROMPT_MODE_SELECTOR: "auto_illustrator_conso_panel_prompt_mode_selector";
+    readonly SHARED_META_DISPLAY: "auto_illustrator_conso_panel_shared_meta_display";
+    readonly INDEPENDENT_BASE: "auto_illustrator_conso_panel_independent_base";
+    readonly CONTEXT_INJECTION: "auto_illustrator_conso_panel_context_injection";
+    readonly WORLD_INFO: "auto_illustrator_conso_panel_world_info";
+    readonly GUIDELINES: "auto_illustrator_conso_panel_guidelines";
+    readonly INDEPENDENT_LLM: "auto_illustrator_conso_panel_independent_llm";
+    readonly PROMPT_STYLE: "auto_illustrator_conso_panel_prompt_style";
+    readonly STANDALONE: "auto_illustrator_conso_panel_standalone";
+    readonly CHARACTER_TAGS: "auto_illustrator_conso_panel_character_tags";
 };

@@ -600,15 +600,11 @@ export async function generateStandalonePrompts(
   const sections: string[] = [];
 
   if (includeCharInfo) {
-    // Override injection toggles — standalone UI checkbox is the sole authority,
-    // don't let independent API mode's individual toggles block injection
-    const charSettings = {
-      ...settings,
-      injectCharacterDescription: true,
-      injectUserPersona: true,
-      injectScenario: true,
-    };
-    const charInfo = buildCharacterInfoSection(context, charSettings);
+    // Standalone "include character info" controls whether character info is used at all.
+    // The specific sub-sections (description / persona / scenario) still respect
+    // the current context injection settings, so the standalone page can reuse
+    // the same "上下文注入设置" panel as independent API mode.
+    const charInfo = buildCharacterInfoSection(context, settings);
     if (charInfo) {
       sections.push(charInfo);
     }

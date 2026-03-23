@@ -18,6 +18,7 @@ export declare class GalleryWidgetView {
     private messageGroups;
     private isWidgetVisible;
     private isWidgetMinimized;
+    private hostContainer;
     private messageOrder;
     private refreshTimeout;
     private readonly REFRESH_DEBOUNCE_MS;
@@ -52,9 +53,19 @@ export declare class GalleryWidgetView {
      */
     show(): void;
     /**
+     * Force the widget into expanded mode.
+     * Used when embedding the gallery into the floating panel page.
+     */
+    expand(): void;
+    /**
      * Hide the gallery widget
      */
     hide(): void;
+    /**
+     * Attach the gallery widget to a host container instead of the legacy global location.
+     * Passing null restores the legacy #sheld/body mount behavior.
+     */
+    setHostContainer(container: HTMLElement | null): void;
     /**
      * Refresh gallery by rescanning chat (debounced to prevent freeze with large galleries)
      * When multiple images complete rapidly, this batches the refreshes to avoid

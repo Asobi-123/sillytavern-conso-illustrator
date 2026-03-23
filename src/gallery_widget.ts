@@ -41,6 +41,7 @@ export class GalleryWidgetView {
   private messageGroups: Map<number, MessageGalleryGroup> = new Map();
   private isWidgetVisible = true; // Default visible for new chats
   private isWidgetMinimized = true; // Start minimized by default
+  private hostContainer: HTMLElement | null = null;
   private messageOrder: 'newest-first' | 'oldest-first' = 'newest-first';
   private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly REFRESH_DEBOUNCE_MS = 500; // Debounce gallery refreshes by 500ms
@@ -221,6 +222,18 @@ export class GalleryWidgetView {
   }
 
   /**
+   * Force the widget into expanded mode.
+   * Used when embedding the gallery into the floating panel page.
+   */
+  public expand(): void {
+    this.isWidgetVisible = true;
+    this.isWidgetMinimized = false;
+    this.saveStateToChatMetadata();
+    this.updateDisplay();
+    logger.debug('Gallery widget expanded');
+  }
+
+  /**
    * Hide the gallery widget
    */
   public hide(): void {
@@ -228,6 +241,35 @@ export class GalleryWidgetView {
     this.saveStateToChatMetadata();
     this.updateDisplay();
     logger.debug('Gallery widget hidden');
+  }
+
+  /**
+   * Attach the gallery widget to a host container instead of the legacy global location.
+   * Passing null restores the legacy #sheld/body mount behavior.
+   */
+  public setHostContainer(container: HTMLElement | null): void {
+    this.hostContainer = container;
+
+    const widget = document.getElementById('ai-img-gallery-global');
+    if (!widget) {
+      this.updateDisplay();
+      return;
+    }
+
+    if (container) {
+      if (widget.parentElement !== container) {
+        container.appendChild(widget);
+      }
+    } else {
+      const sheld = document.getElementById('sheld');
+      if (sheld && widget.parentElement !== sheld) {
+        sheld.insertBefore(widget, sheld.firstChild);
+      } else if (!sheld && widget.parentElement !== document.body) {
+        document.body.appendChild(widget);
+      }
+    }
+
+    this.updateDisplay();
   }
 
   /**
@@ -900,6 +942,12 @@ export class GalleryWidgetView {
   private getOrCreateGalleryWidget(): HTMLElement {
     const existingWidget = document.getElementById('ai-img-gallery-global');
     if (existingWidget) {
+      if (
+        this.hostContainer &&
+        existingWidget.parentElement !== this.hostContainer
+      ) {
+        this.hostContainer.appendChild(existingWidget);
+      }
       return existingWidget;
     }
 
@@ -911,15 +959,20 @@ export class GalleryWidgetView {
     widget.setAttribute('role', 'complementary');
     widget.setAttribute('aria-label', 'Image Gallery');
 
-    // Find #sheld to insert widget
-    const sheld = document.getElementById('sheld');
-    if (!sheld) {
-      logger.error('Could not find #sheld, appending to body');
-      document.body.appendChild(widget);
+    if (this.hostContainer) {
+      this.hostContainer.appendChild(widget);
+      logger.debug('Created gallery widget and inserted into custom host');
     } else {
-      // Insert at the beginning of sheld (top of chat area)
-      sheld.insertBefore(widget, sheld.firstChild);
-      logger.debug('Created gallery widget and inserted into #sheld');
+      // Find #sheld to insert widget
+      const sheld = document.getElementById('sheld');
+      if (!sheld) {
+        logger.error('Could not find #sheld, appending to body');
+        document.body.appendChild(widget);
+      } else {
+        // Insert at the beginning of sheld (top of chat area)
+        sheld.insertBefore(widget, sheld.firstChild);
+        logger.debug('Created gallery widget and inserted into #sheld');
+      }
     }
 
     return widget;
