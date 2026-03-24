@@ -33,6 +33,9 @@ import {
   CONTEXT_MESSAGE_COUNT,
   META_PROMPT_DEPTH,
   IMAGE_DISPLAY_WIDTH,
+  IMAGE_RETENTION_DAYS,
+  INDEPENDENT_LLM_MAX_TOKENS,
+  STANDALONE_PROMPT_COUNT,
   DEFAULT_LLM_FREQUENCY_GUIDELINES,
   DEFAULT_LLM_PROMPT_WRITING_GUIDELINES,
   DEFAULT_CONTENT_FILTER_TAGS,
@@ -93,6 +96,17 @@ let isEditingIndependentLlmPreset = false; // Track if user is editing independe
 let streamingPreviewWidget: StreamingPreviewWidget | null = null; // Streaming preview widget instance
 let imageWidthUpdateTimer: ReturnType<typeof setTimeout> | null = null; // Debounce timer for image width updates
 let previousImageDisplayWidth: number | null = null; // Track previous width to detect actual changes
+let extensionInitialized = false;
+
+type RegisteredEventHandlers = {
+  streamTokenReceived: () => void;
+  messageReceived: (messageId: number) => void;
+  messageUpdated: () => void;
+  generationStarted: (type: string, options: unknown, dryRun: boolean) => void;
+  generationEnded: (messageId: number) => void;
+  chatCompletionPromptReady: (eventData: any) => void;
+};
+let registeredEventHandlers: RegisteredEventHandlers | null = null;
 
 // Generation state
 export let currentGenerationType: string | null = null; // Track generation type for filtering
@@ -200,6 +214,9 @@ function updateUI(): void {
   const metaPromptDepthInput = document.getElementById(
     UI_ELEMENT_IDS.META_PROMPT_DEPTH
   ) as HTMLInputElement;
+  const standalonePromptCountInput = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_PROMPT_COUNT
+  ) as HTMLInputElement;
   // Update image retention days
   const imageRetentionDaysInput = document.getElementById(
     UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
@@ -286,6 +303,11 @@ function updateUI(): void {
   // Update meta prompt depth
   if (metaPromptDepthInput) {
     metaPromptDepthInput.value = settings.metaPromptDepth.toString();
+  }
+  if (standalonePromptCountInput) {
+    standalonePromptCountInput.value = (
+      settings.standalonePromptCount ?? STANDALONE_PROMPT_COUNT.DEFAULT
+    ).toString();
   }
 
   // Update LLM guidelines textareas
@@ -640,6 +662,8 @@ export function applyImageWidthToAllImages(): void {
  * Handles changes to settings from UI
  */
 function handleSettingsChange(): void {
+  const previousMetaPrompt = settings.metaPrompt;
+  const previousPromptPatterns = settings.promptDetectionPatterns.join('\n');
   const enabledCheckbox = document.getElementById(
     UI_ELEMENT_IDS.ENABLED
   ) as HTMLInputElement;
@@ -697,6 +721,9 @@ function handleSettingsChange(): void {
   const metaPromptDepthInput = document.getElementById(
     UI_ELEMENT_IDS.META_PROMPT_DEPTH
   ) as HTMLInputElement;
+  const standalonePromptCountInput = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_PROMPT_COUNT
+  ) as HTMLInputElement;
   const llmFrequencyGuidelinesTextarea = document.getElementById(
     UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
   ) as HTMLTextAreaElement;
@@ -714,8 +741,27 @@ function handleSettingsChange(): void {
     UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
   ) as HTMLInputElement;
   if (imageRetentionDaysInput) {
-    settings.imageRetentionDays =
-      parseInt(imageRetentionDaysInput.value, 10) || 1;
+    const originalValue = parseInt(imageRetentionDaysInput.value, 10);
+    const clampedValue = clampValue(
+      originalValue,
+      IMAGE_RETENTION_DAYS.MIN,
+      IMAGE_RETENTION_DAYS.MAX,
+      IMAGE_RETENTION_DAYS.STEP
+    );
+    settings.imageRetentionDays = clampedValue;
+    imageRetentionDaysInput.value = clampedValue.toString();
+
+    if (clampedValue !== originalValue) {
+      toastr.warning(
+        t('toast.valueAdjustedNoStep', {
+          original: originalValue,
+          clamped: clampedValue,
+          min: IMAGE_RETENTION_DAYS.MIN,
+          max: IMAGE_RETENTION_DAYS.MAX,
+        }),
+        t('extensionName')
+      );
+    }
   }
 
   // Independent LLM API settings
@@ -745,8 +791,27 @@ function handleSettingsChange(): void {
     UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS
   ) as HTMLInputElement;
   if (independentLlmMaxTokensInput) {
-    settings.independentLlmMaxTokens =
-      parseInt(independentLlmMaxTokensInput.value, 10) || 4096;
+    const originalValue = parseInt(independentLlmMaxTokensInput.value, 10);
+    const clampedValue = clampValue(
+      originalValue,
+      INDEPENDENT_LLM_MAX_TOKENS.MIN,
+      INDEPENDENT_LLM_MAX_TOKENS.MAX,
+      INDEPENDENT_LLM_MAX_TOKENS.STEP
+    );
+    settings.independentLlmMaxTokens = clampedValue;
+    independentLlmMaxTokensInput.value = clampedValue.toString();
+
+    if (clampedValue !== originalValue) {
+      toastr.warning(
+        t('toast.valueAdjustedNoStep', {
+          original: originalValue,
+          clamped: clampedValue,
+          min: INDEPENDENT_LLM_MAX_TOKENS.MIN,
+          max: INDEPENDENT_LLM_MAX_TOKENS.MAX,
+        }),
+        t('extensionName')
+      );
+    }
   }
 
   // Context injection checkboxes
@@ -983,6 +1048,30 @@ function handleSettingsChange(): void {
     }
   }
 
+  if (standalonePromptCountInput) {
+    const originalValue = parseInt(standalonePromptCountInput.value);
+    const clampedValue = clampValue(
+      originalValue,
+      STANDALONE_PROMPT_COUNT.MIN,
+      STANDALONE_PROMPT_COUNT.MAX,
+      STANDALONE_PROMPT_COUNT.STEP
+    );
+    settings.standalonePromptCount = clampedValue;
+    standalonePromptCountInput.value = clampedValue.toString();
+
+    if (clampedValue !== originalValue) {
+      toastr.warning(
+        t('toast.valueAdjustedNoStep', {
+          original: originalValue,
+          clamped: clampedValue,
+          min: STANDALONE_PROMPT_COUNT.MIN,
+          max: STANDALONE_PROMPT_COUNT.MAX,
+        }),
+        t('extensionName')
+      );
+    }
+  }
+
   // LLM guidelines (textareas)
   settings.llmFrequencyGuidelines =
     llmFrequencyGuidelinesTextarea?.value ?? settings.llmFrequencyGuidelines;
@@ -1098,8 +1187,12 @@ function handleSettingsChange(): void {
 
   saveSettings(settings, context);
 
-  // Update validation status after settings change
-  updateValidationStatus();
+  if (
+    previousMetaPrompt !== settings.metaPrompt ||
+    previousPromptPatterns !== settings.promptDetectionPatterns.join('\n')
+  ) {
+    updateValidationStatus();
+  }
 
   // ===== 处理 enabled 开关的立即生效 =====
   if (wasEnabled !== settings.enabled) {
@@ -1149,6 +1242,7 @@ function handleSettingsChange(): void {
 
       // 清理 streamingPreviewWidget (不调用 hide,直接设为 null)
       if (streamingPreviewWidget) {
+        streamingPreviewWidget.destroy();
         streamingPreviewWidget = null;
       }
 
@@ -1196,9 +1290,73 @@ function handleSettingsChange(): void {
  * Resets settings to defaults
  */
 function handleResetSettings(): void {
-  settings = getDefaultSettings();
+  if (
+    typeof confirm === 'function' &&
+    !confirm(t('prompt.resetSettingsConfirm'))
+  ) {
+    return;
+  }
+
+  const previousSettings = settings;
+  const defaults = getDefaultSettings();
+  settings = {
+    ...defaults,
+    customPresets: [...(previousSettings.customPresets || [])],
+    customIndependentLlmPresets: [
+      ...(previousSettings.customIndependentLlmPresets || []),
+    ],
+    apiProfiles: [...(previousSettings.apiProfiles || [])],
+  };
   saveSettings(settings, context);
   updateUI();
+
+  setLogLevel(settings.logLevel);
+  updateMaxConcurrent(settings.maxConcurrentGenerations);
+  updateMinInterval(settings.minGenerationInterval);
+  setFloatingPanelLauncherVisible(settings.showFloatingPanelLauncher);
+
+  if (previousSettings.enabled !== settings.enabled) {
+    if (settings.enabled) {
+      if (!eventHandlersRegistered) {
+        registerEventHandlers();
+      }
+
+      if (settings.showProgressWidget) {
+        initializeProgressWidget(progressManager);
+      }
+
+      if (settings.showGalleryWidget) {
+        initializeGalleryWidget(progressManager);
+        getGalleryWidget()?.show();
+      }
+
+      if (settings.showStreamingPreviewWidget && !streamingPreviewWidget) {
+        streamingPreviewWidget = new StreamingPreviewWidget(
+          progressManager,
+          settings.promptDetectionPatterns || DEFAULT_PROMPT_DETECTION_PATTERNS
+        );
+      }
+    } else {
+      unregisterEventHandlers();
+      clearProgressWidgetState();
+      if (streamingPreviewWidget) {
+        streamingPreviewWidget.destroy();
+        streamingPreviewWidget = null;
+      }
+      getGalleryWidget()?.hide();
+    }
+  }
+
+  if (
+    previousSettings.showGalleryWidget !== settings.showGalleryWidget ||
+    previousSettings.showProgressWidget !== settings.showProgressWidget ||
+    previousSettings.showStreamingPreviewWidget !==
+      settings.showStreamingPreviewWidget
+  ) {
+    toastr.info(t('toast.reloadRequired'), t('extensionName'), {
+      timeOut: 5000,
+    });
+  }
 
   logger.info('Settings reset to defaults');
 }
@@ -2285,139 +2443,174 @@ function registerEventHandlers(): void {
 
   logger.info('Registering event handlers...');
 
-  // Register streaming handlers using v2 message handlers
+  if (!registeredEventHandlers) {
+    registeredEventHandlers = {
+      streamTokenReceived: () => {
+        if (!settings.enabled) {
+          return;
+        }
+
+        const messageId = context.chat.length - 1;
+        if (messageId < 0) {
+          logger.warn('No messages in chat, cannot start streaming session');
+          return;
+        }
+        handleStreamTokenStarted(messageId, context, settings);
+      },
+      messageReceived: (messageId: number) => {
+        if (!settings.enabled) {
+          return;
+        }
+
+        handleMessageReceived(messageId, context, settings);
+
+        setTimeout(() => {
+          if (!settings.enabled) {
+            return;
+          }
+          addImageClickHandlers(settings);
+        }, 100);
+      },
+      messageUpdated: () => {
+        if (!settings.enabled) {
+          return;
+        }
+
+        setTimeout(() => {
+          if (!settings.enabled) {
+            return;
+          }
+          addImageClickHandlers(settings);
+        }, 100);
+      },
+      generationStarted: (type: string, _options: unknown, dryRun: boolean) => {
+        if (!settings.enabled) {
+          return;
+        }
+
+        if (dryRun) {
+          logger.trace('Generation started (dry run), skipping type tracking', {
+            type,
+          });
+          return;
+        }
+        currentGenerationType = type;
+        logger.info('Generation started', {type});
+      },
+      generationEnded: (messageId: number) => {
+        if (!settings.enabled) {
+          return;
+        }
+
+        handleGenerationEnded(messageId, context, settings);
+      },
+      chatCompletionPromptReady: (eventData: any) => {
+        if (!settings.enabled) {
+          return;
+        }
+
+        if (eventData?.dryRun) {
+          logger.trace('Skipping prompt ready processing for dry run');
+          return;
+        }
+
+        if (!eventData?.chat) {
+          return;
+        }
+
+        if (isIndependentApiMode(settings.promptGenerationMode)) {
+          pruneGeneratedImagesAndPrompts(
+            eventData.chat,
+            settings.promptDetectionPatterns
+          );
+          logger.debug(
+            'Applied independent-API-mode pruning (images + prompts)'
+          );
+        } else {
+          pruneGeneratedImages(
+            eventData.chat,
+            settings.promptDetectionPatterns
+          );
+          logger.debug('Applied shared-API-mode pruning (images only)');
+        }
+
+        const effectiveType = currentGenerationType || 'normal';
+        const shouldInject =
+          settings.metaPrompt &&
+          settings.metaPrompt.length > 0 &&
+          !['quiet', 'impersonate'].includes(effectiveType) &&
+          !isIndependentApiMode(settings.promptGenerationMode);
+
+        if (shouldInject) {
+          const depth = settings.metaPromptDepth || 0;
+          const insertPosition = Math.max(0, eventData.chat.length - depth);
+
+          logger.info('Injecting meta-prompt as system message', {
+            generationType: effectiveType,
+            depth,
+            insertPosition,
+            chatLength: eventData.chat.length,
+          });
+
+          eventData.chat.splice(insertPosition, 0, {
+            role: 'system',
+            content: settings.metaPrompt,
+          });
+        } else {
+          logger.info('Skipping meta-prompt injection', {
+            enabled: settings.enabled,
+            hasMetaPrompt: !!settings.metaPrompt,
+            generationType: effectiveType,
+            promptGenerationMode: settings.promptGenerationMode,
+            reason: !settings.metaPrompt
+              ? 'no meta-prompt'
+              : ['quiet', 'impersonate'].includes(effectiveType)
+                ? `filtered generation type: ${effectiveType}`
+                : isIndependentApiMode(settings.promptGenerationMode)
+                  ? 'Independent API mode enabled'
+                  : 'unknown',
+          });
+        }
+      },
+    };
+  }
+
   const STREAM_TOKEN_RECEIVED = context.eventTypes.STREAM_TOKEN_RECEIVED;
-  context.eventSource.on(STREAM_TOKEN_RECEIVED, () => {
-    if (!settings.enabled) {
-      return;
-    }
-    // STREAM_TOKEN_RECEIVED doesn't provide messageId - get it from chat
-    const messageId = context.chat.length - 1;
-    if (messageId < 0) {
-      logger.warn('No messages in chat, cannot start streaming session');
-      return;
-    }
-    handleStreamTokenStarted(messageId, context, settings);
-  });
+  context.eventSource.on(
+    STREAM_TOKEN_RECEIVED,
+    registeredEventHandlers.streamTokenReceived
+  );
 
   const MESSAGE_RECEIVED = context.eventTypes.MESSAGE_RECEIVED;
-  context.eventSource.on(MESSAGE_RECEIVED, (messageId: number) => {
-    // Handle streaming finalization or non-streaming message processing
-    handleMessageReceived(messageId, context, settings);
+  context.eventSource.on(
+    MESSAGE_RECEIVED,
+    registeredEventHandlers.messageReceived
+  );
 
-    // Add image click handlers after message is received
-    setTimeout(() => {
-      addImageClickHandlers(settings);
-    }, 100);
-  });
-
-  // Add click handlers when messages are updated
   const MESSAGE_UPDATED = context.eventTypes.MESSAGE_UPDATED;
-  context.eventSource.on(MESSAGE_UPDATED, () => {
-    setTimeout(() => {
-      addImageClickHandlers(settings);
-    }, 100);
-  });
+  context.eventSource.on(
+    MESSAGE_UPDATED,
+    registeredEventHandlers.messageUpdated
+  );
 
-  // Track generation type to filter out quiet/impersonate modes
   const GENERATION_STARTED = context.eventTypes.GENERATION_STARTED;
   context.eventSource.on(
     GENERATION_STARTED,
-    (type: string, _options: unknown, dryRun: boolean) => {
-      if (dryRun) {
-        logger.trace('Generation started (dry run), skipping type tracking', {
-          type,
-        });
-        return;
-      }
-      currentGenerationType = type;
-      logger.info('Generation started', {type});
-    }
+    registeredEventHandlers.generationStarted
   );
 
-  // Handle GENERATION_ENDED for final reconciliation pass
   const GENERATION_ENDED = context.eventTypes.GENERATION_ENDED;
-  context.eventSource.on(GENERATION_ENDED, (messageId: number) => {
-    if (!settings.enabled) {
-      return;
-    }
+  context.eventSource.on(
+    GENERATION_ENDED,
+    registeredEventHandlers.generationEnded
+  );
 
-    // Run final reconciliation as a safety check
-    handleGenerationEnded(messageId, context, settings);
-  });
-
-  // Chat history pruning and meta-prompt injection
   const CHAT_COMPLETION_PROMPT_READY =
     context.eventTypes.CHAT_COMPLETION_PROMPT_READY;
-  context.eventSource.on(CHAT_COMPLETION_PROMPT_READY, (eventData: any) => {
-    if (eventData?.dryRun) {
-      logger.trace('Skipping prompt ready processing for dry run');
-      return;
-    }
-
-    if (!eventData?.chat) {
-      return;
-    }
-
-    // Prune generated images (and optionally prompt tags) from chat history
-    // Mode depends on promptGenerationMode setting
-    if (isIndependentApiMode(settings.promptGenerationMode)) {
-      // Independent API mode: Remove both images and prompt tags (keep history clean)
-      pruneGeneratedImagesAndPrompts(
-        eventData.chat,
-        settings.promptDetectionPatterns
-      );
-      logger.debug('Applied independent-API-mode pruning (images + prompts)');
-    } else {
-      // Shared API mode: Remove images only (keep prompt tags for AI context)
-      pruneGeneratedImages(eventData.chat, settings.promptDetectionPatterns);
-      logger.debug('Applied shared-API-mode pruning (images only)');
-    }
-
-    // Inject meta-prompt (filter out quiet/impersonate modes and independent-API mode)
-    const effectiveType = currentGenerationType || 'normal';
-    const shouldInject =
-      settings.enabled &&
-      settings.metaPrompt &&
-      settings.metaPrompt.length > 0 &&
-      !['quiet', 'impersonate'].includes(effectiveType) &&
-      !isIndependentApiMode(settings.promptGenerationMode);
-
-    if (shouldInject) {
-      // Calculate insertion position based on metaPromptDepth
-      // depth=0 means last position (default), depth=1 means one before last, etc.
-      const depth = settings.metaPromptDepth || 0;
-      const insertPosition = Math.max(0, eventData.chat.length - depth);
-
-      logger.info('Injecting meta-prompt as system message', {
-        generationType: effectiveType,
-        depth,
-        insertPosition,
-        chatLength: eventData.chat.length,
-      });
-
-      eventData.chat.splice(insertPosition, 0, {
-        role: 'system',
-        content: settings.metaPrompt,
-      });
-    } else {
-      logger.info('Skipping meta-prompt injection', {
-        enabled: settings.enabled,
-        hasMetaPrompt: !!settings.metaPrompt,
-        generationType: effectiveType,
-        promptGenerationMode: settings.promptGenerationMode,
-        reason: !settings.enabled
-          ? 'extension disabled'
-          : !settings.metaPrompt
-            ? 'no meta-prompt'
-            : ['quiet', 'impersonate'].includes(effectiveType)
-              ? `filtered generation type: ${effectiveType}`
-              : isIndependentApiMode(settings.promptGenerationMode)
-                ? 'Independent API mode enabled'
-                : 'unknown',
-      });
-    }
-  });
+  context.eventSource.on(
+    CHAT_COMPLETION_PROMPT_READY,
+    registeredEventHandlers.chatCompletionPromptReady
+  );
 
   // Note: CHAT_CHANGED is now handled by chat_changed_handler module
 
@@ -2444,20 +2637,62 @@ function unregisterEventHandlers(): void {
   }
 
   logger.info('正在注销事件处理器...');
+  const off =
+    (context.eventSource as any).off ||
+    (context.eventSource as any).removeListener;
 
-  // 标记为未注册
-  // 注意: SillyTavern 的 eventSource 可能不支持 removeListener
-  // 最简单的方法是标记为未注册,下次启用时会重新注册
-  // EventSource 的内部机制会处理重复注册
-  eventHandlersRegistered = false;
+  if (typeof off === 'function' && registeredEventHandlers) {
+    off.call(
+      context.eventSource,
+      context.eventTypes.STREAM_TOKEN_RECEIVED,
+      registeredEventHandlers.streamTokenReceived
+    );
+    off.call(
+      context.eventSource,
+      context.eventTypes.MESSAGE_RECEIVED,
+      registeredEventHandlers.messageReceived
+    );
+    off.call(
+      context.eventSource,
+      context.eventTypes.MESSAGE_UPDATED,
+      registeredEventHandlers.messageUpdated
+    );
+    off.call(
+      context.eventSource,
+      context.eventTypes.GENERATION_STARTED,
+      registeredEventHandlers.generationStarted
+    );
+    off.call(
+      context.eventSource,
+      context.eventTypes.GENERATION_ENDED,
+      registeredEventHandlers.generationEnded
+    );
+    off.call(
+      context.eventSource,
+      context.eventTypes.CHAT_COMPLETION_PROMPT_READY,
+      registeredEventHandlers.chatCompletionPromptReady
+    );
+    eventHandlersRegistered = false;
+    logger.info('事件处理器已注销');
+    return;
+  }
 
-  logger.info('事件处理器已标记为未注册');
+  logger.warn(
+    'eventSource 不支持解绑，保留已注册处理器并通过 enabled 开关使其休眠'
+  );
 }
 
 /**
  * Initializes the extension
  */
 function initialize(): void {
+  if (extensionInitialized) {
+    logger.info(
+      'Extension already initialized, skipping duplicate initialization'
+    );
+    return;
+  }
+
   logger.info('Initializing extension...');
 
   // Get SillyTavern context
@@ -2627,6 +2862,9 @@ function initialize(): void {
     const metaPromptDepthInput = document.getElementById(
       UI_ELEMENT_IDS.META_PROMPT_DEPTH
     ) as HTMLInputElement;
+    const standalonePromptCountInput = document.getElementById(
+      UI_ELEMENT_IDS.STANDALONE_PROMPT_COUNT
+    ) as HTMLInputElement;
     const llmFrequencyGuidelinesTextarea = document.getElementById(
       UI_ELEMENT_IDS.LLM_FREQUENCY_GUIDELINES
     ) as HTMLTextAreaElement;
@@ -2680,6 +2918,10 @@ function initialize(): void {
     maxPromptsPerMessageInput?.addEventListener('change', handleSettingsChange);
     contextMessageCountInput?.addEventListener('change', handleSettingsChange);
     metaPromptDepthInput?.addEventListener('change', handleSettingsChange);
+    standalonePromptCountInput?.addEventListener(
+      'change',
+      handleSettingsChange
+    );
     llmFrequencyGuidelinesTextarea?.addEventListener(
       'change',
       handleSettingsChange
@@ -2962,6 +3204,7 @@ function initialize(): void {
 
   // Add click handlers to existing images
   addImageClickHandlers(settings);
+  extensionInitialized = true;
 
   // Run startup cleanup for expired images
   try {

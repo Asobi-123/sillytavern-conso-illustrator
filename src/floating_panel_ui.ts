@@ -9,7 +9,6 @@ const logger = createLogger('FloatingPanel');
 const ROOT_ID = 'auto_illustrator_conso_floating_panel_root';
 const STYLE_ID = 'auto_illustrator_conso_floating_panel_style';
 const THEME_STORAGE_KEY = `${EXTENSION_NAME}_floating_panel_theme`;
-const OPEN_STORAGE_KEY = `${EXTENSION_NAME}_floating_panel_open`;
 const POSITION_STORAGE_KEY = `${EXTENSION_NAME}_floating_panel_position`;
 
 const SLOT_IDS = {
@@ -1202,6 +1201,11 @@ function showPage(page: string): void {
 function setOpen(isOpen: boolean): void {
   const panelRoot = root();
   if (!panelRoot) return;
+  if (!isOpen) {
+    closeAllOverlays();
+    currentTextTarget = null;
+    textOverlayReadonly = false;
+  }
   panelRoot.classList.toggle('open', isOpen);
   requestAnimationFrame(() => {
     if (isOpen) {
@@ -1210,11 +1214,6 @@ function setOpen(isOpen: boolean): void {
       applyLauncherAnchorPosition();
     }
   });
-  try {
-    localStorage.setItem(OPEN_STORAGE_KEY, isOpen ? '1' : '0');
-  } catch (error) {
-    logger.debug('Failed to persist floating panel open state', error);
-  }
 }
 
 export function openFloatingPanel(): void {
@@ -1377,6 +1376,14 @@ function closeOverlay(id: string): void {
   if (overlay) overlay.classList.remove('open');
 }
 
+function closeAllOverlays(): void {
+  root()
+    ?.querySelectorAll<HTMLElement>('.ai-floating-panel-overlay.open')
+    .forEach(overlay => {
+      overlay.classList.remove('open');
+    });
+}
+
 function ensureRoot(): HTMLElement {
   const existing = root();
   if (existing) return existing;
@@ -1465,15 +1472,13 @@ function bindPanelEvents(): void {
   document
     .getElementById(PANEL_IDS.close)
     ?.addEventListener('click', () => setOpen(false));
-  document
-    .getElementById(PANEL_IDS.launcher)
-    ?.addEventListener('click', () => {
-      if (suppressLauncherClick) {
-        suppressLauncherClick = false;
-        return;
-      }
-      setOpen(true);
-    });
+  document.getElementById(PANEL_IDS.launcher)?.addEventListener('click', () => {
+    if (suppressLauncherClick) {
+      suppressLauncherClick = false;
+      return;
+    }
+    setOpen(true);
+  });
   document
     .getElementById(PANEL_IDS.textOverlayApply)
     ?.addEventListener('click', applyTextOverlayChanges);
@@ -1573,7 +1578,9 @@ function initializeCollapsibleCards(): void {
 
       const content = document.createElement('div');
       content.className = contentClass;
-      const children = Array.from(card.children).filter(child => child !== head);
+      const children = Array.from(card.children).filter(
+        child => child !== head
+      );
       children.forEach(child => content.appendChild(child));
 
       const badge = head.querySelector('.badge, .chip');
@@ -1586,11 +1593,7 @@ function initializeCollapsibleCards(): void {
       main.appendChild(caret);
 
       headNodes.forEach(node => {
-        if (
-          badge &&
-          node.nodeType === Node.ELEMENT_NODE &&
-          node === badge
-        ) {
+        if (badge && node.nodeType === Node.ELEMENT_NODE && node === badge) {
           return;
         }
         main.appendChild(node);
@@ -1636,7 +1639,9 @@ function openTextOverlay(
 
   if (textarea) {
     textarea.value =
-      target instanceof HTMLPreElement ? target.textContent || '' : target.value;
+      target instanceof HTMLPreElement
+        ? target.textContent || ''
+        : target.value;
     textarea.readOnly = textOverlayReadonly;
   }
 
@@ -1649,6 +1654,12 @@ function openTextOverlay(
 
 function applyTextOverlayChanges(): void {
   if (!currentTextTarget || textOverlayReadonly) {
+    closeOverlay(PANEL_IDS.textOverlay);
+    return;
+  }
+
+  if (!currentTextTarget.isConnected) {
+    currentTextTarget = null;
     closeOverlay(PANEL_IDS.textOverlay);
     return;
   }
@@ -1719,9 +1730,9 @@ function enhanceLongTextEditors(): void {
 
   mappings.forEach(({selector, title}) => {
     document
-      .querySelectorAll<HTMLTextAreaElement | HTMLPreElement | HTMLInputElement>(
-        selector
-      )
+      .querySelectorAll<
+        HTMLTextAreaElement | HTMLPreElement | HTMLInputElement
+      >(selector)
       .forEach(target => addExpandButton(target, title));
   });
 }
@@ -1746,6 +1757,14 @@ function observeTextTargets(): void {
 function attachGalleryToHost(): void {
   const host = slot(SLOT_IDS.gallery);
   if (!host) return;
+
+  const showGalleryCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.SHOW_GALLERY_WIDGET
+  ) as HTMLInputElement | null;
+  if (showGalleryCheckbox && !showGalleryCheckbox.checked) {
+    host.innerHTML = '';
+    return;
+  }
 
   if (!getGalleryWidget()) {
     initializeGalleryWidget(progressManager);
@@ -1779,11 +1798,9 @@ export function initializeFloatingPanel(): void {
   syncStandaloneContextToggle();
   syncStandaloneWorldToggle();
 
-  let isOpen = false;
+  const isOpen = false;
   let theme: PanelTheme = 'slate';
   try {
-    const storedOpen = localStorage.getItem(OPEN_STORAGE_KEY);
-    isOpen = storedOpen === '1';
     const storedTheme = localStorage.getItem(
       THEME_STORAGE_KEY
     ) as PanelTheme | null;

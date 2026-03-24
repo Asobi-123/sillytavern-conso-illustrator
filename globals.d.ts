@@ -222,6 +222,8 @@ declare global {
       string,
       import('./src/types').CharacterFixedTagEntry
     >;
+    /** Default prompt count for standalone generation */
+    standalonePromptCount?: number;
   }
 
   interface ImagePromptMatch {

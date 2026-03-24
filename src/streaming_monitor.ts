@@ -15,7 +15,7 @@ import type {ImagePromptMatch} from './types';
 import {createLogger} from './logger';
 import {progressManager} from './progress_manager';
 import {registerPrompt} from './prompt_manager';
-import {getMetadata} from './metadata';
+import {getMetadata, saveMetadata} from './metadata';
 
 const logger = createLogger('Monitor');
 
@@ -240,7 +240,8 @@ export class StreamingMonitor {
           this.messageId,
           i, // Use index in allPrompts array
           'ai-message',
-          metadata
+          metadata,
+          true
         );
 
         newPromptsWithIds.push({
@@ -248,6 +249,10 @@ export class StreamingMonitor {
           promptId: promptNode.id,
         });
       }
+    }
+
+    if (newPromptsWithIds.length > 0) {
+      await saveMetadata();
     }
 
     return newPromptsWithIds;

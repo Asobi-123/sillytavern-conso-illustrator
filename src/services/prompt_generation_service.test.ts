@@ -3,10 +3,14 @@
  */
 
 import {describe, it, expect, vi, beforeEach} from 'vitest';
+vi.mock('./worldinfo_service', () => ({
+  fetchWorldBookEntries: vi.fn(),
+}));
 import {
   generatePromptsForMessage,
   buildWorldInfoSection,
 } from './prompt_generation_service';
+import {fetchWorldBookEntries} from './worldinfo_service';
 
 describe('prompt_generation_service', () => {
   let mockContext: SillyTavernContext;
@@ -460,6 +464,10 @@ REASONING: Handles newlines naturally
   });
 
   describe('buildWorldInfoSection', () => {
+    beforeEach(() => {
+      vi.mocked(fetchWorldBookEntries).mockReset();
+    });
+
     it('should return empty string when injectWorldInfo is false', async () => {
       const result = await buildWorldInfoSection(
         {...mockSettings, injectWorldInfo: false} as AutoIllustratorSettings,
@@ -502,6 +510,40 @@ REASONING: Handles newlines naturally
         }
       );
       expect(result).toBe('');
+    });
+
+    it('should preserve configured world book order while fetching in parallel', async () => {
+      vi.mocked(fetchWorldBookEntries).mockImplementation(async bookName => {
+        if (bookName === 'FirstBook') {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          return [
+            {uid: 1, comment: 'First Entry', content: 'First Content', key: []},
+          ] as any;
+        }
+
+        return [
+          {uid: 2, comment: 'Second Entry', content: 'Second Content', key: []},
+        ] as any;
+      });
+
+      const result = await buildWorldInfoSection(
+        {...mockSettings, injectWorldInfo: true} as AutoIllustratorSettings,
+        {
+          worldInfoConfig: {
+            selectedWorldBooks: ['FirstBook', 'SecondBook'],
+            worldBookOverrides: {
+              FirstBook: {entryOverrides: {1: true}},
+              SecondBook: {entryOverrides: {2: true}},
+            },
+          },
+        }
+      );
+
+      expect(result).toContain('[FirstBook]\nFirst Entry: First Content');
+      expect(result).toContain('[SecondBook]\nSecond Entry: Second Content');
+      expect(result.indexOf('[FirstBook]')).toBeLessThan(
+        result.indexOf('[SecondBook]')
+      );
     });
   });
 });

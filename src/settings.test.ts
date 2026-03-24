@@ -38,8 +38,27 @@ describe('settings', () => {
       expect(defaults.showProgressWidget).toBe(true);
       expect(defaults.promptGenerationMode).toBe('shared-api');
       expect(defaults.maxPromptsPerMessage).toBe(5);
+      expect(defaults.standalonePromptCount).toBe(3);
       expect(defaults.llmFrequencyGuidelines).toBeTruthy();
       expect(defaults.llmPromptWritingGuidelines).toBeTruthy();
+    });
+
+    it('should return fresh array and object instances on each call', () => {
+      const defaultsA = getDefaultSettings();
+      const defaultsB = getDefaultSettings();
+
+      expect(defaultsA.customPresets).not.toBe(defaultsB.customPresets);
+      expect(defaultsA.customIndependentLlmPresets).not.toBe(
+        defaultsB.customIndependentLlmPresets
+      );
+      expect(defaultsA.apiProfiles).not.toBe(defaultsB.apiProfiles);
+      expect(defaultsA.characterFixedTags).not.toBe(
+        defaultsB.characterFixedTags
+      );
+      expect(defaultsA.promptDetectionPatterns).not.toBe(
+        defaultsB.promptDetectionPatterns
+      );
+      expect(defaultsA.contentFilterTags).not.toBe(defaultsB.contentFilterTags);
     });
   });
 
@@ -131,6 +150,22 @@ describe('settings', () => {
 
       expect(loaded.enabled).toBe(false);
       expect(loaded.metaPrompt).toBeTruthy(); // Should use default
+    });
+
+    it('should clamp persisted numeric settings to safe ranges on load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            imageRetentionDays: 999,
+            independentLlmMaxTokens: 999999,
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.imageRetentionDays).toBe(7);
+      expect(loaded.independentLlmMaxTokens).toBe(32000);
     });
   });
 

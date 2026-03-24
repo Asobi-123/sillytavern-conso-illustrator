@@ -987,6 +987,12 @@ export function attachRegenerationHandlers(
 
   // Attach handlers to all images (including failed placeholders)
   regeneratableImages.forEach(img => {
+    if (img.dataset.aiRegenBound === 'true') {
+      return;
+    }
+
+    img.dataset.aiRegenBound = 'true';
+
     // Add visual indicator
     img.style.cursor = 'pointer';
     img.title = img.title || 'Click to regenerate';

@@ -33,8 +33,32 @@ describe('StreamingPreviewWidget', () => {
     // Clear DOM
     document.body.innerHTML = '';
 
-    // Clear localStorage
-    localStorage.clear();
+    // Some Vitest environments provide a partial localStorage implementation.
+    if (typeof localStorage.getItem !== 'function') {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: {
+          getItem: vi.fn(() => null),
+          setItem: vi.fn(),
+          clear: vi.fn(),
+          removeItem: vi.fn(),
+        },
+      });
+    } else {
+      if (typeof localStorage.clear !== 'function') {
+        (localStorage as any).clear = vi.fn();
+      }
+      if (typeof localStorage.removeItem !== 'function') {
+        (localStorage as any).removeItem = vi.fn();
+      }
+      if (typeof localStorage.setItem !== 'function') {
+        (localStorage as any).setItem = vi.fn();
+      }
+      if (typeof localStorage.getItem !== 'function') {
+        (localStorage as any).getItem = vi.fn(() => null);
+      }
+      localStorage.clear();
+    }
 
     // Create widget instance
     widget = new StreamingPreviewWidget(progressManager, mockPatterns);
@@ -170,6 +194,22 @@ describe('StreamingPreviewWidget', () => {
       const status = widget.getStatus();
       expect(status.isVisible).toBe(false);
       expect(status.segmentCount).toBe(0);
+    });
+  });
+
+  describe('destroy', () => {
+    it('should unsubscribe from progress manager events', () => {
+      const removeListenerSpy = vi.spyOn(
+        progressManager,
+        'removeEventListener'
+      );
+
+      widget.destroy();
+
+      expect(removeListenerSpy).toHaveBeenCalledWith(
+        'progress:image-completed',
+        expect.any(Function)
+      );
     });
   });
 

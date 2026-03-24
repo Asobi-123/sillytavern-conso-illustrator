@@ -24,8 +24,10 @@ export declare class StreamingPreviewWidget {
     private promptDetectionPatterns;
     private autoScrollEnabled;
     private scrollCheckTimeout;
+    private renderTimeout;
     private isUserScrolling;
     private lastScrollTop;
+    private readonly imageCompletedHandler;
     private textBuffer;
     private displayedText;
     private animationFrameId;
@@ -110,6 +112,10 @@ export declare class StreamingPreviewWidget {
      * Clear state when chat changes
      */
     clearState(): void;
+    /**
+     * Fully destroy the widget instance and detach global subscriptions.
+     */
+    destroy(): void;
     /**
      * Render the widget to DOM
      */

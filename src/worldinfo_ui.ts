@@ -22,6 +22,7 @@ let allWorldBookNames: string[] = [];
 
 /** Currently expanded book (only one at a time) */
 let expandedBookName: string | null = null;
+let worldInfoEventListenersRegistered = false;
 
 /**
  * Gets or creates worldInfoConfig from current chat metadata.
@@ -310,6 +311,11 @@ export function reloadWorldInfoForChat(): void {
  * Call once after settings HTML is inserted.
  */
 export function registerWorldInfoEventListeners(): void {
+  if (worldInfoEventListenersRegistered) {
+    logger.debug('World info event listeners already registered, skipping');
+    return;
+  }
+
   // Book list click delegation
   const bookList = document.getElementById(UI_ELEMENT_IDS.WORLD_INFO_BOOK_LIST);
   if (bookList) {
@@ -345,6 +351,8 @@ export function registerWorldInfoEventListeners(): void {
       }
     });
   }
+
+  worldInfoEventListenersRegistered = true;
 }
 
 /**

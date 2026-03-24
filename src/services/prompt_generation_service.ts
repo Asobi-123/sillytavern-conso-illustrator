@@ -174,42 +174,49 @@ export async function buildWorldInfoSection(
     return '';
   }
 
-  const bookSections: string[] = [];
+  const bookSections = await Promise.all(
+    config.selectedWorldBooks.map(async bookName => {
+      const overrides =
+        config.worldBookOverrides[bookName]?.entryOverrides ?? {};
+      const enabledUids = Object.entries(overrides)
+        .filter(([, enabled]) => enabled === true)
+        .map(([uid]) => Number(uid));
 
-  for (const bookName of config.selectedWorldBooks) {
-    const overrides = config.worldBookOverrides[bookName]?.entryOverrides ?? {};
-    const enabledUids = Object.entries(overrides)
-      .filter(([, enabled]) => enabled === true)
-      .map(([uid]) => Number(uid));
+      if (enabledUids.length === 0) {
+        return '';
+      }
 
-    if (enabledUids.length === 0) continue;
+      try {
+        const entries = await fetchWorldBookEntries(bookName);
+        const enabledSet = new Set(enabledUids);
+        const enabledEntries = entries.filter(e => enabledSet.has(e.uid));
 
-    try {
-      const entries = await fetchWorldBookEntries(bookName);
-      const enabledSet = new Set(enabledUids);
-      const enabledEntries = entries.filter(e => enabledSet.has(e.uid));
+        if (enabledEntries.length === 0) {
+          return '';
+        }
 
-      if (enabledEntries.length === 0) continue;
+        const entryLines = enabledEntries
+          .map(e => {
+            const title = e.comment || `Entry #${e.uid}`;
+            return `${title}: ${e.content}`;
+          })
+          .join('\n');
 
-      const entryLines = enabledEntries
-        .map(e => {
-          const title = e.comment || `Entry #${e.uid}`;
-          return `${title}: ${e.content}`;
-        })
-        .join('\n');
+        return `[${bookName}]\n${entryLines}`;
+      } catch (error) {
+        logger.warn(
+          `Failed to fetch entries for world book "${bookName}":`,
+          error
+        );
+        return '';
+      }
+    })
+  );
 
-      bookSections.push(`[${bookName}]\n${entryLines}`);
-    } catch (error) {
-      logger.warn(
-        `Failed to fetch entries for world book "${bookName}":`,
-        error
-      );
-    }
-  }
+  const nonEmptySections = bookSections.filter(Boolean);
+  if (nonEmptySections.length === 0) return '';
 
-  if (bookSections.length === 0) return '';
-
-  return `=== WORLD INFO ===\n${bookSections.join('\n\n')}\n\n`;
+  return `=== WORLD INFO ===\n${nonEmptySections.join('\n\n')}\n\n`;
 }
 
 /**

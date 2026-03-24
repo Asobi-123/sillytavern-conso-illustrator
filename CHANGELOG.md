@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-03-24
+
+### Fixed
+
+- **UI lifecycle guards** - Prevent duplicate initialization of the centralized chat-change handler, standalone panel bindings, character tags bindings, and world info bindings to reduce repeated listener registration.
+- **Streaming preview cleanup** - Added an explicit destroy path for the streaming preview widget so disabling the extension now detaches its global progress listener and clears pending UI timers.
+- **Floating panel close cleanup** - Closing the floating panel now closes open overlays and drops stale fullscreen text editor targets instead of keeping old UI state alive.
+- **Manual image action rebinding** - Regeneration click handlers are now only attached once per image element, preventing duplicate dialogs and repeated handler stacking.
+- **Default settings isolation** - Default settings now return fresh arrays/objects instead of reusing shared references, preventing reset/default state pollution by custom presets or runtime mutations.
+- **Standalone prompt count persistence** - The standalone prompt count input is now treated as a real setting, loaded into the UI and saved back through normal settings persistence.
+- **Prompt registry batch saves** - Batch prompt registration/deletion flows now defer metadata persistence so repeated prompt operations do not save on every loop iteration.
+- **Reset defaults confirmation** - Resetting settings now asks for confirmation before applying the reset and keeps user-created preset/profile resources intact.
+- **Prompt validation hot path** - Prompt pattern validation now only reruns when the meta prompt or detection patterns actually change, avoiding unnecessary regex work on unrelated setting changes.
+- **World info section fetches** - World book entry loading for prompt generation now fetches selected books in parallel while preserving configured output order.
+- **Standalone workbench label memory** - The standalone image subfolder label is now remembered locally between reloads instead of resetting every session.
+- **Range validation parity** - Image retention days and independent LLM max tokens now clamp to their configured safe ranges like the other numeric settings.
+
 ## [1.6.0] - 2026-03-24
 
 ### Added

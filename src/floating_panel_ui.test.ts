@@ -2,7 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createMockContext} from './test_helpers';
 import {initializeI18n} from './i18n';
 import {createSettingsUI} from './settings';
-import {initializeFloatingPanel} from './floating_panel_ui';
+import {initializeFloatingPanel, openFloatingPanel} from './floating_panel_ui';
 import {UI_ELEMENT_IDS, UI_SECTION_IDS} from './constants';
 
 const galleryMock = {
@@ -21,6 +21,18 @@ describe('floating_panel_ui', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
     vi.clearAllMocks();
+
+    if (typeof localStorage.setItem !== 'function') {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: {
+          getItem: vi.fn(() => null),
+          setItem: vi.fn(),
+          clear: vi.fn(),
+          removeItem: vi.fn(),
+        },
+      });
+    }
 
     initializeI18n(
       createMockContext({
@@ -51,6 +63,19 @@ describe('floating_panel_ui', () => {
     ).toBe(false);
   });
 
+  it('should still start closed even if old open-state storage exists', () => {
+    localStorage.setItem('auto_illustrator_conso_floating_panel_open', '1');
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+
+    expect(
+      document
+        .getElementById('auto_illustrator_conso_floating_panel_root')
+        ?.classList.contains('open')
+    ).toBe(false);
+  });
+
   it('should move floating panel source sections into panel slots', () => {
     document.body.insertAdjacentHTML('beforeend', createSettingsUI());
 
@@ -59,7 +84,9 @@ describe('floating_panel_ui', () => {
     const sourceContainer = document.getElementById(
       UI_SECTION_IDS.FLOATING_PANEL_SOURCE
     );
-    const movedMainEnabled = document.getElementById(UI_SECTION_IDS.MAIN_ENABLED);
+    const movedMainEnabled = document.getElementById(
+      UI_SECTION_IDS.MAIN_ENABLED
+    );
 
     expect(sourceContainer).not.toBeNull();
     expect(movedMainEnabled).not.toBeNull();
@@ -136,5 +163,28 @@ describe('floating_panel_ui', () => {
 
     expect(standaloneCharCheckbox.checked).toBe(false);
     expect(standaloneWorldCheckbox.checked).toBe(false);
+  });
+
+  it('should close open overlays when the panel is closed', () => {
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+    openFloatingPanel();
+
+    const overlay = document.getElementById(
+      'ai-floating-panel-overlay-context'
+    ) as HTMLElement;
+    const openButton = document.querySelector(
+      '[data-open-overlay="ai-floating-panel-overlay-context"]'
+    ) as HTMLButtonElement;
+    const closeButton = document.getElementById(
+      'ai-floating-panel-close'
+    ) as HTMLButtonElement;
+
+    openButton.click();
+    expect(overlay.classList.contains('open')).toBe(true);
+
+    closeButton.click();
+    expect(overlay.classList.contains('open')).toBe(false);
   });
 });

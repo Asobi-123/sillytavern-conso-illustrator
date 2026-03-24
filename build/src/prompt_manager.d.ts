@@ -184,7 +184,7 @@ export declare function getPromptNode(promptId: string, metadata: AutoIllustrato
  * @example
  * await deletePromptNode("prompt_abc123", metadata);
  */
-export declare function deletePromptNode(promptId: string, metadata: AutoIllustratorChatMetadata): Promise<void>;
+export declare function deletePromptNode(promptId: string, metadata: AutoIllustratorChatMetadata, skipSave?: boolean): Promise<void>;
 /**
  * Updates the lastUsedAt timestamp for a prompt node (with auto-save)
  *
@@ -194,7 +194,7 @@ export declare function deletePromptNode(promptId: string, metadata: AutoIllustr
  * @example
  * await updatePromptLastUsed("prompt_abc123", metadata);
  */
-export declare function updatePromptLastUsed(promptId: string, metadata: AutoIllustratorChatMetadata): Promise<void>;
+export declare function updatePromptLastUsed(promptId: string, metadata: AutoIllustratorChatMetadata, skipSave?: boolean): Promise<void>;
 /**
  * Registers a prompt in the registry (with auto-save)
  *
@@ -213,7 +213,7 @@ export declare function updatePromptLastUsed(promptId: string, metadata: AutoIll
  * const node = await registerPrompt("1girl, red dress", 42, 0, 'ai-message', metadata);
  * console.log(node.id); // "prompt_abc123"
  */
-export declare function registerPrompt(text: string, messageId: number, promptIndex: number, source: PromptSource, metadata: AutoIllustratorChatMetadata): Promise<PromptNode>;
+export declare function registerPrompt(text: string, messageId: number, promptIndex: number, source: PromptSource, metadata: AutoIllustratorChatMetadata, skipSave?: boolean): Promise<PromptNode>;
 /**
  * Links an image URL to a prompt (with auto-save)
  *
