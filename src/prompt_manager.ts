@@ -275,7 +275,8 @@ export function getPromptNode(
  */
 export async function deletePromptNode(
   promptId: string,
-  metadata: AutoIllustratorChatMetadata
+  metadata: AutoIllustratorChatMetadata,
+  skipSave = false
 ): Promise<void> {
   const registry = getRegistry(metadata);
   const node = registry.nodes[promptId];
@@ -324,8 +325,9 @@ export async function deletePromptNode(
     `Deleted prompt node: ${promptId} (promoted ${node.childIds.length} children to roots)`
   );
 
-  // Auto-save
-  await saveMetadata();
+  if (!skipSave) {
+    await saveMetadata();
+  }
 }
 
 /**
@@ -339,15 +341,17 @@ export async function deletePromptNode(
  */
 export async function updatePromptLastUsed(
   promptId: string,
-  metadata: AutoIllustratorChatMetadata
+  metadata: AutoIllustratorChatMetadata,
+  skipSave = false
 ): Promise<void> {
   const registry = getRegistry(metadata);
   const node = registry.nodes[promptId];
 
   if (node) {
     node.metadata.lastUsedAt = Date.now();
-    // Auto-save
-    await saveMetadata();
+    if (!skipSave) {
+      await saveMetadata();
+    }
   }
 }
 
@@ -378,7 +382,8 @@ export async function registerPrompt(
   messageId: number,
   promptIndex: number,
   source: PromptSource,
-  metadata: AutoIllustratorChatMetadata
+  metadata: AutoIllustratorChatMetadata,
+  skipSave = false
 ): Promise<PromptNode> {
   const registry = getRegistry(metadata);
   const id = generatePromptId(text, messageId, promptIndex);
@@ -386,7 +391,7 @@ export async function registerPrompt(
   // Check if node already exists (deduplication)
   const existing = registry.nodes[id];
   if (existing) {
-    await updatePromptLastUsed(id, metadata);
+    await updatePromptLastUsed(id, metadata, skipSave);
     logger.debug(`Prompt already registered: ${id}`);
     return existing;
   }
@@ -404,8 +409,9 @@ export async function registerPrompt(
     `Registered new prompt: ${id} (messageId: ${messageId}, index: ${promptIndex})`
   );
 
-  // Auto-save
-  await saveMetadata();
+  if (!skipSave) {
+    await saveMetadata();
+  }
 
   return node;
 }
@@ -898,7 +904,11 @@ export async function deleteMessagePrompts(
   const prompts = getPromptsForMessage(messageId, metadata);
 
   for (const prompt of prompts) {
-    await deletePromptNode(prompt.id, metadata);
+    await deletePromptNode(prompt.id, metadata, true);
+  }
+
+  if (prompts.length > 0) {
+    await saveMetadata();
   }
 
   logger.info(`Deleted ${prompts.length} prompts for message ${messageId}`);
@@ -936,7 +946,11 @@ export async function pruneOrphanedNodes(
 
   // Delete them
   for (const id of toPrune) {
-    await deletePromptNode(id, metadata);
+    await deletePromptNode(id, metadata, true);
+  }
+
+  if (toPrune.length > 0) {
+    await saveMetadata();
   }
 
   logger.info(`Pruned ${toPrune.length} orphaned nodes`);
@@ -1038,9 +1052,14 @@ export async function detectPromptsInMessage(
       messageId,
       i, // promptIndex
       'ai-message',
-      metadata
+      metadata,
+      true
     );
     nodes.push(node);
+  }
+
+  if (matches.length > 0) {
+    await saveMetadata();
   }
 
   logger.debug(`Detected ${matches.length} prompts in message ${messageId}`);

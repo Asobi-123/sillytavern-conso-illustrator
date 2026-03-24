@@ -15,6 +15,9 @@ import type {
 } from './types';
 
 const logger = createLogger('StandaloneGen');
+let standaloneGenerationInitialized = false;
+const STANDALONE_SUBFOLDER_STORAGE_KEY =
+  'auto_illustrator_conso_standalone_subfolder_label';
 
 /**
  * Creates the HTML content for the standalone generation drawer.
@@ -278,6 +281,11 @@ export function initializeStandaloneGeneration(
   settings: AutoIllustratorSettings,
   metadata: AutoIllustratorChatMetadata | undefined
 ): void {
+  if (standaloneGenerationInitialized) {
+    logger.debug('Standalone generation panel already initialized, skipping');
+    return;
+  }
+
   const aiRadio = document.getElementById(
     UI_ELEMENT_IDS.STANDALONE_MODE_AI
   ) as HTMLInputElement;
@@ -286,6 +294,34 @@ export function initializeStandaloneGeneration(
   ) as HTMLInputElement;
   const aiPanel = document.getElementById('standalone_ai_panel');
   const manualPanel = document.getElementById('standalone_manual_panel');
+  const subfolderLabelInput = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_SUBFOLDER_LABEL
+  ) as HTMLInputElement | null;
+
+  if (subfolderLabelInput) {
+    try {
+      subfolderLabelInput.value =
+        localStorage.getItem(STANDALONE_SUBFOLDER_STORAGE_KEY) ?? '';
+    } catch (error) {
+      logger.debug('Failed to restore standalone subfolder label', error);
+    }
+
+    const persistSubfolderLabel = () => {
+      try {
+        const value = subfolderLabelInput.value.trim();
+        if (value) {
+          localStorage.setItem(STANDALONE_SUBFOLDER_STORAGE_KEY, value);
+        } else {
+          localStorage.removeItem(STANDALONE_SUBFOLDER_STORAGE_KEY);
+        }
+      } catch (error) {
+        logger.debug('Failed to persist standalone subfolder label', error);
+      }
+    };
+
+    subfolderLabelInput.addEventListener('input', persistSubfolderLabel);
+    subfolderLabelInput.addEventListener('change', persistSubfolderLabel);
+  }
 
   // Mode switching
   const switchMode = () => {
@@ -524,6 +560,7 @@ export function initializeStandaloneGeneration(
   });
 
   logger.info('Standalone generation panel initialized');
+  standaloneGenerationInitialized = true;
 }
 
 /**

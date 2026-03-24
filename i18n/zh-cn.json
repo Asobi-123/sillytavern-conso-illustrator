@@ -165,6 +165,7 @@
   "prompt.enterPresetName": "输入新预设的名称：",
   "prompt.overwritePreset": "覆盖现有预设 '{name}'？",
   "prompt.deletePresetConfirm": "删除预设 '{name}'？",
+  "prompt.resetSettingsConfirm": "重置所有设置？此操作无法撤销。",
   "button.manualGenerate": "从提示词生成图像",
   "gallery.title": "图片画廊",
   "gallery.images": "张图片",

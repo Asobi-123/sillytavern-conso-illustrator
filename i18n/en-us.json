@@ -165,6 +165,7 @@
   "prompt.enterPresetName": "Enter name for new preset:",
   "prompt.overwritePreset": "Overwrite existing preset '{name}'?",
   "prompt.deletePresetConfirm": "Delete preset '{name}'?",
+  "prompt.resetSettingsConfirm": "Reset all settings? This cannot be undone.",
   "button.manualGenerate": "Generate images from prompts",
   "gallery.title": "Image Gallery",
   "gallery.images": "images",

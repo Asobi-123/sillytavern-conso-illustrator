@@ -61,8 +61,10 @@ export class StreamingPreviewWidget {
   private promptDetectionPatterns: string[] = [];
   private autoScrollEnabled = true;
   private scrollCheckTimeout: number | null = null;
+  private renderTimeout: number | null = null;
   private isUserScrolling = false;
   private lastScrollTop = 0;
+  private readonly imageCompletedHandler: EventListener;
 
   // Smooth streaming buffer
   private textBuffer = ''; // Target text to display
@@ -87,13 +89,17 @@ export class StreamingPreviewWidget {
     this.progressManager = manager;
     this.promptDetectionPatterns = promptPatterns;
     this.loadStateFromStorage();
-
-    // Subscribe to image completion events
-    manager.addEventListener('progress:image-completed', event => {
+    this.imageCompletedHandler = event => {
       const detail = (event as CustomEvent<ProgressImageCompletedEventDetail>)
         .detail;
       this.handleImageCompleted(detail);
-    });
+    };
+
+    // Subscribe to image completion events
+    manager.addEventListener(
+      'progress:image-completed',
+      this.imageCompletedHandler
+    );
 
     logger.debug(
       'StreamingPreviewWidget initialized and subscribed to image completion events'
@@ -455,8 +461,9 @@ export class StreamingPreviewWidget {
       // Schedule for later
       this.renderScheduled = true;
       const delay = this.RENDER_INTERVAL_MS - timeSinceRender;
-      setTimeout(() => {
+      this.renderTimeout = window.setTimeout(() => {
         this.renderScheduled = false;
+        this.renderTimeout = null;
         this.performRender();
       }, delay);
     }
@@ -570,6 +577,17 @@ export class StreamingPreviewWidget {
       this.animationFrameId = null;
     }
 
+    if (this.scrollCheckTimeout !== null) {
+      clearTimeout(this.scrollCheckTimeout);
+      this.scrollCheckTimeout = null;
+    }
+
+    if (this.renderTimeout !== null) {
+      clearTimeout(this.renderTimeout);
+      this.renderTimeout = null;
+      this.renderScheduled = false;
+    }
+
     this.isVisible = false;
     this.currentMessageId = -1;
     this.lastSeenText = '';
@@ -585,6 +603,17 @@ export class StreamingPreviewWidget {
   clearState(): void {
     logger.info('Clearing streaming preview state (chat changed)');
     this.close();
+  }
+
+  /**
+   * Fully destroy the widget instance and detach global subscriptions.
+   */
+  destroy(): void {
+    this.close();
+    this.progressManager.removeEventListener(
+      'progress:image-completed',
+      this.imageCompletedHandler
+    );
   }
 
   /**
@@ -698,7 +727,7 @@ export class StreamingPreviewWidget {
     this.lastScrollTop = currentScrollTop;
 
     // Clear existing timeout
-    if (this.scrollCheckTimeout) {
+    if (this.scrollCheckTimeout !== null) {
       clearTimeout(this.scrollCheckTimeout);
     }
 

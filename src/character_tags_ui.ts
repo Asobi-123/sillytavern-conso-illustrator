@@ -22,6 +22,7 @@ const logger = createLogger('CharacterTagsUI');
 let settingsRef: AutoIllustratorSettings | null = null;
 let saveSettingsFn: (() => void) | null = null;
 let pendingReloadTimers: Array<ReturnType<typeof setTimeout>> = [];
+let characterTagListenersRegistered = false;
 
 /**
  * Gets manual character keys from current chat metadata.
@@ -59,7 +60,10 @@ export function initializeCharacterTagsPanel(
 ): void {
   settingsRef = settings;
   saveSettingsFn = saveFn;
-  registerCharacterTagEventListeners();
+  if (!characterTagListenersRegistered) {
+    registerCharacterTagEventListeners();
+    characterTagListenersRegistered = true;
+  }
   renderCharacterTagList();
 }
 

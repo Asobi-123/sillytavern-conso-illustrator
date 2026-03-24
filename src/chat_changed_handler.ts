@@ -22,6 +22,7 @@ import {clearWorldBookCache} from './services/worldinfo_service';
 import {reloadCharacterTagsForChat} from './character_tags_ui';
 
 const logger = createLogger('ChatChangedHandler');
+let chatChangedHandlerInitialized = false;
 
 // Types are in globals.d.ts (no need to import)
 // SillyTavern global is also declared in globals.d.ts
@@ -80,6 +81,11 @@ function handleChatChanged(): void {
  * Call this once during extension initialization
  */
 export function initializeChatChangedHandler(): void {
+  if (chatChangedHandlerInitialized) {
+    logger.debug('CHAT_CHANGED handler already initialized, skipping');
+    return;
+  }
+
   const context = SillyTavern.getContext();
 
   if (!context?.eventSource || !context?.eventTypes?.CHAT_CHANGED) {
@@ -91,6 +97,7 @@ export function initializeChatChangedHandler(): void {
 
   // Register the single CHAT_CHANGED listener
   context.eventSource.on(context.eventTypes.CHAT_CHANGED, handleChatChanged);
+  chatChangedHandlerInitialized = true;
 
   logger.info('CHAT_CHANGED handler registered');
 }

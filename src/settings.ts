@@ -30,6 +30,21 @@ const logger = createLogger('Settings');
 
 export {EXTENSION_NAME};
 
+function clampSettingValue(
+  value: unknown,
+  min: number,
+  max: number,
+  fallback: number
+): number {
+  const numericValue =
+    typeof value === 'number' ? value : Number.parseInt(String(value), 10);
+  if (!Number.isFinite(numericValue)) {
+    return fallback;
+  }
+
+  return Math.max(min, Math.min(max, numericValue));
+}
+
 /**
  * Gets the default settings for the extension
  * @returns Default settings
@@ -37,6 +52,12 @@ export {EXTENSION_NAME};
 export function getDefaultSettings(): AutoIllustratorSettings {
   return {
     ...DEFAULT_SETTINGS,
+    promptDetectionPatterns: [...DEFAULT_SETTINGS.promptDetectionPatterns],
+    contentFilterTags: [...DEFAULT_SETTINGS.contentFilterTags],
+    customPresets: [],
+    customIndependentLlmPresets: [],
+    apiProfiles: [],
+    characterFixedTags: {},
     metaPrompt: getDefaultMetaPrompt(),
   };
 }
@@ -87,6 +108,18 @@ export function loadSettings(
   );
   merged.llmFrequencyGuidelines = ilmPreset.frequencyGuidelines;
   merged.llmPromptWritingGuidelines = ilmPreset.promptWritingGuidelines;
+  merged.imageRetentionDays = clampSettingValue(
+    merged.imageRetentionDays,
+    IMAGE_RETENTION_DAYS.MIN,
+    IMAGE_RETENTION_DAYS.MAX,
+    IMAGE_RETENTION_DAYS.DEFAULT
+  );
+  merged.independentLlmMaxTokens = clampSettingValue(
+    merged.independentLlmMaxTokens,
+    INDEPENDENT_LLM_MAX_TOKENS.MIN,
+    INDEPENDENT_LLM_MAX_TOKENS.MAX,
+    INDEPENDENT_LLM_MAX_TOKENS.DEFAULT
+  );
 
   return merged;
 }
