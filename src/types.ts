@@ -230,3 +230,43 @@ export interface PluginWorldInfoConfig {
   /** Whether auto-initialization has been performed (prevents re-adding character default book) */
   initialized?: boolean;
 }
+
+/** NovelAI image generation parameters extracted from PNG metadata */
+export interface NovelAiParameters {
+  steps?: number;
+  sampler?: string;
+  seed?: number;
+  /** CFG scale */
+  scale?: number;
+  width?: number;
+  height?: number;
+  strength?: number;
+  noise?: number;
+  model?: string;
+  /** Preserve any unknown parameters from the metadata */
+  [key: string]: unknown;
+}
+
+/** A saved entry in the prompt library */
+export interface PromptLibraryEntry {
+  /** Unique identifier */
+  id: string;
+  /** User-defined display name */
+  name: string;
+  /** Positive prompt (NovelAI "prompt" field) */
+  positivePrompt: string;
+  /** Negative prompt (NovelAI "uc" field) */
+  negativePrompt: string;
+  /** Generation parameters (read-only reference) */
+  parameters: NovelAiParameters;
+  /** Base64 JPEG thumbnail for visual reference */
+  thumbnail?: string;
+  /** User-defined tags for categorization */
+  tags: string[];
+  /** User-defined character prompt (manually split from positive prompt) */
+  characterPrompt: string;
+  /** Timestamp when entry was created */
+  createdAt: number;
+  /** Timestamp when entry was last modified */
+  updatedAt: number;
+}

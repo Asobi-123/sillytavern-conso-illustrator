@@ -6,6 +6,7 @@
 import {getDefaultMetaPrompt, getPresetById} from './meta_prompt_presets';
 import {getIndependentLlmPresetById} from './independent_llm_presets';
 import {createStandaloneGenerationContent} from './standalone_generation_ui';
+import {createPromptLibraryContent} from './prompt_library_ui';
 import {
   EXTENSION_NAME,
   DEFAULT_SETTINGS,
@@ -660,6 +661,10 @@ export function createSettingsUI(): string {
         ${floatingSourceSection(
           UI_SECTION_IDS.STANDALONE,
           createStandaloneGenerationContent()
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.PROMPT_LIBRARY,
+          createPromptLibraryContent()
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.CHARACTER_TAGS,

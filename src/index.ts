@@ -80,6 +80,7 @@ import {
 } from './worldinfo_ui';
 import {initializeCharacterTagsPanel} from './character_tags_ui';
 import {initializeStandaloneGeneration} from './standalone_generation_ui';
+import {initializePromptLibrary} from './prompt_library_ui';
 import {
   initializeFloatingPanel,
   openFloatingPanel,
@@ -3191,6 +3192,9 @@ function initialize(): void {
       // No active chat - initialize without metadata
       initializeStandaloneGeneration(context, settings, undefined);
     }
+
+    // Initialize prompt library panel
+    initializePromptLibrary(context, settings);
 
     // Mount the floating panel after all source controls and submodules are ready.
     initializeFloatingPanel();

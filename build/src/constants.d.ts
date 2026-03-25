@@ -7,6 +7,7 @@
  */
 import type { CharacterFixedTagEntry } from './types';
 import type { StyleTagPosition } from './types';
+import type { PromptLibraryEntry } from './types';
 /**
  * Extension identifier used for settings storage
  */
@@ -14,7 +15,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.6.1";
+export declare const EXTENSION_VERSION = "1.7.0";
 /**
  * GitHub repository for update checks
  */
@@ -206,6 +207,22 @@ export declare const STANDALONE_PROMPT_COUNT: {
     readonly STEP: 1;
 };
 /**
+ * Prompt library max entries configuration
+ */
+export declare const PROMPT_LIBRARY_MAX_ENTRIES: {
+    readonly DEFAULT: 500;
+    readonly MIN: 10;
+    readonly MAX: 2000;
+    readonly STEP: 10;
+};
+/**
+ * Prompt library thumbnail configuration
+ */
+export declare const PROMPT_LIBRARY_THUMBNAIL: {
+    readonly MAX_SIZE: 200;
+    readonly QUALITY: 0.6;
+};
+/**
  * Default settings for the extension
  * These values are used when no saved settings exist or when resetting
  */
@@ -252,6 +269,9 @@ export declare const DEFAULT_SETTINGS: {
     currentApiProfileId: string;
     characterFixedTags: Record<string, CharacterFixedTagEntry>;
     standalonePromptCount: 3;
+    promptLibraryEntries: PromptLibraryEntry[];
+    promptLibraryMaxEntries: 500;
+    promptLibrarySaveThumbnail: boolean;
 };
 /**
  * UI element IDs for settings controls
@@ -352,6 +372,19 @@ export declare const UI_ELEMENT_IDS: {
     readonly STANDALONE_MANUAL_GENERATE_BTN: "auto_illustrator_conso_standalone_manual_generate";
     readonly STANDALONE_MANUAL_IMAGE: "auto_illustrator_conso_standalone_manual_image";
     readonly STANDALONE_SUBFOLDER_LABEL: "auto_illustrator_conso_standalone_subfolder_label";
+    readonly PROMPT_LIBRARY_UPLOAD: "auto_illustrator_conso_prompt_library_upload";
+    readonly PROMPT_LIBRARY_UPLOAD_INPUT: "auto_illustrator_conso_prompt_library_upload_input";
+    readonly PROMPT_LIBRARY_SEARCH: "auto_illustrator_conso_prompt_library_search";
+    readonly PROMPT_LIBRARY_LIST: "auto_illustrator_conso_prompt_library_list";
+    readonly PROMPT_LIBRARY_COUNT: "auto_illustrator_conso_prompt_library_count";
+    readonly PROMPT_LIBRARY_EDIT_OVERLAY: "auto_illustrator_conso_prompt_library_edit_overlay";
+    readonly PROMPT_LIBRARY_EDIT_NAME: "auto_illustrator_conso_prompt_library_edit_name";
+    readonly PROMPT_LIBRARY_EDIT_POSITIVE: "auto_illustrator_conso_prompt_library_edit_positive";
+    readonly PROMPT_LIBRARY_EDIT_NEGATIVE: "auto_illustrator_conso_prompt_library_edit_negative";
+    readonly PROMPT_LIBRARY_EDIT_TAGS: "auto_illustrator_conso_prompt_library_edit_tags";
+    readonly PROMPT_LIBRARY_EDIT_CHARACTER: "auto_illustrator_conso_prompt_library_edit_character";
+    readonly PROMPT_LIBRARY_EDIT_SAVE: "auto_illustrator_conso_prompt_library_edit_save";
+    readonly PROMPT_LIBRARY_EDIT_CANCEL: "auto_illustrator_conso_prompt_library_edit_cancel";
 };
 /**
  * Stable DOM section IDs for the floating panel source area.
@@ -372,4 +405,5 @@ export declare const UI_SECTION_IDS: {
     readonly PROMPT_STYLE: "auto_illustrator_conso_panel_prompt_style";
     readonly STANDALONE: "auto_illustrator_conso_panel_standalone";
     readonly CHARACTER_TAGS: "auto_illustrator_conso_panel_character_tags";
+    readonly PROMPT_LIBRARY: "auto_illustrator_conso_panel_prompt_library";
 };

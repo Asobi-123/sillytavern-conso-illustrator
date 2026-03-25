@@ -768,11 +768,15 @@ export class GalleryWidgetView {
     `;
     container.appendChild(header);
 
-    // Add toggle functionality
+    // Add toggle functionality — look up the live group from the map
+    // to avoid stale closure when scanChatForImagesAsync replaces groups.
     header.addEventListener('click', () => {
-      group.isExpanded = !group.isExpanded;
-      this.saveStateToChatMetadata();
-      this.updateImmediately();
+      const liveGroup = this.messageGroups.get(group.messageId);
+      if (liveGroup) {
+        liveGroup.isExpanded = !liveGroup.isExpanded;
+        this.saveStateToChatMetadata();
+        this.updateImmediately();
+      }
     });
 
     // Create thumbnail gallery if expanded

@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-03-25
+
+### Added
+
+- **Prompt Library** - New top-level page in the floating panel for extracting, storing, and managing image generation prompts from NovelAI PNG files.
+  - **PNG metadata parser** - Pure browser-side parser extracts positive/negative prompts and full generation parameters (steps, sampler, seed, CFG, dimensions, etc.) from PNG tEXt chunks. Zero external dependencies.
+  - **Compressed thumbnails** - Automatically generates small JPEG thumbnails (~10-20KB) when importing, providing visual reference without storage bloat.
+  - **Batch import** - Drag-and-drop or file picker supporting multiple PNG files at once.
+  - **Search** - Real-time filtering by name, prompt content, or custom tags.
+  - **One-click copy** - Separate copy buttons for positive, negative, and character prompts.
+  - **Character prompt field** - Manually split and save character-related tags from the positive prompt.
+  - **Edit & rename** - Edit overlay for modifying prompts, names, and tags with persistent storage.
+  - **Custom tags** - User-defined tags for categorizing prompt entries.
+  - **Send to standalone** - One-click transfer of a prompt to the standalone generation manual input.
+  - **Parameter badges** - Read-only display of generation parameters (dimensions, steps, sampler, CFG, seed) on each card.
+  - **Storage management** - Configurable entry limit (default 500), stored globally in extension settings.
+- **6 new panel themes** - Obsidian (pure black), Snow (pure white), Sapphire (deep blue), Mocha (warm brown), Sakura (light pink), Dusk (deep purple). Total: 17 themes.
+
+### Fixed
+
+- **Gallery collapse toggle** - Fixed a stale closure bug where the expand/collapse toggle for message groups in the gallery would stop working after a chat scan. The toggle handler now looks up the live group reference from the map instead of relying on a captured closure.
+
 ## [1.6.1] - 2026-03-24
 
 ### Fixed

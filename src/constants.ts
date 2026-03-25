@@ -9,6 +9,7 @@
 import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
 import type {CharacterFixedTagEntry} from './types';
 import type {StyleTagPosition} from './types';
+import type {PromptLibraryEntry} from './types';
 
 /**
  * Extension identifier used for settings storage
@@ -18,7 +19,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.6.1';
+export const EXTENSION_VERSION = '1.7.0';
 
 /**
  * GitHub repository for update checks
@@ -242,6 +243,24 @@ export const STANDALONE_PROMPT_COUNT = {
 } as const;
 
 /**
+ * Prompt library max entries configuration
+ */
+export const PROMPT_LIBRARY_MAX_ENTRIES = {
+  DEFAULT: 500,
+  MIN: 10,
+  MAX: 2000,
+  STEP: 10,
+} as const;
+
+/**
+ * Prompt library thumbnail configuration
+ */
+export const PROMPT_LIBRARY_THUMBNAIL = {
+  MAX_SIZE: 200,
+  QUALITY: 0.6,
+} as const;
+
+/**
  * Default settings for the extension
  * These values are used when no saved settings exist or when resetting
  */
@@ -288,6 +307,9 @@ export const DEFAULT_SETTINGS = {
   currentApiProfileId: '',
   characterFixedTags: {} as Record<string, CharacterFixedTagEntry>,
   standalonePromptCount: STANDALONE_PROMPT_COUNT.DEFAULT,
+  promptLibraryEntries: [] as PromptLibraryEntry[],
+  promptLibraryMaxEntries: PROMPT_LIBRARY_MAX_ENTRIES.DEFAULT,
+  promptLibrarySaveThumbnail: true,
 };
 
 /**
@@ -418,6 +440,25 @@ export const UI_ELEMENT_IDS = {
   STANDALONE_MANUAL_IMAGE: 'auto_illustrator_conso_standalone_manual_image',
   STANDALONE_SUBFOLDER_LABEL:
     'auto_illustrator_conso_standalone_subfolder_label',
+  PROMPT_LIBRARY_UPLOAD: 'auto_illustrator_conso_prompt_library_upload',
+  PROMPT_LIBRARY_UPLOAD_INPUT:
+    'auto_illustrator_conso_prompt_library_upload_input',
+  PROMPT_LIBRARY_SEARCH: 'auto_illustrator_conso_prompt_library_search',
+  PROMPT_LIBRARY_LIST: 'auto_illustrator_conso_prompt_library_list',
+  PROMPT_LIBRARY_COUNT: 'auto_illustrator_conso_prompt_library_count',
+  PROMPT_LIBRARY_EDIT_OVERLAY:
+    'auto_illustrator_conso_prompt_library_edit_overlay',
+  PROMPT_LIBRARY_EDIT_NAME: 'auto_illustrator_conso_prompt_library_edit_name',
+  PROMPT_LIBRARY_EDIT_POSITIVE:
+    'auto_illustrator_conso_prompt_library_edit_positive',
+  PROMPT_LIBRARY_EDIT_NEGATIVE:
+    'auto_illustrator_conso_prompt_library_edit_negative',
+  PROMPT_LIBRARY_EDIT_TAGS: 'auto_illustrator_conso_prompt_library_edit_tags',
+  PROMPT_LIBRARY_EDIT_CHARACTER:
+    'auto_illustrator_conso_prompt_library_edit_character',
+  PROMPT_LIBRARY_EDIT_SAVE: 'auto_illustrator_conso_prompt_library_edit_save',
+  PROMPT_LIBRARY_EDIT_CANCEL:
+    'auto_illustrator_conso_prompt_library_edit_cancel',
 } as const;
 
 /**
@@ -439,4 +480,5 @@ export const UI_SECTION_IDS = {
   PROMPT_STYLE: 'auto_illustrator_conso_panel_prompt_style',
   STANDALONE: 'auto_illustrator_conso_panel_standalone',
   CHARACTER_TAGS: 'auto_illustrator_conso_panel_character_tags',
+  PROMPT_LIBRARY: 'auto_illustrator_conso_panel_prompt_library',
 } as const;

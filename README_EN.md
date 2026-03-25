@@ -70,6 +70,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **Streaming Preview** | Live preview widget showing streamed text and generated images |
 | **Image Viewer** | Full modal viewer with zoom, pan, rotate, navigate, and download |
 | **Gallery Widget** | Floating gallery of all generated images, grouped by message |
+| **Prompt Library** | Upload NovelAI PNGs to extract prompts and parameters — search, edit, copy, and organize |
 
 ### Prompt Enhancement
 
@@ -91,7 +92,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **API Profile Management** | Save/switch/delete named API configurations |
 | **Guidelines Presets** | Manage frequency and prompt writing guidelines for independent API mode |
 | **Per-Chat Image Folders** | Organize images by chat with subfolder labels |
-| **Panel Themes** | Switch the floating panel between multiple dark and light themes |
+| **Panel Themes** | Switch the floating panel between 17 dark and light themes |
 | **Fullscreen Text Editing** | Fullscreen editing/preview for meta prompts, guideline text, and standalone prompts |
 | **Image Cleanup** | Auto-delete old images after configurable retention days |
 | **Collapsible Settings** | Three-level accordion panel, organized by function group |
@@ -121,7 +122,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 Starting from `1.6.0`, the plugin includes a floating workbench that pulls high-frequency actions out of the old drawer.
 
-### Four Pages
+### Five Pages
 
 | Page | Purpose |
 |------|---------|
@@ -129,6 +130,7 @@ Starting from `1.6.0`, the plugin includes a floating workbench that pulls high-
 | **Prompt Settings** | Configure shared API mode or independent API mode prompt generation behavior |
 | **Gallery** | View generated images from the current chat inside the panel |
 | **Standalone** | Test prompt generation and image output without sending chat messages |
+| **Prompt Library** | Upload NovelAI PNGs → extract positive/negative/character prompts → search, edit, copy, organize |
 
 ### When does it appear?
 

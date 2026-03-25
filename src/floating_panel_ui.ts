@@ -26,6 +26,7 @@ const SLOT_IDS = {
   worldOverlay: 'ai-floating-panel-slot-world-overlay',
   characterOverlay: 'ai-floating-panel-slot-character-overlay',
   gallery: 'ai-floating-panel-slot-gallery',
+  promptLibrary: 'ai-floating-panel-slot-prompt-library',
 } as const;
 
 const PANEL_IDS = {
@@ -36,6 +37,7 @@ const PANEL_IDS = {
   promptPage: 'ai-floating-panel-page-prompt',
   galleryPage: 'ai-floating-panel-page-gallery',
   standalonePage: 'ai-floating-panel-page-standalone',
+  promptLibraryPage: 'ai-floating-panel-page-prompt-library',
   sharedSection: 'ai-floating-panel-shared-section',
   independentSection: 'ai-floating-panel-independent-section',
   contextTogglePrompt: 'ai-floating-panel-context-toggle-prompt',
@@ -62,7 +64,13 @@ type PanelTheme =
   | 'rose'
   | 'jade'
   | 'lavender'
-  | 'citrus';
+  | 'citrus'
+  | 'obsidian'
+  | 'snow'
+  | 'sapphire'
+  | 'mocha'
+  | 'sakura'
+  | 'dusk';
 
 const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
   slate: {
@@ -274,6 +282,120 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--switch-on': '#93aa55',
     '--switch-knob': '#ffffff',
   },
+  obsidian: {
+    '--bg-top': '#0a0a0a',
+    '--bg-bottom': '#111111',
+    '--panel': '#161616',
+    '--panel-2': '#1e1e1e',
+    '--panel-3': '#262626',
+    '--panel-soft': 'rgba(0, 0, 0, 0.12)',
+    '--overlay-bg': 'rgba(10, 10, 10, 0.98)',
+    '--field-bg': '#0f0f0f',
+    '--line': '#333333',
+    '--text': '#e8e8e8',
+    '--text-2': '#b0b0b0',
+    '--text-3': '#787878',
+    '--accent': '#8a8a8a',
+    '--accent-soft': 'rgba(138, 138, 138, 0.14)',
+    '--switch-off': '#3a3a3a',
+    '--switch-on': '#6e6e6e',
+    '--switch-knob': '#e0e0e0',
+  },
+  snow: {
+    '--bg-top': '#f0f0f0',
+    '--bg-bottom': '#fafafa',
+    '--panel': '#f5f5f5',
+    '--panel-2': '#fafafa',
+    '--panel-3': '#ffffff',
+    '--panel-soft': 'rgba(255, 255, 255, 0.85)',
+    '--overlay-bg': 'rgba(250, 250, 250, 0.98)',
+    '--field-bg': '#ffffff',
+    '--line': '#d5d5d5',
+    '--text': '#1a1a1a',
+    '--text-2': '#555555',
+    '--text-3': '#888888',
+    '--accent': '#555555',
+    '--accent-soft': 'rgba(85, 85, 85, 0.12)',
+    '--switch-off': '#cccccc',
+    '--switch-on': '#666666',
+    '--switch-knob': '#ffffff',
+  },
+  sapphire: {
+    '--bg-top': '#0b1628',
+    '--bg-bottom': '#0f1f3a',
+    '--panel': '#132748',
+    '--panel-2': '#1a3460',
+    '--panel-3': '#224178',
+    '--panel-soft': 'rgba(0, 0, 0, 0.10)',
+    '--overlay-bg': 'rgba(12, 20, 40, 0.98)',
+    '--field-bg': '#0e1a32',
+    '--line': '#2d5090',
+    '--text': '#e8f0ff',
+    '--text-2': '#a8c4f0',
+    '--text-3': '#7096cc',
+    '--accent': '#4d8aff',
+    '--accent-soft': 'rgba(77, 138, 255, 0.18)',
+    '--switch-off': '#2c4a78',
+    '--switch-on': '#4c85f2',
+    '--switch-knob': '#e8f0ff',
+  },
+  mocha: {
+    '--bg-top': '#1a1412',
+    '--bg-bottom': '#261d18',
+    '--panel': '#2e231d',
+    '--panel-2': '#3d302a',
+    '--panel-3': '#4a3b33',
+    '--panel-soft': 'rgba(0, 0, 0, 0.10)',
+    '--overlay-bg': 'rgba(26, 20, 16, 0.98)',
+    '--field-bg': '#221a15',
+    '--line': '#5e4b3e',
+    '--text': '#f2e8e0',
+    '--text-2': '#cdb8a8',
+    '--text-3': '#9e8878',
+    '--accent': '#c09070',
+    '--accent-soft': 'rgba(192, 144, 112, 0.18)',
+    '--switch-off': '#5a483c',
+    '--switch-on': '#b58568',
+    '--switch-knob': '#f5ede6',
+  },
+  sakura: {
+    '--bg-top': '#f5e8ee',
+    '--bg-bottom': '#fdf4f8',
+    '--panel': '#f8ecf2',
+    '--panel-2': '#fbf2f6',
+    '--panel-3': '#fef8fb',
+    '--panel-soft': 'rgba(255, 255, 255, 0.75)',
+    '--overlay-bg': 'rgba(252, 244, 248, 0.98)',
+    '--field-bg': '#fffafc',
+    '--line': '#e0c4d2',
+    '--text': '#3a222e',
+    '--text-2': '#6b4a5a',
+    '--text-3': '#997080',
+    '--accent': '#d4738e',
+    '--accent-soft': 'rgba(212, 115, 142, 0.16)',
+    '--switch-off': '#d6bfc9',
+    '--switch-on': '#d07590',
+    '--switch-knob': '#ffffff',
+  },
+  dusk: {
+    '--bg-top': '#18141e',
+    '--bg-bottom': '#221c2c',
+    '--panel': '#2a2338',
+    '--panel-2': '#372e48',
+    '--panel-3': '#433858',
+    '--panel-soft': 'rgba(0, 0, 0, 0.10)',
+    '--overlay-bg': 'rgba(24, 20, 32, 0.98)',
+    '--field-bg': '#1e1828',
+    '--line': '#554872',
+    '--text': '#f0e8f8',
+    '--text-2': '#c8b8da',
+    '--text-3': '#9888b0',
+    '--accent': '#b088e0',
+    '--accent-soft': 'rgba(176, 136, 224, 0.18)',
+    '--switch-off': '#504468',
+    '--switch-on': '#a880d8',
+    '--switch-knob': '#f5f0fa',
+  },
 };
 
 let currentTextTarget:
@@ -306,6 +428,7 @@ function panelHtml(): string {
           <button class="ai-floating-panel-tab" data-panel-tab="prompt">${t('panel.promptSettings')}</button>
           <button class="ai-floating-panel-tab" data-panel-tab="gallery">${t('gallery.title')}</button>
           <button class="ai-floating-panel-tab" data-panel-tab="standalone">${t('drawer.standaloneGeneration')}</button>
+          <button class="ai-floating-panel-tab" data-panel-tab="prompt-library">${t('promptLibrary.title')}</button>
         </nav>
 
         <div class="ai-floating-panel-body">
@@ -347,6 +470,12 @@ function panelHtml(): string {
                 ${themeButtonHtml('jade')}
                 ${themeButtonHtml('lavender')}
                 ${themeButtonHtml('citrus')}
+                ${themeButtonHtml('obsidian')}
+                ${themeButtonHtml('snow')}
+                ${themeButtonHtml('sapphire')}
+                ${themeButtonHtml('mocha')}
+                ${themeButtonHtml('sakura')}
+                ${themeButtonHtml('dusk')}
               </div>
             </section>
 
@@ -494,6 +623,15 @@ function panelHtml(): string {
                   <button class="ai-floating-panel-ghost-btn" data-open-overlay="${PANEL_IDS.worldOverlay}">${t('panel.manage')}</button>
                 </div>
               </div>
+            </section>
+          </section>
+
+          <section id="${PANEL_IDS.promptLibraryPage}" class="ai-floating-panel-page" data-page="prompt-library">
+            <section class="ai-floating-panel-card no-collapse">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('promptLibrary.title')}</strong>
+              </div>
+              <div id="${SLOT_IDS.promptLibrary}"></div>
             </section>
           </section>
         </div>
@@ -1409,6 +1547,7 @@ function mountSourceSections(): void {
   mountSection(UI_SECTION_IDS.CONTEXT_INJECTION, SLOT_IDS.contextOverlay);
   mountSection(UI_SECTION_IDS.WORLD_INFO, SLOT_IDS.worldOverlay);
   mountSection(UI_SECTION_IDS.CHARACTER_TAGS, SLOT_IDS.characterOverlay);
+  mountSection(UI_SECTION_IDS.PROMPT_LIBRARY, SLOT_IDS.promptLibrary);
 }
 
 function bindPanelEvents(): void {
