@@ -1,6 +1,6 @@
 /**
  * PNG Metadata Parser
- * Extracts NovelAI generation metadata from PNG tEXt/iTXt chunks.
+ * Extracts NovelAI generation metadata from PNG tEXt/zTXt/iTXt chunks.
  * Pure browser-side implementation with zero external dependencies.
  */
 import type { NovelAiParameters } from '../types';
@@ -24,7 +24,7 @@ export interface PngMetadataResult {
     rawChunks: PngTextChunks;
 }
 /**
- * Extracts all tEXt and iTXt chunks from a PNG ArrayBuffer.
+ * Extracts all tEXt, zTXt, and iTXt chunks from a PNG ArrayBuffer.
  *
  * PNG chunk structure:
  *   4 bytes: data length
@@ -33,10 +33,11 @@ export interface PngMetadataResult {
  *   4 bytes: CRC
  *
  * tEXt chunk data: keyword (Latin-1) + null byte + text (Latin-1)
+ * zTXt chunk data: keyword + null byte + compression method (1 byte, 0=zlib) + compressed data
  * iTXt chunk data: keyword + null + compression flag + compression method
  *                  + language tag + null + translated keyword + null + text (UTF-8)
  */
-export declare function extractPngTextChunks(buffer: ArrayBuffer): PngTextChunks;
+export declare function extractPngTextChunks(buffer: ArrayBuffer): Promise<PngTextChunks>;
 /**
  * Parses NovelAI metadata from a PNG file's text chunks.
  */

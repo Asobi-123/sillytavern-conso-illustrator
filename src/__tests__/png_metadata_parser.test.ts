@@ -68,30 +68,30 @@ function addChunk(parts: number[], type: string, data: Uint8Array): void {
 }
 
 describe('extractPngTextChunks', () => {
-  it('returns empty object for non-PNG buffer', () => {
+  it('returns empty object for non-PNG buffer', async () => {
     const buf = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8]).buffer;
-    expect(extractPngTextChunks(buf)).toEqual({});
+    expect(await extractPngTextChunks(buf)).toEqual({});
   });
 
-  it('extracts single tEXt chunk', () => {
+  it('extracts single tEXt chunk', async () => {
     const buf = buildPngWithTextChunks({Title: 'AI generated image'});
-    const chunks = extractPngTextChunks(buf);
+    const chunks = await extractPngTextChunks(buf);
     expect(chunks['Title']).toBe('AI generated image');
   });
 
-  it('extracts multiple tEXt chunks', () => {
+  it('extracts multiple tEXt chunks', async () => {
     const buf = buildPngWithTextChunks({
       Title: 'AI generated image',
       Software: 'NovelAI',
       Description: '1girl, blue hair',
     });
-    const chunks = extractPngTextChunks(buf);
+    const chunks = await extractPngTextChunks(buf);
     expect(chunks['Title']).toBe('AI generated image');
     expect(chunks['Software']).toBe('NovelAI');
     expect(chunks['Description']).toBe('1girl, blue hair');
   });
 
-  it('extracts Comment chunk with JSON content', () => {
+  it('extracts Comment chunk with JSON content', async () => {
     const comment = JSON.stringify({
       prompt: '1girl, blue hair, school uniform',
       uc: 'lowres, bad anatomy',
@@ -101,15 +101,15 @@ describe('extractPngTextChunks', () => {
       scale: 7.0,
     });
     const buf = buildPngWithTextChunks({Comment: comment});
-    const chunks = extractPngTextChunks(buf);
+    const chunks = await extractPngTextChunks(buf);
     expect(chunks['Comment']).toBe(comment);
   });
 
-  it('handles empty PNG (just signature + IEND)', () => {
+  it('handles empty PNG (just signature + IEND)', async () => {
     const parts = [...PNG_SIG];
     addChunk(parts, 'IEND', new Uint8Array(0));
     const buf = new Uint8Array(parts).buffer;
-    expect(extractPngTextChunks(buf)).toEqual({});
+    expect(await extractPngTextChunks(buf)).toEqual({});
   });
 });
 

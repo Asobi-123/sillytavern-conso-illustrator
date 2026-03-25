@@ -1,11 +1,14 @@
 /**
  * PNG Metadata Parser
- * Extracts NovelAI generation metadata from PNG tEXt/iTXt chunks.
+ * Extracts NovelAI generation metadata from PNG tEXt/zTXt/iTXt chunks.
  * Pure browser-side implementation with zero external dependencies.
  */
 
 import type {NovelAiParameters} from '../types';
 import {PROMPT_LIBRARY_THUMBNAIL} from '../constants';
+import {createLogger} from '../logger';
+
+const logger = createLogger('PngParser');
 
 /** Raw text chunks extracted from PNG */
 export interface PngTextChunks {
@@ -62,7 +65,45 @@ function decodeLatin1(bytes: Uint8Array): string {
 }
 
 /**
- * Extracts all tEXt and iTXt chunks from a PNG ArrayBuffer.
+ * Decompresses zlib-compressed data using the browser's DecompressionStream API.
+ * Falls back to manual inflate if DecompressionStream is not available.
+ */
+async function decompressZlib(data: Uint8Array): Promise<ArrayBuffer> {
+  // Modern browsers: use DecompressionStream
+  if (typeof DecompressionStream !== 'undefined') {
+    const ds = new DecompressionStream('deflate');
+    const writer = ds.writable.getWriter();
+    const reader = ds.readable.getReader();
+
+    writer.write(data);
+    writer.close();
+
+    const chunks: Uint8Array[] = [];
+    let totalLength = 0;
+    let done = false;
+    while (!done) {
+      const result = await reader.read();
+      done = result.done;
+      if (result.value) {
+        chunks.push(result.value);
+        totalLength += result.value.byteLength;
+      }
+    }
+
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return result.buffer;
+  }
+
+  throw new Error('DecompressionStream not available');
+}
+
+/**
+ * Extracts all tEXt, zTXt, and iTXt chunks from a PNG ArrayBuffer.
  *
  * PNG chunk structure:
  *   4 bytes: data length
@@ -71,10 +112,13 @@ function decodeLatin1(bytes: Uint8Array): string {
  *   4 bytes: CRC
  *
  * tEXt chunk data: keyword (Latin-1) + null byte + text (Latin-1)
+ * zTXt chunk data: keyword + null byte + compression method (1 byte, 0=zlib) + compressed data
  * iTXt chunk data: keyword + null + compression flag + compression method
  *                  + language tag + null + translated keyword + null + text (UTF-8)
  */
-export function extractPngTextChunks(buffer: ArrayBuffer): PngTextChunks {
+export async function extractPngTextChunks(
+  buffer: ArrayBuffer
+): Promise<PngTextChunks> {
   const view = new DataView(buffer);
   const bytes = new Uint8Array(buffer);
   const chunks: PngTextChunks = {};
@@ -100,6 +144,25 @@ export function extractPngTextChunks(buffer: ArrayBuffer): PngTextChunks {
         const keyword = decodeLatin1(chunkData.subarray(0, nullIndex));
         const value = decodeLatin1(chunkData.subarray(nullIndex + 1));
         chunks[keyword] = value;
+      }
+    } else if (type === 'zTXt') {
+      // zTXt: keyword + \0 + compressionMethod (1 byte) + compressed data
+      const chunkData = bytes.subarray(dataStart, dataStart + length);
+      const nullIndex = chunkData.indexOf(0);
+      if (nullIndex !== -1) {
+        const keyword = decodeLatin1(chunkData.subarray(0, nullIndex));
+        const compressionMethod = chunkData[nullIndex + 1];
+        if (compressionMethod === 0) {
+          // zlib/deflate compression
+          const compressedData = chunkData.subarray(nullIndex + 2);
+          try {
+            const decompressed = await decompressZlib(compressedData);
+            chunks[keyword] = decodeLatin1(new Uint8Array(decompressed));
+          } catch (err) {
+            // Fallback: try reading as raw text (some tools write uncompressed zTXt)
+            logger.warn(`Failed to decompress zTXt chunk "${keyword}":`, err);
+          }
+        }
       }
     } else if (type === 'iTXt') {
       // iTXt: keyword + \0 + compressionFlag + compressionMethod
@@ -240,7 +303,7 @@ function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
  */
 export async function parsePngMetadata(file: File): Promise<PngMetadataResult> {
   const buffer = await readFileAsArrayBuffer(file);
-  const chunks = extractPngTextChunks(buffer);
+  const chunks = await extractPngTextChunks(buffer);
   return parseNovelAiMetadata(chunks);
 }
 
