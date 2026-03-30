@@ -296,6 +296,16 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 - 检查 API 连接配置中 NovelAI 是否已连接
 - 检查扩展 → 图像生成 → 来源是否选了 NovelAI Diffusion
 
+### 弹窗提示“主回复为空，可能是主 API 回复失败”？
+- 这通常表示主聊天 API 这一层没有正常返回内容，不是独立提示词生成本身先坏掉
+- 如果你刚刚为了配置 NovelAI 去过 API 连接页，先检查是否已经切回 **聊天补全**
+- 如果已经切回聊天补全，说明是当前主模型 / 中转 / 网络这层先失败了，先把主回复跑通，再测独立模式
+
+### 弹窗提示“API 请求失败 / API 返回为空 / 没有生成到有效提示词”？
+- 这类提示通常是独立 LLM 这层的问题
+- 优先检查：独立 LLM 的 URL、Key、模型名、网络连通性、max tokens 是否合理
+- 如果是“没有生成到有效提示词”，重点检查指南预设是否把输出格式带偏了
+
 ### 图片质量差？
 - 检查风格配置中的提示词前缀和负面前缀是否填好
 - 尝试添加画师串到前缀中
@@ -314,4 +324,4 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 
 ---
 
-*本教程适用于 Conso Illustrator v1.6.0+*
+*本教程适用于 Conso Illustrator v1.7.1+*

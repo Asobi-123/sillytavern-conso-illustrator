@@ -17,6 +17,11 @@ import {reconcileMessage} from './reconciliation';
 import {getMetadata, saveMetadata} from './metadata';
 import {renderMessageUpdate} from './utils/message_renderer';
 import {attachRegenerationHandlers} from './manual_generation';
+import {t} from './i18n';
+import {
+  AutoIllustratorError,
+  getUserFacingErrorReason,
+} from './utils/error_utils';
 
 const logger = createLogger('MessageHandler');
 
@@ -171,6 +176,18 @@ export async function handleMessageReceived(
   // Skip empty messages (main API may have errored)
   if (!message.mes || message.mes.trim().length === 0) {
     logger.info('Message has no content, skipping (main API may have errored)');
+    if (isIndependentApiMode(settings.promptGenerationMode)) {
+      const reason = getUserFacingErrorReason(
+        new AutoIllustratorError(
+          'main-response-empty',
+          'Main response is empty'
+        )
+      );
+      toastr.error(
+        t('toast.llmPromptGenerationFailedWithReason', {reason}),
+        t('extensionName')
+      );
+    }
     return;
   }
   const session = sessionManager.getSession(messageId);
@@ -245,9 +262,15 @@ export async function handleMessageReceived(
 
         if (totalInserted === 0) {
           logger.warn('No prompts generated or inserted');
-          toastr.warning(
-            'Failed to generate image prompts (LLM returned no valid prompts)',
-            'Warning'
+          const reason = getUserFacingErrorReason(
+            new AutoIllustratorError(
+              'prompt-insertion-failed',
+              'Failed to inject generated prompts into the message'
+            )
+          );
+          toastr.error(
+            t('toast.llmPromptGenerationFailedWithReason', {reason}),
+            t('extensionName')
           );
           return;
         }
@@ -260,7 +283,12 @@ export async function handleMessageReceived(
         );
       } catch (error) {
         logger.error('LLM prompt generation failed:', error);
-        toastr.warning('Failed to generate image prompts', 'Warning');
+        toastr.error(
+          t('toast.llmPromptGenerationFailedWithReason', {
+            reason: getUserFacingErrorReason(error),
+          }),
+          t('extensionName')
+        );
         return;
       }
     }

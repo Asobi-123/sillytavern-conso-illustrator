@@ -15,7 +15,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.7.0";
+export declare const EXTENSION_VERSION = "1.7.1";
 /**
  * GitHub repository for update checks
  */

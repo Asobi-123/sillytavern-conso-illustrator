@@ -8,6 +8,7 @@ vi.mock('./worldinfo_service', () => ({
 }));
 import {
   generatePromptsForMessage,
+  generateStandalonePrompts,
   buildWorldInfoSection,
 } from './prompt_generation_service';
 import {fetchWorldBookEntries} from './worldinfo_service';
@@ -119,35 +120,27 @@ Hope this helps!`;
       expect(result).toHaveLength(0);
     });
 
-    it('should return empty array on malformed response', async () => {
+    it('should throw when response does not contain valid prompt blocks', async () => {
       const messageText = 'Test message.';
       const llmResponse = 'This is not a valid format at all';
 
       vi.mocked(mockContext.generateRaw).mockResolvedValue(llmResponse);
 
-      const result = await generatePromptsForMessage(
-        messageText,
-        mockContext,
-        mockSettings
-      );
-
-      expect(result).toHaveLength(0);
+      await expect(
+        generatePromptsForMessage(messageText, mockContext, mockSettings)
+      ).rejects.toMatchObject({code: 'no-valid-prompts'});
     });
 
-    it('should return empty array when response missing prompts', async () => {
+    it('should throw when response ends without valid prompt fields', async () => {
       const messageText = 'Test message.';
       const llmResponse = `Some text but no prompts
 ---END---`;
 
       vi.mocked(mockContext.generateRaw).mockResolvedValue(llmResponse);
 
-      const result = await generatePromptsForMessage(
-        messageText,
-        mockContext,
-        mockSettings
-      );
-
-      expect(result).toHaveLength(0);
+      await expect(
+        generatePromptsForMessage(messageText, mockContext, mockSettings)
+      ).rejects.toMatchObject({code: 'no-valid-prompts'});
     });
 
     it('should skip prompts with missing required fields', async () => {
@@ -296,20 +289,29 @@ REASONING: Second
       expect(result[0].text).toBe('prompt1');
     });
 
-    it('should return empty array when generateRaw throws error', async () => {
+    it('should throw categorized error when generateRaw throws', async () => {
       const messageText = 'Test message.';
 
       vi.mocked(mockContext.generateRaw).mockRejectedValue(
         new Error('LLM error')
       );
 
-      const result = await generatePromptsForMessage(
-        messageText,
-        mockContext,
-        mockSettings
-      );
+      await expect(
+        generatePromptsForMessage(messageText, mockContext, mockSettings)
+      ).rejects.toMatchObject({
+        code: 'api-request-failed',
+        detail: 'LLM error',
+      });
+    });
 
-      expect(result).toHaveLength(0);
+    it('should throw categorized error when LLM returns empty response', async () => {
+      const messageText = 'Test message.';
+
+      vi.mocked(mockContext.generateRaw).mockResolvedValue('   ');
+
+      await expect(
+        generatePromptsForMessage(messageText, mockContext, mockSettings)
+      ).rejects.toMatchObject({code: 'llm-empty-response'});
     });
 
     it('should throw error when generateRaw is not available', async () => {
@@ -544,6 +546,44 @@ REASONING: Handles newlines naturally
       expect(result.indexOf('[FirstBook]')).toBeLessThan(
         result.indexOf('[SecondBook]')
       );
+    });
+  });
+
+  describe('generateStandalonePrompts', () => {
+    it('should throw categorized error when standalone LLM returns empty response', async () => {
+      vi.mocked(mockContext.generateRaw).mockResolvedValue('   ');
+      mockSettings.promptGenerationMode = 'shared-api';
+      mockSettings.useIndependentLlmApi = false;
+
+      await expect(
+        generateStandalonePrompts(
+          'A moonlit garden',
+          2,
+          true,
+          false,
+          mockContext,
+          mockSettings
+        )
+      ).rejects.toMatchObject({code: 'llm-empty-response'});
+    });
+
+    it('should throw categorized error when standalone LLM returns no valid prompts', async () => {
+      vi.mocked(mockContext.generateRaw).mockResolvedValue(
+        'This response has no prompt blocks'
+      );
+      mockSettings.promptGenerationMode = 'shared-api';
+      mockSettings.useIndependentLlmApi = false;
+
+      await expect(
+        generateStandalonePrompts(
+          'A moonlit garden',
+          2,
+          true,
+          false,
+          mockContext,
+          mockSettings
+        )
+      ).rejects.toMatchObject({code: 'no-valid-prompts'});
     });
   });
 });

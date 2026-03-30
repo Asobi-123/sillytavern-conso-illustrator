@@ -121,6 +121,9 @@
   "toast.generatingImagesProgress": "正在生成图像：{current}/{total}",
   "toast.generatingImagesProgressWithMessage": "消息 #{messageId}：正在生成 {current}/{total} 图片",
   "toast.reloadRequired": "请刷新页面以使此更改生效",
+  "toast.llmPromptGenerationFailedWithReason": "生成图片提示词失败：{reason}",
+  "toast.standalonePromptGenerationFailedWithReason": "独立生图提示词生成失败：{reason}",
+  "toast.standaloneImageGenerationFailedWithReason": "独立生图失败：{reason}",
   "progress.succeeded": "成功",
   "progress.failed": "失败",
   "progress.pending": "等待中",
@@ -341,6 +344,7 @@
   "standalone.generatingPrompts": "正在生成提示词...",
   "standalone.promptsGenerated": "已生成 {count} 条提示词",
   "standalone.generatingImage": "正在生成图片...",
+  "standalone.promptFailed": "提示词生成失败",
   "standalone.imageFailed": "生成失败",
   "standalone.reasoning": "理由",
   "standalone.noSceneDescription": "请输入场景描述",
@@ -420,4 +424,14 @@
   "toast.promptLibraryDeleted": "条目已删除",
   "toast.promptLibrarySentToStandalone": "提示词已发送到独立生图",
   "toast.promptLibraryFull": "提示词仓库已满（{max} 条）。请删除部分条目后再导入。"
+  ,"errorReason.apiRequestFailed": "API 请求失败",
+  "errorReason.apiReturnedEmpty": "API 返回为空",
+  "errorReason.noValidPrompts": "没有生成到有效提示词",
+  "errorReason.llmUnavailable": "LLM 生成功能不可用",
+  "errorReason.mainResponseEmpty": "主回复为空，可能是主 API 回复失败",
+  "errorReason.promptInsertionFailed": "生成的提示词无法注入到消息中",
+  "errorReason.imageCommandUnavailable": "生图命令不可用",
+  "errorReason.imageReturnedEmpty": "生图接口没有返回图片",
+  "errorReason.imageRequestFailed": "生图请求失败",
+  "errorReason.unknown": "未知错误"
 }

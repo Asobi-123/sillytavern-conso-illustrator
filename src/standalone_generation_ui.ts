@@ -9,6 +9,10 @@ import {createLogger} from './logger';
 import {generateStandalonePrompts} from './services/prompt_generation_service';
 import {generateImage, setImageSubfolderLabel} from './image_generator';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {
+  AutoIllustratorError,
+  getUserFacingErrorReason,
+} from './utils/error_utils';
 import type {
   AutoIllustratorChatMetadata,
   StandalonePromptResult,
@@ -18,6 +22,25 @@ const logger = createLogger('StandaloneGen');
 let standaloneGenerationInitialized = false;
 const STANDALONE_SUBFOLDER_STORAGE_KEY =
   'auto_illustrator_conso_standalone_subfolder_label';
+
+function renderStandaloneError(
+  container: HTMLElement,
+  key: 'standalone.imageFailed' | 'standalone.promptFailed'
+): void {
+  container.innerHTML = `<div class="standalone-error">${t(key)}</div>`;
+}
+
+function showStandaloneToast(
+  key:
+    | 'toast.standalonePromptGenerationFailedWithReason'
+    | 'toast.standaloneImageGenerationFailedWithReason',
+  error: unknown
+): void {
+  toastr.error(
+    t(key, {reason: getUserFacingErrorReason(error)}),
+    t('extensionName')
+  );
+}
 
 /**
  * Creates the HTML content for the standalone generation drawer.
@@ -263,11 +286,23 @@ async function generateForCard(
         window.open(imageUrl, '_blank');
       });
     } else {
-      imageContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+      const error = new AutoIllustratorError(
+        'image-empty-response',
+        'Image generation returned no image'
+      );
+      renderStandaloneError(imageContainer, 'standalone.imageFailed');
+      showStandaloneToast(
+        'toast.standaloneImageGenerationFailedWithReason',
+        error
+      );
     }
   } catch (error) {
     logger.error('Standalone image generation failed:', error);
-    imageContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+    renderStandaloneError(imageContainer, 'standalone.imageFailed');
+    showStandaloneToast(
+      'toast.standaloneImageGenerationFailedWithReason',
+      error
+    );
   } finally {
     genBtn.disabled = false;
   }
@@ -404,11 +439,23 @@ export function initializeStandaloneGeneration(
         // Bind individual card generate buttons
         bindCardGenerateButtons(resultsContainer, context, settings, scene);
       } else {
-        resultsContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+        const error = new AutoIllustratorError(
+          'no-valid-prompts',
+          'Standalone LLM returned no valid prompts'
+        );
+        renderStandaloneError(resultsContainer, 'standalone.promptFailed');
+        showStandaloneToast(
+          'toast.standalonePromptGenerationFailedWithReason',
+          error
+        );
       }
     } catch (error) {
       logger.error('Failed to generate standalone prompts:', error);
-      resultsContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+      renderStandaloneError(resultsContainer, 'standalone.promptFailed');
+      showStandaloneToast(
+        'toast.standalonePromptGenerationFailedWithReason',
+        error
+      );
     } finally {
       (generatePromptsBtn as HTMLButtonElement).disabled = false;
     }
@@ -456,11 +503,23 @@ export function initializeStandaloneGeneration(
           await generateForCard(card as HTMLElement, context, settings, scene);
         }
       } else {
-        resultsContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+        const error = new AutoIllustratorError(
+          'no-valid-prompts',
+          'Standalone LLM returned no valid prompts'
+        );
+        renderStandaloneError(resultsContainer, 'standalone.promptFailed');
+        showStandaloneToast(
+          'toast.standalonePromptGenerationFailedWithReason',
+          error
+        );
       }
     } catch (error) {
       logger.error('Auto generate failed:', error);
-      resultsContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+      renderStandaloneError(resultsContainer, 'standalone.promptFailed');
+      showStandaloneToast(
+        'toast.standalonePromptGenerationFailedWithReason',
+        error
+      );
     } finally {
       (autoBtn as HTMLButtonElement).disabled = false;
     }
@@ -549,11 +608,23 @@ export function initializeStandaloneGeneration(
           window.open(imageUrl, '_blank');
         });
       } else {
-        imageContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+        const error = new AutoIllustratorError(
+          'image-empty-response',
+          'Image generation returned no image'
+        );
+        renderStandaloneError(imageContainer, 'standalone.imageFailed');
+        showStandaloneToast(
+          'toast.standaloneImageGenerationFailedWithReason',
+          error
+        );
       }
     } catch (error) {
       logger.error('Manual generation failed:', error);
-      imageContainer.innerHTML = `<div class="standalone-error">${t('standalone.imageFailed')}</div>`;
+      renderStandaloneError(imageContainer, 'standalone.imageFailed');
+      showStandaloneToast(
+        'toast.standaloneImageGenerationFailedWithReason',
+        error
+      );
     } finally {
       (manualGenBtn as HTMLButtonElement).disabled = false;
     }

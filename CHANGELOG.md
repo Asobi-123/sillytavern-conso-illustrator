@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-03-30
+
+### Fixed
+
+- **Actionable failure toasts for independent generation flows** - Independent prompt injection and standalone generation now surface categorized SillyTavern error toasts for main-reply-empty failures, API failures, empty responses, invalid prompt output, prompt injection failures, and image generation failures instead of only showing generic inline failure text.
+
 ## [1.7.0] - 2026-03-25
 
 ### Added
