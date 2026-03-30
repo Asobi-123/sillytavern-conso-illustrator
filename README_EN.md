@@ -164,6 +164,7 @@ The following areas support fullscreen editing/preview:
 |---------|-----------|
 | No images generated | Make sure `/sd` command works first — the plugin depends on SillyTavern's Image Generation extension |
 | Images appear then disappear | Check browser console for errors; verify image storage path exists |
+| Independent mode fails and you do not know where to look | The plugin now shows a failure toast with the likely reason. If it says the main reply was empty, first make sure your main API is switched back to Chat Completion. If it says API request failed or returned empty, check the independent LLM configuration |
 | Wrong character appearance | Use **Character Fixed Tags** to lock visual tags per character |
 | Prompts are inaccurate | Try **Independent API mode** with **NAI 4.5 Full** preset |
 | Too many console logs | Adjust **Log Level** in settings (default: INFO) |

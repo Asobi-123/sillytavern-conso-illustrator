@@ -121,6 +121,9 @@
   "toast.generatingImagesProgress": "Generating images: {current} of {total}",
   "toast.generatingImagesProgressWithMessage": "Message #{messageId}: Generating {current} of {total} images",
   "toast.reloadRequired": "Please reload the page for this change to take effect",
+  "toast.llmPromptGenerationFailedWithReason": "Failed to generate image prompts: {reason}",
+  "toast.standalonePromptGenerationFailedWithReason": "Failed to generate standalone prompts: {reason}",
+  "toast.standaloneImageGenerationFailedWithReason": "Failed to generate standalone image: {reason}",
   "progress.succeeded": "ok",
   "progress.failed": "failed",
   "progress.pending": "pending",
@@ -341,6 +344,7 @@
   "standalone.generatingPrompts": "Generating prompts...",
   "standalone.promptsGenerated": "{count} prompt(s) generated",
   "standalone.generatingImage": "Generating image...",
+  "standalone.promptFailed": "Prompt generation failed",
   "standalone.imageFailed": "Generation failed",
   "standalone.reasoning": "Reasoning",
   "standalone.noSceneDescription": "Please enter a scene description",
@@ -420,4 +424,14 @@
   "toast.promptLibraryDeleted": "Entry deleted",
   "toast.promptLibrarySentToStandalone": "Prompt sent to standalone generation",
   "toast.promptLibraryFull": "Prompt library is full ({max} entries). Delete some entries to make room."
+  ,"errorReason.apiRequestFailed": "API request failed",
+  "errorReason.apiReturnedEmpty": "API returned empty content",
+  "errorReason.noValidPrompts": "No valid prompts were returned",
+  "errorReason.llmUnavailable": "LLM generation is unavailable",
+  "errorReason.mainResponseEmpty": "Main reply was empty, likely because the main API failed",
+  "errorReason.promptInsertionFailed": "Generated prompts could not be injected into the message",
+  "errorReason.imageCommandUnavailable": "Image generation command is unavailable",
+  "errorReason.imageReturnedEmpty": "Image API returned no image",
+  "errorReason.imageRequestFailed": "Image generation request failed",
+  "errorReason.unknown": "Unknown error"
 }

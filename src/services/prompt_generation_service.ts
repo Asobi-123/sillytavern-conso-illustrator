@@ -10,6 +10,10 @@ import type {PromptSuggestion} from '../prompt_insertion';
 import {callIndependentLlmApi} from './independent_llm';
 import {fetchWorldBookEntries} from './worldinfo_service';
 import {isIndependentApiMode} from '../mode_utils';
+import {
+  AutoIllustratorError,
+  toAutoIllustratorError,
+} from '../utils/error_utils';
 import type {
   AutoIllustratorChatMetadata,
   PluginWorldInfoConfig,
@@ -17,6 +21,20 @@ import type {
 } from '../types';
 
 const logger = createLogger('PromptGenService');
+
+function normalizeDelimitedLlmResponse(response: string): string {
+  let cleanedResponse = response.trim();
+  if (cleanedResponse.startsWith('```')) {
+    cleanedResponse = cleanedResponse.replace(/^```[a-z]*\s*\n?/, '');
+    cleanedResponse = cleanedResponse.replace(/\n?```\s*$/, '');
+    cleanedResponse = cleanedResponse.trim();
+  }
+  return cleanedResponse;
+}
+
+function isExplicitNoPromptResponse(response: string): boolean {
+  return normalizeDelimitedLlmResponse(response) === '---END---';
+}
 
 /**
  * Cleans message text for LLM consumption by removing noise content.
@@ -282,13 +300,7 @@ ${currentMessageText}`;
  */
 function parsePromptSuggestions(llmResponse: string): PromptSuggestion[] {
   try {
-    // Strip markdown code blocks if present
-    let cleanedResponse = llmResponse.trim();
-    if (cleanedResponse.startsWith('```')) {
-      cleanedResponse = cleanedResponse.replace(/^```[a-z]*\s*\n?/, '');
-      cleanedResponse = cleanedResponse.replace(/\n?```\s*$/, '');
-      cleanedResponse = cleanedResponse.trim();
-    }
+    const cleanedResponse = normalizeDelimitedLlmResponse(llmResponse);
 
     // Split by ---PROMPT--- delimiter
     const promptBlocks = cleanedResponse.split('---PROMPT---');
@@ -405,10 +417,13 @@ export async function generatePromptsForMessage(
     `Cleaned message length: ${cleanedMessageText.length} characters (removed ${messageText.length - cleanedMessageText.length})`
   );
 
-  // Check for LLM availability
-  if (!context.generateRaw) {
+  // Check for LLM availability when using SillyTavern's shared API path
+  if (!settings.useIndependentLlmApi && !context.generateRaw) {
     logger.error('generateRaw not available in context');
-    throw new Error('LLM generation not available');
+    throw new AutoIllustratorError(
+      'llm-unavailable',
+      'LLM generation not available'
+    );
   }
 
   // Build system prompt with all instructions from template
@@ -469,15 +484,34 @@ export async function generatePromptsForMessage(
     logger.trace('Raw LLM response:', llmResponse);
   } catch (error) {
     logger.error('LLM generation failed:', error);
-    return []; // Return empty array instead of throwing
+    throw toAutoIllustratorError(
+      error,
+      'api-request-failed',
+      'LLM generation failed'
+    );
+  }
+
+  if (!normalizeDelimitedLlmResponse(llmResponse)) {
+    throw new AutoIllustratorError(
+      'llm-empty-response',
+      'LLM returned empty response'
+    );
   }
 
   // Parse response
   const suggestions = parsePromptSuggestions(llmResponse);
 
   if (suggestions.length === 0) {
+    if (isExplicitNoPromptResponse(llmResponse)) {
+      logger.info('LLM explicitly returned no prompt suggestions');
+      return [];
+    }
+
     logger.warn('LLM returned no valid suggestions');
-    return [];
+    throw new AutoIllustratorError(
+      'no-valid-prompts',
+      'LLM returned no valid prompt suggestions'
+    );
   }
 
   // Apply maxPromptsPerMessage limit
@@ -517,12 +551,7 @@ export function parseStandalonePromptSuggestions(
   response: string
 ): StandalonePromptResult[] {
   try {
-    let cleanedResponse = response.trim();
-    if (cleanedResponse.startsWith('```')) {
-      cleanedResponse = cleanedResponse.replace(/^```[a-z]*\s*\n?/, '');
-      cleanedResponse = cleanedResponse.replace(/\n?```\s*$/, '');
-      cleanedResponse = cleanedResponse.trim();
-    }
+    const cleanedResponse = normalizeDelimitedLlmResponse(response);
 
     const promptBlocks = cleanedResponse.split('---PROMPT---');
     const results: StandalonePromptResult[] = [];
@@ -653,7 +682,10 @@ export async function generateStandalonePrompts(
       );
     } else {
       if (!context.generateRaw) {
-        throw new Error('LLM generation not available');
+        throw new AutoIllustratorError(
+          'llm-unavailable',
+          'LLM generation not available'
+        );
       }
       logger.debug(
         'Using SillyTavern API (generateRaw) for standalone prompt generation'
@@ -668,7 +700,18 @@ export async function generateStandalonePrompts(
     logger.trace('Raw standalone LLM response:', llmResponse);
   } catch (error) {
     logger.error('Standalone LLM generation failed:', error);
-    return [];
+    throw toAutoIllustratorError(
+      error,
+      'api-request-failed',
+      'Standalone LLM generation failed'
+    );
+  }
+
+  if (!normalizeDelimitedLlmResponse(llmResponse)) {
+    throw new AutoIllustratorError(
+      'llm-empty-response',
+      'Standalone LLM returned empty response'
+    );
   }
 
   // Parse — always use standalone parser (extracts TEXT + REASONING,
@@ -677,9 +720,12 @@ export async function generateStandalonePrompts(
 
   if (results.length === 0) {
     logger.warn('Standalone LLM returned no valid prompts');
-  } else {
-    logger.info(`Generated ${results.length} standalone prompts`);
+    throw new AutoIllustratorError(
+      'no-valid-prompts',
+      'Standalone LLM returned no valid prompts'
+    );
   }
 
+  logger.info(`Generated ${results.length} standalone prompts`);
   return results;
 }

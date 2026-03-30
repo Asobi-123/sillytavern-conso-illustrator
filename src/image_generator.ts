@@ -17,6 +17,7 @@ import {
   type ReconciliationConfig,
 } from './reconciliation';
 import {htmlEncode} from './utils/dom_utils';
+import {AutoIllustratorError, extractErrorMessage} from './utils/error_utils';
 
 const logger = createLogger('Generator');
 
@@ -260,7 +261,10 @@ export async function generateImage(
           'Available commands:',
           Object.keys(context.SlashCommandParser?.commands || {})
         );
-        return null;
+        throw new AutoIllustratorError(
+          'image-command-unavailable',
+          'SD command not available'
+        );
       }
 
       logger.debug('Calling SD command...');
@@ -268,6 +272,13 @@ export async function generateImage(
         {quiet: 'true'},
         enhancedPrompt
       );
+
+      if (!imageUrl) {
+        throw new AutoIllustratorError(
+          'image-empty-response',
+          'Image generation returned no image'
+        );
+      }
 
       const duration = performance.now() - startTime;
       logger.debug(
@@ -281,7 +292,15 @@ export async function generateImage(
         `Error generating image (after ${duration.toFixed(0)}ms):`,
         error
       );
-      return null;
+      if (error instanceof AutoIllustratorError) {
+        throw error;
+      }
+
+      throw new AutoIllustratorError(
+        'image-request-failed',
+        'Image generation failed',
+        extractErrorMessage(error)
+      );
     } finally {
       // Always remove interceptor
       removeInterceptor();

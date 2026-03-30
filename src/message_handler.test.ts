@@ -10,6 +10,17 @@ import {
   handleChatChanged,
   cancelAllDelayedReconciliations,
 } from './message_handler';
+import {AutoIllustratorError} from './utils/error_utils';
+
+const {
+  generatePromptsForMessageMock,
+  insertPromptTagsWithContextMock,
+  toastrErrorMock,
+} = vi.hoisted(() => ({
+  generatePromptsForMessageMock: vi.fn(),
+  insertPromptTagsWithContextMock: vi.fn(),
+  toastrErrorMock: vi.fn(),
+}));
 
 // Mock dependencies
 vi.mock('./logger', () => ({
@@ -20,6 +31,19 @@ vi.mock('./logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   }),
+}));
+
+vi.mock('./i18n', () => ({
+  t: (key: string, replacements?: Record<string, string>) =>
+    replacements ? `${key} ${JSON.stringify(replacements)}` : key,
+}));
+
+vi.mock('./services/prompt_generation_service', () => ({
+  generatePromptsForMessage: generatePromptsForMessageMock,
+}));
+
+vi.mock('./prompt_insertion', () => ({
+  insertPromptTagsWithContext: insertPromptTagsWithContextMock,
 }));
 
 vi.mock('./session_manager', () => ({
@@ -77,8 +101,18 @@ describe('Message Handler V2', () => {
       maxPromptsPerMessage: 5,
     };
 
+    global.toastr = {
+      error: toastrErrorMock,
+      warning: vi.fn(),
+      info: vi.fn(),
+      success: vi.fn(),
+    } as any;
+
     // Clear all mocks
     vi.clearAllMocks();
+    generatePromptsForMessageMock.mockReset();
+    insertPromptTagsWithContextMock.mockReset();
+    toastrErrorMock.mockReset();
   });
 
   afterEach(() => {
@@ -162,6 +196,50 @@ describe('Message Handler V2', () => {
       ).not.toHaveBeenCalled();
     });
 
+    it('should show a categorized toast when independent prompt generation fails', async () => {
+      mockSessionManager.getSession.mockReturnValue(null);
+      mockSettings.promptGenerationMode = 'independent-api';
+      generatePromptsForMessageMock.mockRejectedValue(
+        new AutoIllustratorError(
+          'api-request-failed',
+          'LLM generation failed',
+          '401 Unauthorized'
+        )
+      );
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(generatePromptsForMessageMock).toHaveBeenCalled();
+      expect(toastrErrorMock).toHaveBeenCalledTimes(1);
+      expect(String(toastrErrorMock.mock.calls[0][0])).toContain(
+        '401 Unauthorized'
+      );
+    });
+
+    it('should show a categorized toast when generated prompts cannot be inserted', async () => {
+      mockSessionManager.getSession.mockReturnValue(null);
+      mockSettings.promptGenerationMode = 'independent-api';
+      generatePromptsForMessageMock.mockResolvedValue([
+        {
+          text: 'test prompt',
+          insertAfter: 'Message',
+          insertBefore: '1',
+        },
+      ]);
+      insertPromptTagsWithContextMock.mockReturnValue({
+        updatedText: 'Message 1',
+        insertedCount: 0,
+        failedSuggestions: [],
+      });
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(toastrErrorMock).toHaveBeenCalledTimes(1);
+      expect(String(toastrErrorMock.mock.calls[0][0])).toContain(
+        'promptInsertionFailed'
+      );
+    });
+
     it('should skip if session type is not streaming', async () => {
       mockSessionManager.getSession.mockReturnValue({
         sessionId: 'session1',
@@ -220,6 +298,18 @@ describe('Message Handler V2', () => {
       expect(
         mockSessionManager.finalizeStreamingAndInsert
       ).not.toHaveBeenCalled();
+    });
+
+    it('should show a toast for empty main replies in independent mode', async () => {
+      mockContext.chat[1].mes = '';
+      mockSettings.promptGenerationMode = 'independent-api';
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(toastrErrorMock).toHaveBeenCalledTimes(1);
+      expect(String(toastrErrorMock.mock.calls[0][0])).toContain(
+        'errorReason.mainResponseEmpty'
+      );
     });
 
     it('should skip if message has only whitespace', async () => {

@@ -5,6 +5,7 @@
  */
 
 import {createLogger} from '../logger';
+import {AutoIllustratorError} from '../utils/error_utils';
 
 const logger = createLogger('IndependentLLM');
 
@@ -155,7 +156,10 @@ export async function callIndependentLlmApi(
     maxTokensOverride ?? settings.independentLlmMaxTokens ?? 4096;
 
   if (!apiUrl || !model) {
-    throw new Error('Independent LLM API not configured');
+    throw new AutoIllustratorError(
+      'llm-unavailable',
+      'Independent LLM API not configured'
+    );
   }
 
   const fullUrl = buildChatCompletionsUrl(apiUrl);
@@ -197,8 +201,10 @@ export async function callIndependentLlmApi(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
-      `Independent LLM API error: ${response.status} ${errorText}`
+    throw new AutoIllustratorError(
+      'api-request-failed',
+      'Independent LLM API request failed',
+      `${response.status} ${errorText}`.trim()
     );
   }
 
@@ -206,7 +212,10 @@ export async function callIndependentLlmApi(
   const content = data.choices?.[0]?.message?.content;
 
   if (!content) {
-    throw new Error('Invalid response from independent LLM API');
+    throw new AutoIllustratorError(
+      'llm-empty-response',
+      'Invalid response from independent LLM API'
+    );
   }
 
   return content;
