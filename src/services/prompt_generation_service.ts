@@ -253,12 +253,20 @@ function buildUserPromptWithContext(
   currentMessageText: string,
   contextMessageCount: number,
   settings: AutoIllustratorSettings,
-  worldInfoSection = ''
+  worldInfoSection = '',
+  currentMessageIndex?: number
 ): string {
   // Get recent chat history (last N messages, excluding current)
   const chat = context.chat || [];
-  const startIndex = Math.max(0, chat.length - contextMessageCount - 1);
-  const recentMessages = chat.slice(startIndex, -1); // Last N messages before current
+  const safeCurrentIndex =
+    typeof currentMessageIndex === 'number' &&
+    Number.isFinite(currentMessageIndex) &&
+    currentMessageIndex >= 0 &&
+    currentMessageIndex < chat.length
+      ? currentMessageIndex
+      : chat.length - 1;
+  const startIndex = Math.max(0, safeCurrentIndex - contextMessageCount);
+  const recentMessages = chat.slice(startIndex, safeCurrentIndex);
 
   let contextText = '';
   if (recentMessages.length > 0 && contextMessageCount > 0) {
@@ -403,7 +411,8 @@ export async function generatePromptsForMessage(
   messageText: string,
   context: SillyTavernContext,
   settings: AutoIllustratorSettings,
-  metadata?: AutoIllustratorChatMetadata
+  metadata?: AutoIllustratorChatMetadata,
+  options?: {messageId?: number}
 ): Promise<PromptSuggestion[]> {
   logger.info('Generating image prompts using separate LLM call');
   logger.debug(`Message length: ${messageText.length} characters`);
@@ -454,7 +463,8 @@ export async function generatePromptsForMessage(
     cleanedMessageText,
     contextMessageCount,
     settings,
-    worldInfoSection
+    worldInfoSection,
+    options?.messageId
   );
 
   logger.debug('Calling LLM for prompt generation');

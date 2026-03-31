@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.2] - 2026-03-31
+## [1.7.3] - 2026-03-31
+
+### Fixed
+
+- **Independent prompt context anchoring** - Independent prompt generation now uses the actual message ID being processed instead of assuming the current chat tail, preventing the wrong context slice from being sent to the LLM during delayed/manual prompt generation flows.
+- **Runtime URL/path compatibility** - Prompt lookup, prompt update, manual image actions, reconciliation, and expired-image cleanup now normalize and compare image URLs more defensively across absolute URLs, relative paths, URI-encoded paths, HTML-encoded paths, query strings, and malformed encodings.
+- **Metadata/context safety** - Metadata access now retries lazy initialization and handles missing SillyTavern context more safely during startup and non-runtime environments, reducing brittle failures when the extension loads before the host is fully ready.
+- **Settings load safety** - Additional persisted numeric settings now clamp to safe runtime ranges on load, including standalone prompt count, image display width, final reconciliation delay, and prompt library entry limit.
+- **Default settings isolation** - Prompt Library default entries now use a fresh array instance instead of sharing the default reference across resets and fresh loads.
 
 ### Added
 
@@ -14,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Action button layout** - The prompt retry button, standalone workbench actions, and independent LLM settings actions now stay horizontal instead of collapsing into awkward vertical text stacks in narrow panels.
+
+## [1.7.2] - 2026-03-31
 
 ## [1.7.1] - 2026-03-30
 

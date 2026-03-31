@@ -55,7 +55,9 @@ export declare function buildWorldInfoSection(settings: AutoIllustratorSettings,
  * //   insertBefore: "under the pale"
  * // }]
  */
-export declare function generatePromptsForMessage(messageText: string, context: SillyTavernContext, settings: AutoIllustratorSettings, metadata?: AutoIllustratorChatMetadata): Promise<PromptSuggestion[]>;
+export declare function generatePromptsForMessage(messageText: string, context: SillyTavernContext, settings: AutoIllustratorSettings, metadata?: AutoIllustratorChatMetadata, options?: {
+    messageId?: number;
+}): Promise<PromptSuggestion[]>;
 /**
  * Parses LLM response for standalone prompt generation.
  * Only extracts TEXT and REASONING fields (no INSERT_AFTER/INSERT_BEFORE).

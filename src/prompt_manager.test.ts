@@ -341,6 +341,20 @@ describe('Image Linking', () => {
     expect(result).toBe(false);
   });
 
+  it('should unlink image when given an absolute URL', async () => {
+    const node = await registerPrompt('test', 42, 0, 'ai-message', metadata);
+    const imageUrl = 'http://example.com/img.jpg';
+
+    await linkImageToPrompt(node.id, imageUrl, metadata);
+    const result = await unlinkImageFromPrompt(imageUrl, metadata);
+
+    expect(result).toBe(true);
+    expect(node.generatedImages).not.toContain(normalizeUrl(imageUrl));
+
+    const registry = getRegistry(metadata);
+    expect(registry.imageToPromptId[normalizeUrl(imageUrl)]).toBeUndefined();
+  });
+
   it('should avoid duplicate images in generatedImages array', async () => {
     const node = await registerPrompt('test', 42, 0, 'ai-message', metadata);
     const imageUrl = 'http://example.com/img.jpg';

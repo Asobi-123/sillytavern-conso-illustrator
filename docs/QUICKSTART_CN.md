@@ -325,4 +325,4 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 
 ---
 
-*本教程适用于 Conso Illustrator v1.7.2+*
+*本教程适用于 Conso Illustrator v1.7.3+*

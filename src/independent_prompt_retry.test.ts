@@ -74,9 +74,7 @@ describe('independent_prompt_retry', () => {
     syncIndependentPromptRetryButtons(context, settings, vi.fn());
 
     expect(hasIndependentPromptRetryState(0)).toBe(false);
-    expect(
-      document.querySelector('.auto-illustrator-prompt-retry')
-    ).toBeNull();
+    expect(document.querySelector('.auto-illustrator-prompt-retry')).toBeNull();
   });
 
   it('should invoke retry callback once and remove the button afterwards', async () => {
@@ -95,8 +93,6 @@ describe('independent_prompt_retry', () => {
     });
 
     expect(hasIndependentPromptRetryState(0)).toBe(false);
-    expect(
-      document.querySelector('.auto-illustrator-prompt-retry')
-    ).toBeNull();
+    expect(document.querySelector('.auto-illustrator-prompt-retry')).toBeNull();
   });
 });

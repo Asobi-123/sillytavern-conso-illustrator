@@ -37,6 +37,21 @@ import {collectAllImagesFromChat, normalizeImageUrl} from './image_utils';
 
 const logger = createLogger('ManualGen');
 
+function buildMessageUrlCandidates(imageUrl: string): string[] {
+  const normalizedUrl = normalizeImageUrl(imageUrl);
+  const uriEncodedNormalized = encodeURI(normalizedUrl);
+  return Array.from(
+    new Set([
+      normalizedUrl,
+      uriEncodedNormalized,
+      htmlEncode(normalizedUrl),
+      htmlEncode(uriEncodedNormalized),
+      imageUrl,
+      htmlEncode(imageUrl),
+    ])
+  ).filter(Boolean);
+}
+
 /**
  * Opens the global image viewer starting from a specific image
  * Collects all AI-generated images from all messages in chat order
@@ -285,12 +300,20 @@ async function showPromptUpdateDialog(
   logger.info('URLs in registry:', registryUrls);
 
   // Check if any URLs are similar (might be encoding issue)
-  const decodedLookupUrl = decodeURIComponent(normalizedUrl);
+  const safeDecode = (value: string): string => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  };
+
+  const decodedLookupUrl = safeDecode(normalizedUrl);
   logger.info(`Decoded lookup URL: ${decodedLookupUrl}`);
 
   // Try to find similar URLs
   const similarUrls = registryUrls.filter(url => {
-    const decodedRegistryUrl = decodeURIComponent(url);
+    const decodedRegistryUrl = safeDecode(url);
     return decodedRegistryUrl === decodedLookupUrl || url === normalizedUrl;
   });
   logger.info('Similar URLs found:', similarUrls);
@@ -553,26 +576,29 @@ async function deleteImage(imageUrl: string): Promise<void> {
 
   // Normalize URL to relative path (message text contains relative paths)
   const normalizedUrl = normalizeImageUrl(imageUrl);
-
-  // HTML-encode the URL to match against message text (which has &amp; etc.)
-  const encodedUrl = htmlEncode(normalizedUrl);
+  const urlCandidates = buildMessageUrlCandidates(imageUrl);
 
   // Find which message contains this image
   for (let i = 0; i < context.chat.length; i++) {
     const message = context.chat[i];
-    if (message.mes && message.mes.includes(encodedUrl)) {
-      const escapedUrl = encodedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const imgPattern = new RegExp(
-        `\\s*<img[^>]*src="${escapedUrl}"[^>]*>`,
-        'g'
-      );
+    if (
+      message.mes &&
+      urlCandidates.some(candidate => message.mes.includes(candidate))
+    ) {
       const beforeLength = message.mes.length;
-      message.mes = message.mes.replace(imgPattern, '');
+      for (const candidate of urlCandidates) {
+        const escapedUrl = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const imgPattern = new RegExp(
+          `\\s*<img[^>]*src="${escapedUrl}"[^>]*>`,
+          'g'
+        );
+        message.mes = message.mes.replace(imgPattern, '');
+      }
       const afterLength = message.mes.length;
 
       if (beforeLength === afterLength) {
         logger.warn(
-          `Failed to delete image - pattern didn't match: ${encodedUrl.substring(0, 100)}...`
+          `Failed to delete image - pattern didn't match any candidate for: ${normalizedUrl.substring(0, 100)}...`
         );
         toastr.error(t('toast.imageNotFound'), 'Auto Illustrator');
         return;
@@ -597,7 +623,7 @@ async function deleteImage(imageUrl: string): Promise<void> {
   }
 
   logger.warn(`Image not found in any message: ${normalizedUrl}`);
-  logger.debug(`Looking for encoded URL: ${encodedUrl.substring(0, 100)}...`);
+  logger.debug('URL candidates checked:', urlCandidates);
   toastr.error(t('toast.imageNotFound'), 'Auto Illustrator');
 }
 
@@ -625,9 +651,15 @@ async function rebuildPromptFromMessage(
   const messageText = message.mes || '';
 
   // Find the image in the message text
-  const escapedUrl = imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const imgPattern = new RegExp(`<img[^>]*src="${escapedUrl}"[^>]*>`, 'g');
-  const imgMatch = imgPattern.exec(messageText);
+  let imgMatch: RegExpExecArray | null = null;
+  for (const candidate of buildMessageUrlCandidates(imageUrl)) {
+    const escapedUrl = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const imgPattern = new RegExp(`<img[^>]*src="${escapedUrl}"[^>]*>`, 'g');
+    imgMatch = imgPattern.exec(messageText);
+    if (imgMatch?.index !== undefined) {
+      break;
+    }
+  }
 
   if (!imgMatch || imgMatch.index === undefined) {
     logger.warn(

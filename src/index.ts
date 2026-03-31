@@ -2472,11 +2472,8 @@ function registerEventHandlers(): void {
             return;
           }
           addImageClickHandlers(settings);
-          syncIndependentPromptRetryButtons(
-            context,
-            settings,
-            retryMessageId =>
-              handleManualIndependentPromptRetry(retryMessageId, settings)
+          syncIndependentPromptRetryButtons(context, settings, retryMessageId =>
+            handleManualIndependentPromptRetry(retryMessageId, settings)
           );
         }, 100);
       },
@@ -2490,11 +2487,8 @@ function registerEventHandlers(): void {
             return;
           }
           addImageClickHandlers(settings);
-          syncIndependentPromptRetryButtons(
-            context,
-            settings,
-            retryMessageId =>
-              handleManualIndependentPromptRetry(retryMessageId, settings)
+          syncIndependentPromptRetryButtons(context, settings, retryMessageId =>
+            handleManualIndependentPromptRetry(retryMessageId, settings)
           );
         }, 100);
       },
@@ -2710,9 +2704,17 @@ function initialize(): void {
 
   logger.info('Initializing extension...');
 
+  const st = (
+    globalThis as {SillyTavern?: {getContext?: () => SillyTavernContext}}
+  ).SillyTavern;
+  if (!st || typeof st.getContext !== 'function') {
+    logger.debug('SillyTavern global not available; skipping initialization');
+    return;
+  }
+
   // Get SillyTavern context
   try {
-    context = SillyTavern.getContext();
+    context = st.getContext();
     logger.info('Got SillyTavern context');
   } catch (error) {
     logger.error('Failed to get SillyTavern context:', error);

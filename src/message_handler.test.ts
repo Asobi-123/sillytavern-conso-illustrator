@@ -555,9 +555,12 @@ describe('Message Handler V2', () => {
         'Message 1',
         mockContext,
         mockSettings,
-        {}
+        {},
+        {messageId: 1}
       );
-      expect(mockContext.chat[1].mes).toContain('<!--img-prompt="test prompt"-->');
+      expect(mockContext.chat[1].mes).toContain(
+        '<!--img-prompt="test prompt"-->'
+      );
       expect(mockSessionManager.startStreamingSession).toHaveBeenCalledWith(
         1,
         mockContext,

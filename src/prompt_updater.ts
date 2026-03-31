@@ -19,6 +19,7 @@ import {
 } from './services/independent_llm';
 import {DEFAULT_PROMPT_DETECTION_PATTERNS} from './constants';
 import {renderMessageUpdate} from './utils/message_renderer';
+import {htmlEncode} from './utils/dom_utils';
 import {normalizeImageUrl} from './image_utils';
 
 // Re-export PromptNode type for consumers
@@ -195,11 +196,19 @@ export async function applyPromptUpdate(
 ): Promise<boolean> {
   const metadata = getMetadata();
   const normalized = normalizeImageUrl(imageUrl);
+  const encodedNormalized = htmlEncode(normalized);
+  const uriEncodedNormalized = encodeURI(normalized);
 
-  // Find message containing this image (try both normalized and encoded forms)
-  const message = context.chat?.find(
-    msg => msg.mes.includes(normalized) || msg.mes.includes(imageUrl)
-  );
+  // Find message containing this image (try normalized, encoded, and raw forms)
+  const message = context.chat?.find(msg => {
+    const text = msg.mes || '';
+    return (
+      text.includes(normalized) ||
+      text.includes(uriEncodedNormalized) ||
+      text.includes(encodedNormalized) ||
+      text.includes(imageUrl)
+    );
+  });
 
   if (!message) {
     logger.error('Message containing image not found');
@@ -217,7 +226,7 @@ export async function applyPromptUpdate(
     settings.promptDetectionPatterns || DEFAULT_PROMPT_DETECTION_PATTERNS;
   const updatedText = replacePromptTextInMessage(
     parentPromptId, // Replace at parent's position
-    message.mes,
+    message.mes || '',
     childNode.text, // Use child's text
     patterns,
     metadata

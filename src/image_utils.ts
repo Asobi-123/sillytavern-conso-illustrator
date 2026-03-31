@@ -10,6 +10,14 @@ import type {ModalImage} from './modal_viewer';
 
 const logger = createLogger('ImageUtils');
 
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 /**
  * Normalizes an image URL by converting absolute URLs to relative paths
  * and decoding URL encoding for consistent lookups
@@ -28,10 +36,21 @@ export function normalizeImageUrl(url: string): string {
   try {
     const urlObj = new URL(url);
     // Return decoded pathname (e.g., /user/images/小说家/test.png instead of /user/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/test.png)
-    return decodeURIComponent(urlObj.pathname);
+    return safeDecodeURIComponent(urlObj.pathname);
   } catch {
-    // If URL parsing fails, it's already a relative path - decode it anyway
-    return decodeURIComponent(url);
+    // If URL parsing fails, treat it as a relative path.
+    // Strip query/hash first so relative URLs normalize consistently with absolute URLs.
+    const queryIndex = url.indexOf('?');
+    const hashIndex = url.indexOf('#');
+    const cutIndex =
+      queryIndex === -1
+        ? hashIndex
+        : hashIndex === -1
+          ? queryIndex
+          : Math.min(queryIndex, hashIndex);
+
+    const pathOnly = cutIndex === -1 ? url : url.substring(0, cutIndex);
+    return safeDecodeURIComponent(pathOnly);
   }
 }
 
@@ -48,7 +67,12 @@ export function extractImagesFromMessage(
   const images: ModalImage[] = [];
 
   // Get metadata for prompt lookup
-  const metadata = getMetadata();
+  let metadata: ReturnType<typeof getMetadata> | null = null;
+  try {
+    metadata = getMetadata();
+  } catch (error) {
+    logger.debug('Metadata not available; falling back to title/alt', error);
+  }
 
   // Find all img tags in the message
   const imgPattern = /<img\s+([^>]+)>/g;
@@ -82,7 +106,9 @@ export function extractImagesFromMessage(
     const normalizedUrl = normalizeImageUrl(imageUrl);
 
     // Get complete prompt from PromptRegistry using normalized URL
-    const promptNode = getPromptForImage(normalizedUrl, metadata);
+    const promptNode = metadata
+      ? getPromptForImage(normalizedUrl, metadata)
+      : null;
 
     let promptText: string;
     if (promptNode) {

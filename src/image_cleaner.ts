@@ -7,6 +7,7 @@ import {createLogger} from './logger';
 import {getRegistry, getPromptNode, deletePromptNode} from './prompt_manager';
 import {saveMetadata} from './metadata';
 import type {AutoIllustratorChatMetadata} from './types';
+import {normalizeImageUrl} from './image_utils';
 
 const logger = createLogger('ImageCleaner');
 
@@ -108,8 +109,9 @@ export function removeExpiredImagesFromText(
     IMAGE_BLOCK_PATTERN,
     (match, imageUrl) => {
       if (isImageExpired(imageUrl, retentionDays)) {
-        removedUrls.push(imageUrl);
-        logger.debug(`Removing expired image block: ${imageUrl}`);
+        const normalizedUrl = normalizeImageUrl(imageUrl);
+        removedUrls.push(normalizedUrl);
+        logger.debug(`Removing expired image block: ${normalizedUrl}`);
         return '';
       }
       return match;
@@ -119,10 +121,11 @@ export function removeExpiredImagesFromText(
   // Process legacy pattern (without prompt tag)
   cleanedText = cleanedText.replace(LEGACY_IMAGE_PATTERN, (match, imageUrl) => {
     if (isImageExpired(imageUrl, retentionDays)) {
-      if (!removedUrls.includes(imageUrl)) {
-        removedUrls.push(imageUrl);
+      const normalizedUrl = normalizeImageUrl(imageUrl);
+      if (!removedUrls.includes(normalizedUrl)) {
+        removedUrls.push(normalizedUrl);
       }
-      logger.debug(`Removing expired legacy image: ${imageUrl}`);
+      logger.debug(`Removing expired legacy image: ${normalizedUrl}`);
       return '';
     }
     return match;
@@ -145,14 +148,15 @@ export async function cleanupRegistry(
   let cleanedCount = 0;
 
   for (const imageUrl of removedUrls) {
-    const promptId = registry.imageToPromptId[imageUrl];
+    const normalizedUrl = normalizeImageUrl(imageUrl);
+    const promptId = registry.imageToPromptId[normalizedUrl];
 
     if (promptId) {
-      delete registry.imageToPromptId[imageUrl];
+      delete registry.imageToPromptId[normalizedUrl];
 
       const node = getPromptNode(promptId, metadata);
       if (node) {
-        const imageIndex = node.generatedImages.indexOf(imageUrl);
+        const imageIndex = node.generatedImages.indexOf(normalizedUrl);
         if (imageIndex > -1) {
           node.generatedImages.splice(imageIndex, 1);
           cleanedCount++;

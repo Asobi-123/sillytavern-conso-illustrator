@@ -51,12 +51,17 @@ vi.mock('./image_utils', () => ({
   normalizeImageUrl: vi.fn((url: string) => url),
 }));
 
-import {generateUpdatedPrompt} from './prompt_updater';
-import {getPromptForImage, refinePrompt} from './prompt_manager';
+import {applyPromptUpdate, generateUpdatedPrompt} from './prompt_updater';
+import {
+  getPromptForImage,
+  refinePrompt,
+  replacePromptTextInMessage,
+} from './prompt_manager';
 import {
   callIndependentLlmApi,
   isIndependentLlmConfigured,
 } from './services/independent_llm';
+import {renderMessageUpdate} from './utils/message_renderer';
 
 describe('generateUpdatedPrompt - LLM provider selection', () => {
   let mockContext: any;
@@ -211,5 +216,46 @@ describe('generateUpdatedPrompt - LLM provider selection', () => {
     );
 
     expect(result).toBeNull();
+  });
+});
+
+describe('applyPromptUpdate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (replacePromptTextInMessage as any).mockReturnValue('updated message body');
+  });
+
+  it('should find messages containing encoded normalized image URLs', async () => {
+    const context = {
+      chat: [
+        {
+          mes: '<img src="/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/test.png">',
+          is_user: false,
+          name: 'Assistant',
+        },
+      ],
+    } as any;
+
+    const result = await applyPromptUpdate(
+      '/images/小说家/test.png',
+      'parent-1',
+      {id: 'child-1', text: 'updated prompt text'} as any,
+      context,
+      {
+        promptDetectionPatterns: [
+          '<!--img-prompt="([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"\\s*-->',
+        ],
+      } as any
+    );
+
+    expect(result).toBe(true);
+    expect(replacePromptTextInMessage).toHaveBeenCalledWith(
+      'parent-1',
+      '<img src="/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/test.png">',
+      'updated prompt text',
+      expect.any(Array),
+      expect.anything()
+    );
+    expect(renderMessageUpdate).toHaveBeenCalledWith(0);
   });
 });

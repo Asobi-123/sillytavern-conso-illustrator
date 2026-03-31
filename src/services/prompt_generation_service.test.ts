@@ -463,6 +463,51 @@ REASONING: Handles newlines naturally
       expect(result[0].insertAfter).toBe('Test');
       expect(result[0].insertBefore).toBe('message with newlines');
     });
+
+    it('should build context using the provided messageId instead of chat tail', async () => {
+      const llmResponse = `---PROMPT---
+TEXT: test prompt
+INSERT_AFTER: second user
+INSERT_BEFORE: second assistant
+REASONING: Test
+---END---`;
+
+      mockContext.chat = [
+        {name: 'User', is_user: true, mes: 'First user context'} as unknown,
+        {
+          name: 'Assistant',
+          is_user: false,
+          mes: 'Current assistant message',
+        } as unknown,
+        {name: 'User', is_user: true, mes: 'Second user context'} as unknown,
+        {
+          name: 'Assistant',
+          is_user: false,
+          mes: 'Later assistant message',
+        } as unknown,
+      ] as unknown as SillyTavernContext['chat'];
+      mockSettings.contextMessageCount = 2;
+      vi.mocked(mockContext.generateRaw).mockResolvedValue(llmResponse);
+
+      await generatePromptsForMessage(
+        'Current assistant message',
+        mockContext,
+        mockSettings,
+        undefined,
+        {messageId: 1}
+      );
+
+      expect(mockContext.generateRaw).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: expect.stringContaining('User: First user context'),
+        })
+      );
+      expect(mockContext.generateRaw).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prompt: expect.not.stringContaining('Later assistant message'),
+        })
+      );
+    });
   });
 
   describe('buildWorldInfoSection', () => {

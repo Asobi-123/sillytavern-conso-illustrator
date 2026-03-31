@@ -16,9 +16,12 @@ import {
   MAX_PROMPTS_PER_MESSAGE,
   CONTEXT_MESSAGE_COUNT,
   META_PROMPT_DEPTH,
+  FINAL_RECONCILIATION_DELAY,
   IMAGE_DISPLAY_WIDTH,
   IMAGE_RETENTION_DAYS,
   INDEPENDENT_LLM_MAX_TOKENS,
+  STANDALONE_PROMPT_COUNT,
+  PROMPT_LIBRARY_MAX_ENTRIES,
   UI_ELEMENT_IDS,
   UI_SECTION_IDS,
   EXTENSION_VERSION,
@@ -55,6 +58,7 @@ export function getDefaultSettings(): AutoIllustratorSettings {
     ...DEFAULT_SETTINGS,
     promptDetectionPatterns: [...DEFAULT_SETTINGS.promptDetectionPatterns],
     contentFilterTags: [...DEFAULT_SETTINGS.contentFilterTags],
+    promptLibraryEntries: [...DEFAULT_SETTINGS.promptLibraryEntries],
     customPresets: [],
     customIndependentLlmPresets: [],
     apiProfiles: [],
@@ -120,6 +124,30 @@ export function loadSettings(
     INDEPENDENT_LLM_MAX_TOKENS.MIN,
     INDEPENDENT_LLM_MAX_TOKENS.MAX,
     INDEPENDENT_LLM_MAX_TOKENS.DEFAULT
+  );
+  merged.standalonePromptCount = clampSettingValue(
+    merged.standalonePromptCount,
+    STANDALONE_PROMPT_COUNT.MIN,
+    STANDALONE_PROMPT_COUNT.MAX,
+    STANDALONE_PROMPT_COUNT.DEFAULT
+  );
+  merged.imageDisplayWidth = clampSettingValue(
+    merged.imageDisplayWidth,
+    IMAGE_DISPLAY_WIDTH.MIN,
+    IMAGE_DISPLAY_WIDTH.MAX,
+    IMAGE_DISPLAY_WIDTH.DEFAULT
+  );
+  merged.finalReconciliationDelayMs = clampSettingValue(
+    merged.finalReconciliationDelayMs,
+    FINAL_RECONCILIATION_DELAY.MIN,
+    FINAL_RECONCILIATION_DELAY.MAX,
+    FINAL_RECONCILIATION_DELAY.DEFAULT
+  );
+  merged.promptLibraryMaxEntries = clampSettingValue(
+    merged.promptLibraryMaxEntries,
+    PROMPT_LIBRARY_MAX_ENTRIES.MIN,
+    PROMPT_LIBRARY_MAX_ENTRIES.MAX,
+    PROMPT_LIBRARY_MAX_ENTRIES.DEFAULT
   );
 
   return merged;

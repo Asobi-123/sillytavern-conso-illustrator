@@ -66,7 +66,8 @@ async function generateAndInsertIndependentPrompts(
     message.mes,
     context,
     settings,
-    metadata
+    metadata,
+    {messageId}
   );
 
   if (prompts.length === 0) {
