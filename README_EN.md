@@ -206,13 +206,13 @@ For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING
 
 ## Credits
 
-This project stands on the shoulders of two excellent predecessors:
+This project stands on the shoulders of three excellent predecessors and public fix references:
 
 - **Original Author:** [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) — SillyTavern Auto Illustrator
 - **Fork Author:** [Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator) — SillyTavern Simplified Illustrator
 - **Fix reference:** [Lluviose/sillytavern-auto-illustrator-beta](https://github.com/Lluviose/sillytavern-auto-illustrator-beta) — some of the `1.7.3` stability and compatibility fixes were adapted from the public fix ideas in that repository and then adjusted for the Conso edition architecture
 
-Thank you for your pioneering work that made this project possible!
+Thank you to all three for the pioneering work and public sharing that made this project possible!
 
 ## License
 
