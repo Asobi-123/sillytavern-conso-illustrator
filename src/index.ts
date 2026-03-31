@@ -14,8 +14,10 @@ import {
   handleStreamTokenStarted,
   handleMessageReceived,
   handleGenerationEnded,
+  handleManualIndependentPromptRetry,
 } from './message_handler';
 import {addImageClickHandlers} from './manual_generation';
+import {syncIndependentPromptRetryButtons} from './independent_prompt_retry';
 import {
   loadSettings,
   saveSettings,
@@ -2470,6 +2472,12 @@ function registerEventHandlers(): void {
             return;
           }
           addImageClickHandlers(settings);
+          syncIndependentPromptRetryButtons(
+            context,
+            settings,
+            retryMessageId =>
+              handleManualIndependentPromptRetry(retryMessageId, settings)
+          );
         }, 100);
       },
       messageUpdated: () => {
@@ -2482,6 +2490,12 @@ function registerEventHandlers(): void {
             return;
           }
           addImageClickHandlers(settings);
+          syncIndependentPromptRetryButtons(
+            context,
+            settings,
+            retryMessageId =>
+              handleManualIndependentPromptRetry(retryMessageId, settings)
+          );
         }, 100);
       },
       generationStarted: (type: string, _options: unknown, dryRun: boolean) => {

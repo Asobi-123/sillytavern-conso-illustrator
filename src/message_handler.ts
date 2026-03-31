@@ -22,11 +22,179 @@ import {
   AutoIllustratorError,
   getUserFacingErrorReason,
 } from './utils/error_utils';
+import {
+  clearIndependentPromptRetryState,
+  markIndependentPromptRetryAvailable,
+  syncIndependentPromptRetryButtons,
+} from './independent_prompt_retry';
+import {extractImagePromptsMultiPattern} from './regex';
 
 const logger = createLogger('MessageHandler');
 
 // Map of messageId -> timeout ID for delayed reconciliations
 const delayedReconciliations = new Map<number, NodeJS.Timeout>();
+
+function schedulePromptRetryButtonSync(
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings
+): void {
+  window.setTimeout(() => {
+    syncIndependentPromptRetryButtons(context, settings, messageId =>
+      handleManualIndependentPromptRetry(messageId, settings)
+    );
+  }, 100);
+}
+
+async function generateAndInsertIndependentPrompts(
+  messageId: number,
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings
+): Promise<number> {
+  const message = context.chat?.[messageId];
+  if (!message || !message.mes) {
+    return 0;
+  }
+
+  let metadata;
+  try {
+    metadata = getMetadata();
+  } catch {
+    // Metadata not ready, proceed without world info
+  }
+
+  const prompts = await generatePromptsForMessage(
+    message.mes,
+    context,
+    settings,
+    metadata
+  );
+
+  if (prompts.length === 0) {
+    return 0;
+  }
+
+  logger.info(`LLM generated ${prompts.length} prompts`);
+
+  const tagTemplate = settings.promptDetectionPatterns[0];
+  const insertionResult = insertPromptTagsWithContext(
+    message.mes,
+    prompts,
+    tagTemplate
+  );
+
+  let finalText = insertionResult.updatedText;
+  let totalInserted = insertionResult.insertedCount;
+
+  if (insertionResult.failedSuggestions.length > 0) {
+    logger.warn(
+      `Failed to insert ${insertionResult.failedSuggestions.length} prompts (context not found), appending at end`
+    );
+
+    const promptTagTemplate = tagTemplate.includes('{PROMPT}')
+      ? tagTemplate
+      : '<!--img-prompt="{PROMPT}"-->';
+
+    for (const failed of insertionResult.failedSuggestions) {
+      const promptTag = promptTagTemplate.replace('{PROMPT}', failed.text);
+      finalText += ` ${promptTag}`;
+      totalInserted++;
+      logger.debug(
+        `Appended failed prompt at end: "${failed.text.substring(0, 50)}..."`
+      );
+    }
+  }
+
+  if (totalInserted === 0) {
+    throw new AutoIllustratorError(
+      'prompt-insertion-failed',
+      'Failed to inject generated prompts into the message'
+    );
+  }
+
+  message.mes = finalText;
+  await saveMetadata();
+  logger.info(
+    `Inserted ${totalInserted} prompt tags into message (${insertionResult.failedSuggestions.length} appended at end)`
+  );
+
+  return totalInserted;
+}
+
+async function startNonStreamingImageGeneration(
+  messageId: number,
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings
+): Promise<void> {
+  await sessionManager.startStreamingSession(messageId, context, settings);
+  sessionManager.setupStreamingCompletion(messageId, context, settings);
+
+  logger.info(
+    `Started non-streaming session for message ${messageId}, will auto-finalize when images complete`
+  );
+}
+
+export async function handleManualIndependentPromptRetry(
+  messageId: number,
+  settings: AutoIllustratorSettings
+): Promise<void> {
+  const context = SillyTavern.getContext();
+  if (!context) {
+    logger.warn('Cannot retry prompt generation: context unavailable');
+    return;
+  }
+
+  const message = context.chat?.[messageId];
+  if (!message || message.is_user || !message.mes?.trim()) {
+    logger.warn(
+      `Cannot retry prompt generation for message ${messageId}: message unavailable`
+    );
+    return;
+  }
+
+  if (!isIndependentApiMode(settings.promptGenerationMode)) {
+    logger.warn(
+      `Skipping manual prompt retry for message ${messageId}: independent mode disabled`
+    );
+    return;
+  }
+
+  if (
+    extractImagePromptsMultiPattern(
+      message.mes,
+      settings.promptDetectionPatterns
+    ).length > 0
+  ) {
+    logger.info(
+      `Skipping manual prompt retry for message ${messageId}: prompt already present`
+    );
+    return;
+  }
+
+  toastr.info(t('toast.manualPromptRetrying'), t('extensionName'));
+
+  try {
+    const insertedCount = await generateAndInsertIndependentPrompts(
+      messageId,
+      context,
+      settings
+    );
+
+    if (insertedCount === 0) {
+      toastr.info(t('toast.manualPromptRetryNoPrompt'), t('extensionName'));
+      return;
+    }
+
+    await startNonStreamingImageGeneration(messageId, context, settings);
+  } catch (error) {
+    logger.error('Manual prompt retry failed:', error);
+    toastr.error(
+      t('toast.llmPromptGenerationFailedWithReason', {
+        reason: getUserFacingErrorReason(error),
+      }),
+      t('extensionName')
+    );
+  }
+}
 
 /**
  * Schedules a delayed reconciliation for a message
@@ -204,88 +372,28 @@ export async function handleMessageReceived(
       logger.info('LLM-based prompt generation enabled, generating prompts...');
 
       try {
-        // Step 1: Call LLM to generate prompts
-        let metadata;
-        try {
-          metadata = getMetadata();
-        } catch {
-          // Metadata not ready, proceed without world info
-        }
-        const prompts = await generatePromptsForMessage(
-          message.mes,
+        const insertedCount = await generateAndInsertIndependentPrompts(
+          messageId,
           context,
-          settings,
-          metadata
+          settings
         );
 
-        if (prompts.length === 0) {
+        if (insertedCount === 0) {
           logger.info('LLM returned no prompts, skipping image generation');
+          markIndependentPromptRetryAvailable(messageId);
+          schedulePromptRetryButtonSync(context, settings);
           return;
         }
 
-        logger.info(`LLM generated ${prompts.length} prompts`);
-
-        // Step 2: Insert prompt tags into message using context matching
-        const tagTemplate = settings.promptDetectionPatterns[0];
-        const insertionResult = insertPromptTagsWithContext(
-          message.mes,
-          prompts,
-          tagTemplate
-        );
-
-        // Step 2b: Fallback for failed suggestions - append at end
-        let finalText = insertionResult.updatedText;
-        let totalInserted = insertionResult.insertedCount;
-
-        if (insertionResult.failedSuggestions.length > 0) {
-          logger.warn(
-            `Failed to insert ${insertionResult.failedSuggestions.length} prompts (context not found), appending at end`
-          );
-
-          // Append failed prompts at the end of the message
-          const promptTagTemplate = tagTemplate.includes('{PROMPT}')
-            ? tagTemplate
-            : '<!--img-prompt="{PROMPT}"-->';
-
-          for (const failed of insertionResult.failedSuggestions) {
-            const promptTag = promptTagTemplate.replace(
-              '{PROMPT}',
-              failed.text
-            );
-            finalText += ` ${promptTag}`;
-            totalInserted++;
-            logger.debug(
-              `Appended failed prompt at end: "${failed.text.substring(0, 50)}..."`
-            );
-          }
-        }
-
-        if (totalInserted === 0) {
-          logger.warn('No prompts generated or inserted');
-          const reason = getUserFacingErrorReason(
-            new AutoIllustratorError(
-              'prompt-insertion-failed',
-              'Failed to inject generated prompts into the message'
-            )
-          );
-          toastr.error(
-            t('toast.llmPromptGenerationFailedWithReason', {reason}),
-            t('extensionName')
-          );
-          return;
-        }
-
-        // Step 3: Save updated message with prompt tags
-        message.mes = finalText;
-        await saveMetadata();
-        logger.info(
-          `Inserted ${totalInserted} prompt tags into message (${insertionResult.failedSuggestions.length} appended at end)`
-        );
+        clearIndependentPromptRetryState(messageId);
       } catch (error) {
         logger.error('LLM prompt generation failed:', error);
+        const reason = getUserFacingErrorReason(error);
+        markIndependentPromptRetryAvailable(messageId, reason);
+        schedulePromptRetryButtonSync(context, settings);
         toastr.error(
           t('toast.llmPromptGenerationFailedWithReason', {
-            reason: getUserFacingErrorReason(error),
+            reason,
           }),
           t('extensionName')
         );
@@ -295,16 +403,7 @@ export async function handleMessageReceived(
 
     // Process message with prompts (works for both regex and LLM modes)
     try {
-      // Start a new streaming session with the complete message
-      await sessionManager.startStreamingSession(messageId, context, settings);
-
-      // Set up one-time completion listener to auto-finalize when all images are done
-      // This ensures images are generated BEFORE we try to insert them
-      sessionManager.setupStreamingCompletion(messageId, context, settings);
-
-      logger.info(
-        `Started non-streaming session for message ${messageId}, will auto-finalize when images complete`
-      );
+      await startNonStreamingImageGeneration(messageId, context, settings);
     } catch (error) {
       logger.error(
         `Error processing non-streaming message ${messageId}:`,
@@ -566,6 +665,7 @@ export function handleChatChanged(): void {
 
   // Cancel any pending delayed reconciliations
   cancelAllDelayedReconciliations();
+  clearIndependentPromptRetryState();
 
   const activeSessions = sessionManager.getAllSessions();
 

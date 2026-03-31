@@ -262,6 +262,35 @@
 }
 /* ===== End Character Fixed Tags Panel ===== */
 
+/* ===== Shared Action Buttons ===== */
+.auto-illustrator-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.auto-illustrator-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: auto;
+  max-width: 100%;
+  min-height: 2.5rem;
+  white-space: nowrap;
+  word-break: keep-all;
+  text-align: center;
+}
+
+.auto-illustrator-action-btn i {
+  flex-shrink: 0;
+}
+
+.auto-illustrator-action-btn span {
+  white-space: inherit;
+}
+
 /* ===== Standalone Generation ===== */
 .standalone-options-row {
   display: flex;
@@ -2703,6 +2732,14 @@ img[data-failed-placeholder='true']:hover {
   opacity: 1;
   border-color: #ff6b6b;
   transform: scale(1.05);
+}
+
+.auto-illustrator-prompt-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 /* ===== Prompt Library ===== */
