@@ -52,5 +52,15 @@ describe('normalizeImageUrl', () => {
       const path = '/user/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/test.png';
       expect(normalizeImageUrl(path)).toBe('/user/images/小说家/test.png');
     });
+
+    it('should strip query string and hash from relative paths', () => {
+      const path = '/user/images/test.png?foo=1#preview';
+      expect(normalizeImageUrl(path)).toBe('/user/images/test.png');
+    });
+
+    it('should preserve undecodable relative paths instead of throwing', () => {
+      const path = '/user/images/%E0%A4%A/test.png';
+      expect(normalizeImageUrl(path)).toBe('/user/images/%E0%A4%A/test.png');
+    });
   });
 });

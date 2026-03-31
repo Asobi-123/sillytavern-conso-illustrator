@@ -16,6 +16,7 @@ import {loadMetadataFromContext, getMetadata} from './metadata';
 import {sessionManager} from './session_manager';
 import {executeChatChangeOperations} from './chat_change_operations';
 import {reloadGalleryForNewChat} from './gallery_widget';
+import {cancelAllDelayedReconciliations} from './message_handler';
 import {setImageSubfolderLabel} from './image_generator';
 import {reloadWorldInfoForChat} from './worldinfo_ui';
 import {clearWorldBookCache} from './services/worldinfo_service';
@@ -35,6 +36,12 @@ function handleChatChanged(): void {
   logger.info('=== CHAT_CHANGED Event Fired ===');
 
   try {
+    // Step 0: Cancel any pending timeouts/retries from the previous chat.
+    // Message IDs are chat-local, so stale async work can target the new chat.
+    logger.debug('0. Cancelling pending retries/timeouts');
+    cancelAllDelayedReconciliations();
+    clearIndependentPromptRetryState();
+
     // Step 1: Load fresh metadata FIRST (must happen before anything else)
     logger.debug('1. Loading fresh metadata from new chat');
     loadMetadataFromContext();
@@ -55,7 +62,6 @@ function handleChatChanged(): void {
 
     // Step 2: Cancel all active streaming sessions
     logger.debug('2. Cancelling all active streaming sessions');
-    clearIndependentPromptRetryState();
     const activeSessions = sessionManager.getAllSessions();
     if (activeSessions.length > 0) {
       logger.info(`Cancelling ${activeSessions.length} active sessions`);

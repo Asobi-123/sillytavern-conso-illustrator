@@ -150,9 +150,19 @@ export function checkIdempotency(
   }
 
   // Also check for image URL directly (legacy insertions without markers)
-  const escapedUrl = normalizedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const imgTagPattern = new RegExp(`<img[^>]*src="${escapedUrl}"[^>]*>`, 'i');
-  const legacyFound = imgTagPattern.test(messageText);
+  const legacyUrlCandidates = Array.from(
+    new Set([
+      normalizedUrl,
+      encodeURI(normalizedUrl),
+      htmlEncode(normalizedUrl),
+      htmlEncode(encodeURI(normalizedUrl)),
+    ])
+  );
+  const legacyFound = legacyUrlCandidates.some(candidate => {
+    const escapedUrl = candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const imgTagPattern = new RegExp(`<img[^>]*src="${escapedUrl}"[^>]*>`, 'i');
+    return imgTagPattern.test(messageText);
+  });
 
   if (legacyFound) {
     logger.debug(

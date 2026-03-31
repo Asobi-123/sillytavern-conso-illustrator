@@ -1,7 +1,7 @@
 {
   "name": "sillytavern-conso-illustrator",
   "type": "module",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "private": true,
   "scripts": {
     "build": "webpack --mode production",

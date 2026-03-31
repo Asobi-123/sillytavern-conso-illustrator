@@ -109,6 +109,21 @@ describe('Reconciliation Module', () => {
       expect(result.markerPosition).toBe(-1);
     });
 
+    it('should detect legacy image when src uses URI-encoded normalized path', () => {
+      const promptId = 'test-prompt-123';
+      const imageUrl =
+        'https://example.com/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/test.png';
+      const encodedNormalizedUrl =
+        '/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/test.png';
+
+      const messageText = `Some text\n<img src="${encodedNormalizedUrl}" alt="test" />\nMore text`;
+
+      const result = checkIdempotency(messageText, promptId, imageUrl);
+
+      expect(result.alreadyInserted).toBe(true);
+      expect(result.markerPosition).toBe(-1);
+    });
+
     it('should return false if image not found', () => {
       const promptId = 'test-prompt-123';
       const imageUrl = 'https://example.com/image.png';

@@ -59,6 +59,9 @@ describe('settings', () => {
         defaultsB.promptDetectionPatterns
       );
       expect(defaultsA.contentFilterTags).not.toBe(defaultsB.contentFilterTags);
+      expect(defaultsA.promptLibraryEntries).not.toBe(
+        defaultsB.promptLibraryEntries
+      );
     });
   });
 
@@ -158,6 +161,10 @@ describe('settings', () => {
           [EXTENSION_NAME]: {
             imageRetentionDays: 999,
             independentLlmMaxTokens: 999999,
+            standalonePromptCount: 999,
+            imageDisplayWidth: -1,
+            finalReconciliationDelayMs: 999999,
+            promptLibraryMaxEntries: 1,
           },
         },
       });
@@ -166,6 +173,10 @@ describe('settings', () => {
 
       expect(loaded.imageRetentionDays).toBe(7);
       expect(loaded.independentLlmMaxTokens).toBe(32000);
+      expect(loaded.standalonePromptCount).toBe(10);
+      expect(loaded.imageDisplayWidth).toBe(10);
+      expect(loaded.finalReconciliationDelayMs).toBe(30000);
+      expect(loaded.promptLibraryMaxEntries).toBe(10);
     });
   });
 
