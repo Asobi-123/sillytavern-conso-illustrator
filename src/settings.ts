@@ -480,7 +480,7 @@ export function createSettingsUI(): string {
                 <option value="">${t('settings.independentLlmModelPlaceholder')}</option>
               </select>
               <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MODEL}" class="text_pole" type="text" placeholder="${t('settings.independentLlmModelPlaceholder')}" style="flex: 1; min-width: 200px;" />
-              <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_FETCH_MODELS}" class="menu_button menu_button_icon" title="${t('settings.fetchModels')}">
+              <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_FETCH_MODELS}" class="menu_button menu_button_icon auto-illustrator-action-btn" title="${t('settings.fetchModels')}">
                 <i class="fa-solid fa-plug-circle-bolt"></i>
                 <span>${t('settings.fetchModels')}</span>
               </button>
@@ -493,11 +493,11 @@ export function createSettingsUI(): string {
             <input id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_MAX_TOKENS}" class="text_pole" type="number" min="${INDEPENDENT_LLM_MAX_TOKENS.MIN}" max="${INDEPENDENT_LLM_MAX_TOKENS.MAX}" step="${INDEPENDENT_LLM_MAX_TOKENS.STEP}" />
           </label>
 
-          <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION}" class="menu_button">
+          <div class="auto-illustrator-action-row" style="margin-top: 0.5rem;">
+            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_TEST_CONNECTION}" class="menu_button auto-illustrator-action-btn">
               <i class="fa-solid fa-plug"></i> ${t('settings.testConnection')}
             </button>
-            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_VIEW_LAST_REQUEST}" class="menu_button">
+            <button id="${UI_ELEMENT_IDS.INDEPENDENT_LLM_VIEW_LAST_REQUEST}" class="menu_button auto-illustrator-action-btn">
               <i class="fa-solid fa-eye"></i> ${t('settings.viewLastRequest')}
             </button>
           </div>

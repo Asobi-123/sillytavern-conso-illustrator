@@ -82,22 +82,22 @@ export function createStandaloneGenerationContent(): string {
           </label>
         </div>
 
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.75rem;">
-          <button id="${UI_ELEMENT_IDS.STANDALONE_GENERATE_PROMPTS_BTN}" class="menu_button">
+        <div class="auto-illustrator-action-row" style="margin-top: 0.5rem; margin-bottom: 0.75rem;">
+          <button id="${UI_ELEMENT_IDS.STANDALONE_GENERATE_PROMPTS_BTN}" class="menu_button auto-illustrator-action-btn">
             <i class="fa-solid fa-wand-magic-sparkles"></i> ${t('standalone.generatePrompts')}
           </button>
-          <button id="${UI_ELEMENT_IDS.STANDALONE_AUTO_BTN}" class="menu_button">
+          <button id="${UI_ELEMENT_IDS.STANDALONE_AUTO_BTN}" class="menu_button auto-illustrator-action-btn">
             <i class="fa-solid fa-bolt"></i> ${t('standalone.autoGenerate')}
           </button>
         </div>
 
         <div id="${UI_ELEMENT_IDS.STANDALONE_RESULTS}" class="standalone-results-container" style="display:none;"></div>
 
-        <div id="standalone_ai_batch_actions" style="display:none; margin-top: 0.5rem; display: flex; gap: 0.5rem;">
-          <button id="${UI_ELEMENT_IDS.STANDALONE_GENERATE_ALL_BTN}" class="menu_button" style="display:none;">
+        <div id="standalone_ai_batch_actions" class="auto-illustrator-action-row" style="display:none; margin-top: 0.5rem;">
+          <button id="${UI_ELEMENT_IDS.STANDALONE_GENERATE_ALL_BTN}" class="menu_button auto-illustrator-action-btn" style="display:none;">
             <i class="fa-solid fa-images"></i> ${t('standalone.generateAll')}
           </button>
-          <button id="${UI_ELEMENT_IDS.STANDALONE_CLEAR_BTN}" class="menu_button" style="display:none;">
+          <button id="${UI_ELEMENT_IDS.STANDALONE_CLEAR_BTN}" class="menu_button auto-illustrator-action-btn" style="display:none;">
             <i class="fa-solid fa-trash"></i> ${t('standalone.clear')}
           </button>
         </div>
@@ -108,7 +108,7 @@ export function createStandaloneGenerationContent(): string {
           <span>Prompt</span>
           <textarea id="${UI_ELEMENT_IDS.STANDALONE_MANUAL_PROMPT_INPUT}" class="text_pole textarea_compact" rows="3" placeholder="${t('standalone.manualPromptPlaceholder')}"></textarea>
         </label>
-        <button id="${UI_ELEMENT_IDS.STANDALONE_MANUAL_GENERATE_BTN}" class="menu_button" style="margin-top: 0.5rem;">
+        <button id="${UI_ELEMENT_IDS.STANDALONE_MANUAL_GENERATE_BTN}" class="menu_button auto-illustrator-action-btn" style="margin-top: 0.5rem;">
           <i class="fa-solid fa-image"></i> ${t('standalone.generateImage')}
         </button>
         <div id="${UI_ELEMENT_IDS.STANDALONE_MANUAL_IMAGE}" class="standalone-image-container" style="margin-top: 0.5rem;"></div>
@@ -216,7 +216,8 @@ function renderPromptCards(
     actions.className = 'standalone-card-actions';
 
     const genBtn = document.createElement('button');
-    genBtn.className = 'menu_button standalone-card-gen-btn';
+    genBtn.className =
+      'menu_button auto-illustrator-action-btn standalone-card-gen-btn';
     genBtn.innerHTML = `<i class="fa-solid fa-image"></i> ${t('standalone.generateImage')}`;
     genBtn.dataset.cardIndex = String(index);
     actions.appendChild(genBtn);

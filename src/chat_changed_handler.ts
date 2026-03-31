@@ -20,6 +20,7 @@ import {setImageSubfolderLabel} from './image_generator';
 import {reloadWorldInfoForChat} from './worldinfo_ui';
 import {clearWorldBookCache} from './services/worldinfo_service';
 import {reloadCharacterTagsForChat} from './character_tags_ui';
+import {clearIndependentPromptRetryState} from './independent_prompt_retry';
 
 const logger = createLogger('ChatChangedHandler');
 let chatChangedHandlerInitialized = false;
@@ -54,6 +55,7 @@ function handleChatChanged(): void {
 
     // Step 2: Cancel all active streaming sessions
     logger.debug('2. Cancelling all active streaming sessions');
+    clearIndependentPromptRetryState();
     const activeSessions = sessionManager.getAllSessions();
     if (activeSessions.length > 0) {
       logger.info(`Cancelling ${activeSessions.length} active sessions`);

@@ -89,6 +89,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 |---------|-------------|
 | **Two Generation Modes** | Shared API (zero config) or Independent API (cleaner AI replies) |
 | **Independent LLM API** | Use any OpenAI-compatible API with auto model discovery and connection test |
+| **Manual Chat Retry** | If independent prompt generation fails in chat, the affected message can manually retry once |
 | **API Profile Management** | Save/switch/delete named API configurations |
 | **Guidelines Presets** | Manage frequency and prompt writing guidelines for independent API mode |
 | **Per-Chat Image Folders** | Organize images by chat with subfolder labels |
@@ -164,7 +165,7 @@ The following areas support fullscreen editing/preview:
 |---------|-----------|
 | No images generated | Make sure `/sd` command works first — the plugin depends on SillyTavern's Image Generation extension |
 | Images appear then disappear | Check browser console for errors; verify image storage path exists |
-| Independent mode fails and you do not know where to look | The plugin now shows a failure toast with the likely reason. If it says the main reply was empty, first make sure your main API is switched back to Chat Completion. If it says API request failed or returned empty, check the independent LLM configuration |
+| Independent mode fails and you do not know where to look | The plugin now shows a failure toast with the likely reason. If the affected chat message still has no prompt tags, it also shows a **Retry Prompt Generation** button on that message. If it says the main reply was empty, first make sure your main API is switched back to Chat Completion. If it says API request failed or returned empty, check the independent LLM configuration |
 | Wrong character appearance | Use **Character Fixed Tags** to lock visual tags per character |
 | Prompts are inaccurate | Try **Independent API mode** with **NAI 4.5 Full** preset |
 | Too many console logs | Adjust **Log Level** in settings (default: INFO) |

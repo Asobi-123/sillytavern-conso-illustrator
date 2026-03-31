@@ -9,8 +9,13 @@ import {
   handleGenerationEnded,
   handleChatChanged,
   cancelAllDelayedReconciliations,
+  handleManualIndependentPromptRetry,
 } from './message_handler';
 import {AutoIllustratorError} from './utils/error_utils';
+import {
+  clearIndependentPromptRetryState,
+  hasIndependentPromptRetryState,
+} from './independent_prompt_retry';
 
 const {
   generatePromptsForMessageMock,
@@ -49,6 +54,7 @@ vi.mock('./prompt_insertion', () => ({
 vi.mock('./session_manager', () => ({
   sessionManager: {
     startStreamingSession: vi.fn(),
+    setupStreamingCompletion: vi.fn(),
     finalizeStreamingAndInsert: vi.fn(),
     getSession: vi.fn(),
     cancelSession: vi.fn(),
@@ -113,10 +119,13 @@ describe('Message Handler V2', () => {
     generatePromptsForMessageMock.mockReset();
     insertPromptTagsWithContextMock.mockReset();
     toastrErrorMock.mockReset();
+    clearIndependentPromptRetryState();
+    global.SillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    clearIndependentPromptRetryState();
   });
 
   describe('handleStreamTokenStarted', () => {
@@ -211,9 +220,21 @@ describe('Message Handler V2', () => {
 
       expect(generatePromptsForMessageMock).toHaveBeenCalled();
       expect(toastrErrorMock).toHaveBeenCalledTimes(1);
+      expect(hasIndependentPromptRetryState(1)).toBe(true);
       expect(String(toastrErrorMock.mock.calls[0][0])).toContain(
         '401 Unauthorized'
       );
+    });
+
+    it('should mark message as retryable when independent mode returns no prompts', async () => {
+      mockSessionManager.getSession.mockReturnValue(null);
+      mockSettings.promptGenerationMode = 'independent-api';
+      generatePromptsForMessageMock.mockResolvedValue([]);
+
+      await handleMessageReceived(1, mockContext, mockSettings);
+
+      expect(hasIndependentPromptRetryState(1)).toBe(true);
+      expect(mockSessionManager.startStreamingSession).not.toHaveBeenCalled();
     });
 
     it('should show a categorized toast when generated prompts cannot be inserted', async () => {
@@ -508,6 +529,41 @@ describe('Message Handler V2', () => {
         'Message 2',
         expect.anything()
       );
+    });
+  });
+
+  describe('handleManualIndependentPromptRetry', () => {
+    it('should regenerate prompts and restart non-streaming image generation', async () => {
+      mockSettings.promptGenerationMode = 'independent-api';
+      mockSettings.promptDetectionPatterns = ['<!--img-prompt="{PROMPT}"-->'];
+      generatePromptsForMessageMock.mockResolvedValue([
+        {
+          text: 'test prompt',
+          insertAfter: 'Message',
+          insertBefore: '1',
+        },
+      ]);
+      insertPromptTagsWithContextMock.mockReturnValue({
+        updatedText: 'Message 1 <!--img-prompt="test prompt"-->',
+        insertedCount: 1,
+        failedSuggestions: [],
+      });
+
+      await handleManualIndependentPromptRetry(1, mockSettings);
+
+      expect(generatePromptsForMessageMock).toHaveBeenCalledWith(
+        'Message 1',
+        mockContext,
+        mockSettings,
+        {}
+      );
+      expect(mockContext.chat[1].mes).toContain('<!--img-prompt="test prompt"-->');
+      expect(mockSessionManager.startStreamingSession).toHaveBeenCalledWith(
+        1,
+        mockContext,
+        mockSettings
+      );
+      expect(hasIndependentPromptRetryState(1)).toBe(false);
     });
   });
 });

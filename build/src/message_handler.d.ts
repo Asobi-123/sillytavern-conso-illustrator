@@ -8,6 +8,7 @@
  * - Simplified to two events: STREAM_TOKEN_STARTED and MESSAGE_RECEIVED
  */
 import { sessionManager } from './session_manager';
+export declare function handleManualIndependentPromptRetry(messageId: number, settings: AutoIllustratorSettings): Promise<void>;
 /**
  * Cancels all pending delayed reconciliations
  * Called when chat changes

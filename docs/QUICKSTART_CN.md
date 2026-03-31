@@ -305,6 +305,7 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 - 这类提示通常是独立 LLM 这层的问题
 - 优先检查：独立 LLM 的 URL、Key、模型名、网络连通性、max tokens 是否合理
 - 如果是“没有生成到有效提示词”，重点检查指南预设是否把输出格式带偏了
+- 如果这条聊天消息正文里还没有 prompt，消息上会出现 **重试生成提示词** 按钮，可以手动再跑一次独立提示词生成
 
 ### 图片质量差？
 - 检查风格配置中的提示词前缀和负面前缀是否填好
@@ -324,4 +325,4 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 
 ---
 
-*本教程适用于 Conso Illustrator v1.7.1+*
+*本教程适用于 Conso Illustrator v1.7.2+*
