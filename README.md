@@ -212,6 +212,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 - **原作者：** [gamer-mitsuha](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator) — SillyTavern Auto Illustrator
 - **分支作者：** [Hao19911125](https://github.com/Hao19911125/sillytavern-simplified-illustrator) — SillyTavern Simplified Illustrator
+- **修复参考：** [Lluviose/sillytavern-auto-illustrator-beta](https://github.com/Lluviose/sillytavern-auto-illustrator-beta) — `1.7.3` 中部分稳定性与兼容性补丁参考了该仓库公开提交中的修复思路，并按 Conso 版结构做了适配
 
 感谢两位的开创性工作，没有他们就没有这个项目！
 
