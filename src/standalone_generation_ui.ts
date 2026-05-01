@@ -9,6 +9,7 @@ import {createLogger} from './logger';
 import {generateStandalonePrompts} from './services/prompt_generation_service';
 import {generateImage, setImageSubfolderLabel} from './image_generator';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
   AutoIllustratorError,
   getUserFacingErrorReason,
@@ -169,7 +170,9 @@ async function generateImageWithStandaloneFolder(
       prompt,
       context,
       settings.commonStyleTags,
-      settings.commonStyleTagsPosition
+      settings.commonStyleTagsPosition,
+      undefined,
+      buildSdStyleConfigFromSettings(settings)
     );
   } finally {
     // Restore original label (normal mode, no full override)

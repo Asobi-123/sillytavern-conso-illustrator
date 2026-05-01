@@ -18,6 +18,10 @@ import {
 } from './reconciliation';
 import {htmlEncode} from './utils/dom_utils';
 import {AutoIllustratorError, extractErrorMessage} from './utils/error_utils';
+import {
+  withRandomSdStyle,
+  type SdStyleRandomConfig,
+} from './services/sd_style_randomizer';
 
 const logger = createLogger('Generator');
 
@@ -202,6 +206,7 @@ function installImageUploadInterceptor(): () => void {
  * @param commonTags - Optional common style tags to apply
  * @param tagsPosition - Position for common tags ('prefix' or 'suffix')
  * @param signal - Optional AbortSignal for cancellation
+ * @param sdStyleConfig - Optional config to randomly pick from extension_settings.sd.styles before each /sd call
  * @returns URL of generated image or null on failure
  */
 export async function generateImage(
@@ -209,7 +214,8 @@ export async function generateImage(
   context: SillyTavernContext,
   commonTags?: string,
   tagsPosition?: 'prefix' | 'suffix',
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  sdStyleConfig?: SdStyleRandomConfig
 ): Promise<string | null> {
   // If limiter not initialized, create with default values
   if (!imageLimiter) {
@@ -268,9 +274,16 @@ export async function generateImage(
       }
 
       logger.debug('Calling SD command...');
-      const imageUrl = await sdCommand.callback(
-        {quiet: 'true'},
-        enhancedPrompt
+      const sdCallback = sdCommand.callback;
+      const effectiveSdStyleConfig: SdStyleRandomConfig = sdStyleConfig ?? {
+        enabled: false,
+        whitelist: [],
+        restoreAfter: true,
+      };
+      const imageUrl = await withRandomSdStyle(
+        context,
+        effectiveSdStyleConfig,
+        () => sdCallback({quiet: 'true'}, enhancedPrompt)
       );
 
       if (!imageUrl) {

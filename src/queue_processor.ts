@@ -7,6 +7,7 @@ import {ImageGenerationQueue} from './streaming_image_queue';
 import {generateImage} from './image_generator';
 import {createPlaceholderUrl} from './placeholder';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import type {QueuedPrompt, DeferredImage} from './types';
 import {createLogger} from './logger';
 import {progressManager} from './progress_manager';
@@ -173,7 +174,9 @@ export class QueueProcessor {
         injectedPrompt,
         context,
         this.settings.commonStyleTags,
-        this.settings.commonStyleTagsPosition
+        this.settings.commonStyleTagsPosition,
+        undefined,
+        buildSdStyleConfigFromSettings(this.settings)
       );
 
       if (imageUrl) {

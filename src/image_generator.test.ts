@@ -99,6 +99,43 @@ describe('Image Generator V2', () => {
     });
   });
 
+  describe('generateImage with random SD style', () => {
+    it('does not touch extension_settings.sd when sdStyleConfig is undefined or disabled', async () => {
+      initializeConcurrencyLimiter(1);
+      const sd = {
+        styles: [{name: 's1', prefix: 'p1', negative: 'n1'}],
+        prompt_prefix: 'orig-p',
+        negative_prompt: 'orig-n',
+      };
+      const sdCallback = vi.fn().mockResolvedValue('http://ok/img.png');
+      const ctx = {
+        SlashCommandParser: {
+          commands: {sd: {callback: sdCallback}},
+        },
+        extensionSettings: {sd},
+      } as unknown as SillyTavernContext;
+
+      // No sdStyleConfig at all
+      const url = await generateImage('a cat', ctx);
+      expect(url).toBe('http://ok/img.png');
+      expect(sd.prompt_prefix).toBe('orig-p');
+      expect(sd.negative_prompt).toBe('orig-n');
+
+      // Disabled config
+      const url2 = await generateImage(
+        'a cat',
+        ctx,
+        undefined,
+        undefined,
+        undefined,
+        {enabled: false, whitelist: [], restoreAfter: true}
+      );
+      expect(url2).toBe('http://ok/img.png');
+      expect(sd.prompt_prefix).toBe('orig-p');
+      expect(sd.negative_prompt).toBe('orig-n');
+    });
+  });
+
   describe('insertDeferredImages', () => {
     let mockContext: any;
     let mockMetadata: AutoIllustratorChatMetadata;

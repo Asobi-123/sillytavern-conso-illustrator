@@ -15,7 +15,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.7.2";
+export declare const EXTENSION_VERSION = "1.7.3";
 /**
  * GitHub repository for update checks
  */
@@ -272,6 +272,9 @@ export declare const DEFAULT_SETTINGS: {
     promptLibraryEntries: PromptLibraryEntry[];
     promptLibraryMaxEntries: 500;
     promptLibrarySaveThumbnail: boolean;
+    randomizeSdStylePerGeneration: boolean;
+    sdStylePoolWhitelist: string[];
+    restoreSdStyleAfter: boolean;
 };
 /**
  * UI element IDs for settings controls
@@ -385,6 +388,11 @@ export declare const UI_ELEMENT_IDS: {
     readonly PROMPT_LIBRARY_EDIT_CHARACTER: "auto_illustrator_conso_prompt_library_edit_character";
     readonly PROMPT_LIBRARY_EDIT_SAVE: "auto_illustrator_conso_prompt_library_edit_save";
     readonly PROMPT_LIBRARY_EDIT_CANCEL: "auto_illustrator_conso_prompt_library_edit_cancel";
+    readonly RANDOMIZE_SD_STYLE: "auto_illustrator_conso_randomize_sd_style";
+    readonly RESTORE_SD_STYLE_AFTER: "auto_illustrator_conso_restore_sd_style_after";
+    readonly SD_STYLE_POOL_LIST: "auto_illustrator_conso_sd_style_pool_list";
+    readonly SD_STYLE_POOL_SEARCH: "auto_illustrator_conso_sd_style_pool_search";
+    readonly SD_STYLE_POOL_REFRESH: "auto_illustrator_conso_sd_style_pool_refresh";
 };
 /**
  * Stable DOM section IDs for the floating panel source area.
@@ -406,4 +414,5 @@ export declare const UI_SECTION_IDS: {
     readonly STANDALONE: "auto_illustrator_conso_panel_standalone";
     readonly CHARACTER_TAGS: "auto_illustrator_conso_panel_character_tags";
     readonly PROMPT_LIBRARY: "auto_illustrator_conso_panel_prompt_library";
+    readonly MAIN_RANDOM_SD_STYLE: "auto_illustrator_conso_panel_main_random_sd_style";
 };

@@ -4,6 +4,7 @@
  */
 import type { DeferredImage } from './types';
 import { type ReconciliationConfig } from './reconciliation';
+import { type SdStyleRandomConfig } from './services/sd_style_randomizer';
 /**
  * Updates reconciliation configuration
  * @param config - Partial configuration to update
@@ -40,9 +41,10 @@ export declare function setImageSubfolderLabel(label: string | null, fullOverrid
  * @param commonTags - Optional common style tags to apply
  * @param tagsPosition - Position for common tags ('prefix' or 'suffix')
  * @param signal - Optional AbortSignal for cancellation
+ * @param sdStyleConfig - Optional config to randomly pick from extension_settings.sd.styles before each /sd call
  * @returns URL of generated image or null on failure
  */
-export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal): Promise<string | null>;
+export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig): Promise<string | null>;
 /**
  * Parses a comma-separated string of tags into an array
  * @param tagsString - Comma-separated tags string

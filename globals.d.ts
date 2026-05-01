@@ -224,6 +224,12 @@ declare global {
     >;
     /** Default prompt count for standalone generation */
     standalonePromptCount?: number;
+    /** Whether to randomly pick one SD style from extension_settings.sd.styles[] before each /sd call */
+    randomizeSdStylePerGeneration: boolean;
+    /** Whitelist of SD style names eligible for random pick (empty = all styles) */
+    sdStylePoolWhitelist: string[];
+    /** Whether to restore the original sd.prompt_prefix / sd.negative_prompt after generation */
+    restoreSdStyleAfter: boolean;
   }
 
   interface ImagePromptMatch {

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Randomize SD style per generation** - New optional toggle in the floating panel main page (right under the "Enable Auto Illustrator" switch) that randomly picks one Style saved in SillyTavern's stable-diffusion extension before each image generation, applies its prefix/negative, then restores the originals when finished. Includes an opt-in whitelist (limit the random pool to selected styles), a "restore after generation" toggle, a refresh button to re-read the SD style list, and a serialization safeguard so the snapshot/apply/restore cycle stays correct even when concurrent generations are enabled.
+
 ## [1.7.3] - 2026-03-31
 
 ### Fixed

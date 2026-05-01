@@ -83,6 +83,7 @@ import {
 import {initializeCharacterTagsPanel} from './character_tags_ui';
 import {initializeStandaloneGeneration} from './standalone_generation_ui';
 import {initializePromptLibrary} from './prompt_library_ui';
+import {listAvailableStyleNames} from './services/sd_style_randomizer';
 import {
   initializeFloatingPanel,
   openFloatingPanel,
@@ -144,6 +145,84 @@ export function isMessageBeingStreamed(messageId: number): boolean {
 /**
  * Updates the UI elements with current settings
  */
+/**
+ * Renders the SD style pool checkbox list inside SD_STYLE_POOL_LIST container.
+ * Reads available styles from `extension_settings.sd.styles[]` via the
+ * randomizer service and reflects current `settings.sdStylePoolWhitelist`.
+ *
+ * Layout: ticked styles bubble to the top (alphabetical within group),
+ * un-ticked styles below (alphabetical). Optional search filter narrows
+ * the visible set without affecting persisted whitelist.
+ */
+function renderSdStylePoolList(): void {
+  const container = document.getElementById(UI_ELEMENT_IDS.SD_STYLE_POOL_LIST);
+  if (!container) return;
+
+  const st = (
+    globalThis as {SillyTavern?: {getContext?: () => SillyTavernContext}}
+  ).SillyTavern;
+  const context =
+    st && typeof st.getContext === 'function' ? st.getContext() : null;
+
+  const names = context ? listAvailableStyleNames(context) : [];
+  const whitelist = Array.isArray(settings.sdStylePoolWhitelist)
+    ? settings.sdStylePoolWhitelist
+    : [];
+
+  if (names.length === 0) {
+    container.innerHTML = `<small class="auto-illustrator-sd-style-pool-empty" style="opacity:0.7;">${t(
+      'settings.sdStylePoolEmpty'
+    )}</small>`;
+    return;
+  }
+
+  // Read current search filter (if any).
+  const searchInput = document.getElementById(
+    UI_ELEMENT_IDS.SD_STYLE_POOL_SEARCH
+  ) as HTMLInputElement | null;
+  const filter = (searchInput?.value ?? '').trim().toLowerCase();
+
+  // Partition + alphabetical sort within each group.
+  const ticked = names
+    .filter(n => whitelist.includes(n))
+    .sort((a, b) => a.localeCompare(b));
+  const unticked = names
+    .filter(n => !whitelist.includes(n))
+    .sort((a, b) => a.localeCompare(b));
+  const ordered = [...ticked, ...unticked];
+
+  // Apply search filter.
+  const visible = filter
+    ? ordered.filter(n => n.toLowerCase().includes(filter))
+    : ordered;
+
+  if (visible.length === 0) {
+    container.innerHTML = `<small class="auto-illustrator-sd-style-pool-empty" style="opacity:0.7;">${t(
+      'settings.sdStylePoolNoMatch'
+    )}</small>`;
+    return;
+  }
+
+  const escapeHtml = (s: string) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const tickedSet = new Set(ticked);
+  container.innerHTML = visible
+    .map(name => {
+      const checked = tickedSet.has(name) ? ' checked' : '';
+      const safe = escapeHtml(name);
+      return `<label class="checkbox_label auto-illustrator-sd-style-pool-item" style="display:flex; align-items:center; gap:0.4rem; padding:2px 0;">
+        <input type="checkbox" class="auto-illustrator-sd-style-pool-checkbox" data-style-name="${safe}"${checked} />
+        <span>${safe}</span>
+      </label>`;
+    })
+    .join('');
+}
+
 function updateUI(): void {
   const enabledCheckbox = document.getElementById(
     UI_ELEMENT_IDS.ENABLED
@@ -520,6 +599,22 @@ function updateUI(): void {
 
   // Update API profile dropdown
   populateApiProfileDropdown();
+
+  // Update random SD style controls
+  const randomizeSdStyleCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.RANDOMIZE_SD_STYLE
+  ) as HTMLInputElement | null;
+  if (randomizeSdStyleCheckbox) {
+    randomizeSdStyleCheckbox.checked = !!settings.randomizeSdStylePerGeneration;
+  }
+  const restoreSdStyleAfterCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.RESTORE_SD_STYLE_AFTER
+  ) as HTMLInputElement | null;
+  if (restoreSdStyleAfterCheckbox) {
+    restoreSdStyleAfterCheckbox.checked =
+      settings.restoreSdStyleAfter !== false;
+  }
+  renderSdStylePoolList();
 
   // Update validation status
   updateValidationStatus();
@@ -1182,6 +1277,37 @@ function handleSettingsChange(): void {
 
   // Apply log level
   setLogLevel(settings.logLevel);
+
+  // Random SD style settings
+  const randomizeSdStyleCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.RANDOMIZE_SD_STYLE
+  ) as HTMLInputElement | null;
+  if (randomizeSdStyleCheckbox) {
+    settings.randomizeSdStylePerGeneration = randomizeSdStyleCheckbox.checked;
+  }
+  const restoreSdStyleAfterCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.RESTORE_SD_STYLE_AFTER
+  ) as HTMLInputElement | null;
+  if (restoreSdStyleAfterCheckbox) {
+    settings.restoreSdStyleAfter = restoreSdStyleAfterCheckbox.checked;
+  }
+  const sdStylePoolList = document.getElementById(
+    UI_ELEMENT_IDS.SD_STYLE_POOL_LIST
+  );
+  if (sdStylePoolList) {
+    const checkedNames: string[] = [];
+    sdStylePoolList
+      .querySelectorAll<HTMLInputElement>(
+        'input.auto-illustrator-sd-style-pool-checkbox'
+      )
+      .forEach(cb => {
+        if (cb.checked) {
+          const name = cb.dataset.styleName ?? '';
+          if (name) checkedNames.push(name);
+        }
+      });
+    settings.sdStylePoolWhitelist = checkedNames;
+  }
 
   // Update concurrency limiter settings
   updateMaxConcurrent(settings.maxConcurrentGenerations);
@@ -2992,6 +3118,49 @@ function initialize(): void {
       UI_ELEMENT_IDS.IMAGE_RETENTION_DAYS
     );
     imageRetentionDaysInput?.addEventListener('change', handleSettingsChange);
+
+    // Random SD Style controls
+    const randomizeSdStyleCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.RANDOMIZE_SD_STYLE
+    );
+    randomizeSdStyleCheckbox?.addEventListener('change', handleSettingsChange);
+
+    const restoreSdStyleAfterCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.RESTORE_SD_STYLE_AFTER
+    );
+    restoreSdStyleAfterCheckbox?.addEventListener(
+      'change',
+      handleSettingsChange
+    );
+
+    const sdStylePoolRefreshBtn = document.getElementById(
+      UI_ELEMENT_IDS.SD_STYLE_POOL_REFRESH
+    );
+    sdStylePoolRefreshBtn?.addEventListener('click', () => {
+      renderSdStylePoolList();
+    });
+
+    const sdStylePoolSearchInput = document.getElementById(
+      UI_ELEMENT_IDS.SD_STYLE_POOL_SEARCH
+    );
+    sdStylePoolSearchInput?.addEventListener('input', () => {
+      renderSdStylePoolList();
+    });
+
+    const sdStylePoolList = document.getElementById(
+      UI_ELEMENT_IDS.SD_STYLE_POOL_LIST
+    );
+    // Event delegation: any checkbox change inside the pool list triggers settings save.
+    sdStylePoolList?.addEventListener('change', evt => {
+      const target = evt.target as HTMLElement | null;
+      if (
+        target &&
+        target instanceof HTMLInputElement &&
+        target.classList.contains('auto-illustrator-sd-style-pool-checkbox')
+      ) {
+        handleSettingsChange();
+      }
+    });
 
     // Independent LLM API settings
     const useIndependentLlmApiCheckbox = document.getElementById(

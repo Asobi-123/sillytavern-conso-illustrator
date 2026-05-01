@@ -150,6 +150,22 @@ export function loadSettings(
     PROMPT_LIBRARY_MAX_ENTRIES.DEFAULT
   );
 
+  // Safety: ensure random SD style fields land as the right types regardless
+  // of what was previously persisted (e.g., older versions, malformed JSON).
+  if (typeof merged.randomizeSdStylePerGeneration !== 'boolean') {
+    merged.randomizeSdStylePerGeneration = false;
+  }
+  if (!Array.isArray(merged.sdStylePoolWhitelist)) {
+    merged.sdStylePoolWhitelist = [];
+  } else {
+    merged.sdStylePoolWhitelist = merged.sdStylePoolWhitelist.filter(
+      (n: unknown): n is string => typeof n === 'string'
+    );
+  }
+  if (typeof merged.restoreSdStyleAfter !== 'boolean') {
+    merged.restoreSdStyleAfter = true;
+  }
+
   return merged;
 }
 
@@ -575,6 +591,33 @@ export function createSettingsUI(): string {
       </select>
     </label>`;
 
+  const randomSdStyleContent = `
+    <div class="auto-illustrator-random-sd-style">
+      <label class="checkbox_label" for="${UI_ELEMENT_IDS.RANDOMIZE_SD_STYLE}">
+        <input id="${UI_ELEMENT_IDS.RANDOMIZE_SD_STYLE}" type="checkbox" />
+        <span>${t('settings.randomizeSdStyle')}</span>
+      </label>
+      <small class="auto-illustrator-random-sd-style-desc">${t('settings.randomizeSdStyleDesc')}</small>
+
+      <label class="checkbox_label" for="${UI_ELEMENT_IDS.RESTORE_SD_STYLE_AFTER}">
+        <input id="${UI_ELEMENT_IDS.RESTORE_SD_STYLE_AFTER}" type="checkbox" />
+        <span>${t('settings.restoreSdStyleAfter')}</span>
+      </label>
+
+      <div class="auto-illustrator-sd-style-pool-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-top:0.4rem;">
+        <span style="font-size:0.9em; opacity:0.85;">${t('settings.sdStylePoolWhitelist')}</span>
+        <button id="${UI_ELEMENT_IDS.SD_STYLE_POOL_REFRESH}" class="menu_button menu_button_icon" type="button"
+                title="${t('settings.refreshSdStyleList')}"
+                style="height:auto; padding:2px 8px; font-size:0.85em;">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>${t('settings.refreshSdStyleList')}</span>
+        </button>
+      </div>
+      <input id="${UI_ELEMENT_IDS.SD_STYLE_POOL_SEARCH}" class="text_pole" type="text"
+             placeholder="${t('settings.sdStylePoolSearchPlaceholder')}" style="margin-top:0.3rem;" />
+      <div id="${UI_ELEMENT_IDS.SD_STYLE_POOL_LIST}" class="auto-illustrator-sd-style-pool-list" style="max-height: 280px; overflow-y: auto; margin-top: 0.3rem; padding-right: 4px;"></div>
+    </div>`;
+
   const characterFixedTagsContent = `
     <div class="character-tag-desc">${t('settings.characterFixedTags.desc')}</div>
     <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
@@ -631,6 +674,10 @@ export function createSettingsUI(): string {
             <input id="${UI_ELEMENT_IDS.ENABLED}" type="checkbox" />
             <span>${t('settings.enable')}</span>
           </label>`
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE,
+          randomSdStyleContent
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_IMAGE_SUBFOLDER,
