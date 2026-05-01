@@ -82,6 +82,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **角色固定 Tag** | 为每个角色锁定外貌标签——多人场景用 `{}` 隔离，不会混淆 |
 | **世界书注入** | 插件独立的世界书选择，按聊天保存 |
 | **通用样式 Tag** | 全局前缀/后缀标签，应用到所有生成的提示词 |
+| **随机 SD Style** | 每次生图前从酒馆 SD 扩展保存的 Style 列表中随机抽一条临时套用，可用白名单限定参与抽签的范围 |
 | **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
 | **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
 
@@ -198,6 +199,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | 世界书注入 | - | - | 支持 |
 | API 配置档案 | - | - | 支持 |
 | 角色固定 Tag | - | - | 支持 |
+| 随机 SD Style | - | - | 支持 |
 | 独立生图工作台 | - | - | 支持 |
 | 指南预设 | - | - | 支持 |
 | 折叠式设置面板 | - | - | 支持 |

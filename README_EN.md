@@ -80,6 +80,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **Character Fixed Tags** | Lock visual tags per character — auto-injected with `{}` isolation in multi-character scenes |
 | **World Info Injection** | Plugin-independent world book selection per chat |
 | **Common Style Tags** | Global prefix/suffix tags applied to all generated prompts |
+| **Random SD Style** | Randomly pick one Style from the stable-diffusion extension before each generation, apply its prefix/negative, then restore. Optional whitelist limits the eligible pool |
 | **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
 | **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
 
@@ -196,6 +197,7 @@ For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING
 | World Info Injection | - | - | Supported |
 | API Profile Management | - | - | Supported |
 | Character Fixed Tags | - | - | Supported |
+| Random SD Style | - | - | Supported |
 | Standalone Workbench | - | - | Supported |
 | Guidelines Presets | - | - | Supported |
 | Collapsible Settings | - | - | Supported |
