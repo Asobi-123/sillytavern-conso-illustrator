@@ -667,6 +667,9 @@ Result: Operations run concurrently, no conflicts (different messages)
 | LLM Prompt Writing Guidelines | String | multi-line | (default text) | How to write prompts (independent API mode) |
 | Common Style Tags | String | any | "" | Tags added to all prompts |
 | Style Tags Position | Choice | prefix/suffix | prefix | Where to add common tags |
+| Randomize SD Style | Boolean | true/false | false | Pick a random Style from the stable-diffusion extension before each `/sd` call |
+| Restore SD Style After | Boolean | true/false | true | Restore original prefix/negative after generation completes |
+| SD Style Pool Whitelist | string[] | style names | [] | Empty = all eligible; non-empty = restrict to listed styles |
 | Log Level | Choice | trace/debug/info/warn/error/silent | info | Console verbosity |
 
 ### 8.4 Examples
@@ -734,6 +737,30 @@ Result:
 ❌ **DO NOT** lose settings on browser restart (persist properly)
 ❌ **DO NOT** allow editing of predefined presets (enforce read-only)
 ❌ **DO NOT** delete custom presets on reset (only reset settings)
+
+### 8.6 Random SD Style Per Generation
+
+**Users can opt in to a per-generation random pick from the SillyTavern stable-diffusion extension's saved Styles, so each image uses a different "common prompt prefix + negative common prompt prefix" combination without manual switching.**
+
+**STYLE-001**: When `randomizeSdStylePerGeneration` is `false` (default), the extension MUST NOT read or write any field under `extension_settings.sd`. Behavior is identical to versions before this feature existed.
+
+**STYLE-002**: When enabled, before each `/sd` invocation the extension MUST:
+1. Pick a random eligible style from `extension_settings.sd.styles[]`
+2. Write its `prefix` into `extension_settings.sd.prompt_prefix`
+3. Write its `negative` into `extension_settings.sd.negative_prompt`
+4. Trigger `input` events on the corresponding textareas so the SD extension UI reflects the change
+5. Then invoke `/sd` as usual
+
+**STYLE-003**: When `restoreSdStyleAfter` is `true` (default), original values are written back after generation **only if the field still equals what we wrote**. If the user manually edited the textarea mid-generation, that edit MUST be preserved.
+
+**STYLE-004**: Snapshot/apply/`/sd`/restore is strictly serialized across all generations in the session, even when `maxConcurrentGenerations > 1`. Throughput cost is acceptable: random Style selection requires consistent global state.
+
+**STYLE-005**: Whitelist semantics:
+- Empty `sdStylePoolWhitelist` = all styles eligible
+- Non-empty whitelist = only listed style names eligible
+- If whitelist filters to zero styles OR `extension_settings.sd.styles` is empty, the feature MUST be a no-op (fall back to existing behavior, no error, no thrown exception)
+
+**Anti-pattern**: never copy or replicate `extension_settings.sd.styles` into the extension's own settings. Styles remain a SillyTavern stable-diffusion extension artifact; this feature only randomizes the choice, never owns the data.
 
 ---
 

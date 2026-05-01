@@ -13,6 +13,7 @@ const POSITION_STORAGE_KEY = `${EXTENSION_NAME}_floating_panel_position`;
 
 const SLOT_IDS = {
   mainEnabled: 'ai-floating-panel-slot-main-enabled',
+  mainRandomSdStyle: 'ai-floating-panel-slot-main-random-sd-style',
   mainMode: 'ai-floating-panel-slot-main-mode',
   mainSubfolder: 'ai-floating-panel-slot-main-subfolder',
   mainInfo: 'ai-floating-panel-slot-main-info',
@@ -438,6 +439,13 @@ function panelHtml(): string {
                 <strong>${t('settings.enable')}</strong>
               </div>
               <div id="${SLOT_IDS.mainEnabled}"></div>
+            </section>
+
+            <section class="ai-floating-panel-card">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('settings.randomizeSdStyle')}</strong>
+              </div>
+              <div id="${SLOT_IDS.mainRandomSdStyle}"></div>
             </section>
 
             <section class="ai-floating-panel-card no-collapse">
@@ -1535,6 +1543,7 @@ function ensureRoot(): HTMLElement {
 
 function mountSourceSections(): void {
   mountSection(UI_SECTION_IDS.MAIN_ENABLED, SLOT_IDS.mainEnabled);
+  mountSection(UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE, SLOT_IDS.mainRandomSdStyle);
   mountSection(UI_SECTION_IDS.PROMPT_MODE_SELECTOR, SLOT_IDS.mainMode);
   mountSection(UI_SECTION_IDS.MAIN_IMAGE_SUBFOLDER, SLOT_IDS.mainSubfolder);
   mountSection(UI_SECTION_IDS.MAIN_INFO, SLOT_IDS.mainInfo);

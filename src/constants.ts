@@ -310,6 +310,9 @@ export const DEFAULT_SETTINGS = {
   promptLibraryEntries: [] as PromptLibraryEntry[],
   promptLibraryMaxEntries: PROMPT_LIBRARY_MAX_ENTRIES.DEFAULT,
   promptLibrarySaveThumbnail: true,
+  randomizeSdStylePerGeneration: false,
+  sdStylePoolWhitelist: [] as string[],
+  restoreSdStyleAfter: true,
 };
 
 /**
@@ -459,6 +462,11 @@ export const UI_ELEMENT_IDS = {
   PROMPT_LIBRARY_EDIT_SAVE: 'auto_illustrator_conso_prompt_library_edit_save',
   PROMPT_LIBRARY_EDIT_CANCEL:
     'auto_illustrator_conso_prompt_library_edit_cancel',
+  RANDOMIZE_SD_STYLE: 'auto_illustrator_conso_randomize_sd_style',
+  RESTORE_SD_STYLE_AFTER: 'auto_illustrator_conso_restore_sd_style_after',
+  SD_STYLE_POOL_LIST: 'auto_illustrator_conso_sd_style_pool_list',
+  SD_STYLE_POOL_SEARCH: 'auto_illustrator_conso_sd_style_pool_search',
+  SD_STYLE_POOL_REFRESH: 'auto_illustrator_conso_sd_style_pool_refresh',
 } as const;
 
 /**
@@ -481,4 +489,5 @@ export const UI_SECTION_IDS = {
   STANDALONE: 'auto_illustrator_conso_panel_standalone',
   CHARACTER_TAGS: 'auto_illustrator_conso_panel_character_tags',
   PROMPT_LIBRARY: 'auto_illustrator_conso_panel_prompt_library',
+  MAIN_RANDOM_SD_STYLE: 'auto_illustrator_conso_panel_main_random_sd_style',
 } as const;

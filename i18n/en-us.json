@@ -437,5 +437,13 @@
   "errorReason.imageCommandUnavailable": "Image generation command is unavailable",
   "errorReason.imageReturnedEmpty": "Image API returned no image",
   "errorReason.imageRequestFailed": "Image generation request failed",
-  "errorReason.unknown": "Unknown error"
+  "errorReason.unknown": "Unknown error",
+  "settings.randomizeSdStyle": "Randomize SD style per generation",
+  "settings.randomizeSdStyleDesc": "Before each image generation, randomly pick one Style saved in the stable-diffusion extension, apply it temporarily, then restore the original. ⚠ While enabled, image generations are forced to run serially.",
+  "settings.restoreSdStyleAfter": "Restore original prefix after generation",
+  "settings.sdStylePoolWhitelist": "Eligible SD styles (none ticked = all)",
+  "settings.sdStylePoolEmpty": "No SD styles saved in the stable-diffusion extension yet.",
+  "settings.sdStylePoolNoMatch": "No SD style matches the search.",
+  "settings.sdStylePoolSearchPlaceholder": "Search SD styles...",
+  "settings.refreshSdStyleList": "Refresh"
 }

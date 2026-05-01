@@ -178,6 +178,34 @@ describe('settings', () => {
       expect(loaded.finalReconciliationDelayMs).toBe(30000);
       expect(loaded.promptLibraryMaxEntries).toBe(10);
     });
+
+    it('should default random SD style settings to safe values when missing', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {},
+        },
+      });
+      const loaded = loadSettings(mockContext);
+      expect(loaded.randomizeSdStylePerGeneration).toBe(false);
+      expect(loaded.sdStylePoolWhitelist).toEqual([]);
+      expect(loaded.restoreSdStyleAfter).toBe(true);
+    });
+
+    it('should round-trip random SD style settings', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            randomizeSdStylePerGeneration: true,
+            sdStylePoolWhitelist: ['Style A', 'Style B'],
+            restoreSdStyleAfter: false,
+          },
+        },
+      });
+      const loaded = loadSettings(mockContext);
+      expect(loaded.randomizeSdStylePerGeneration).toBe(true);
+      expect(loaded.sdStylePoolWhitelist).toEqual(['Style A', 'Style B']);
+      expect(loaded.restoreSdStyleAfter).toBe(false);
+    });
   });
 
   describe('saveSettings', () => {

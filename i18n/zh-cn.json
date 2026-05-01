@@ -437,5 +437,13 @@
   "errorReason.imageCommandUnavailable": "生图命令不可用",
   "errorReason.imageReturnedEmpty": "生图接口没有返回图片",
   "errorReason.imageRequestFailed": "生图请求失败",
-  "errorReason.unknown": "未知错误"
+  "errorReason.unknown": "未知错误",
+  "settings.randomizeSdStyle": "每次生图随机抽取 SD Style",
+  "settings.randomizeSdStyleDesc": "开启后，每次生图前从酒馆 SD 扩展保存的 Style 列表中随机抽一条临时套用，生图后还原原值。⚠ 启用时多张图会被强制串行生成。",
+  "settings.restoreSdStyleAfter": "生成完成后还原原前缀",
+  "settings.sdStylePoolWhitelist": "参与抽签的 Style（全不勾 = 用全部）",
+  "settings.sdStylePoolEmpty": "酒馆 SD 扩展里还没有保存任何 Style。",
+  "settings.sdStylePoolNoMatch": "没有 Style 匹配当前搜索。",
+  "settings.sdStylePoolSearchPlaceholder": "搜索 SD Style...",
+  "settings.refreshSdStyleList": "刷新列表"
 }
