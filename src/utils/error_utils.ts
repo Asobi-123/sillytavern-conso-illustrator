@@ -8,6 +8,7 @@ export type AutoIllustratorErrorCode =
   | 'main-response-empty'
   | 'prompt-insertion-failed'
   | 'image-command-unavailable'
+  | 'image-advanced-backend-unavailable'
   | 'image-empty-response'
   | 'image-request-failed'
   | 'unknown';
@@ -110,6 +111,11 @@ export function getUserFacingErrorReason(error: unknown): string {
       case 'image-command-unavailable':
         return appendDetail(
           t('errorReason.imageCommandUnavailable'),
+          error.detail
+        );
+      case 'image-advanced-backend-unavailable':
+        return appendDetail(
+          t('errorReason.imageAdvancedBackendUnavailable'),
           error.detail
         );
       case 'image-empty-response':

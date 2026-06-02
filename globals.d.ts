@@ -230,6 +230,18 @@ declare global {
     sdStylePoolWhitelist: string[];
     /** Whether to restore the original sd.prompt_prefix / sd.negative_prompt after generation */
     restoreSdStyleAfter: boolean;
+    /** Whether NovelAI Vibe Transfer is used for image generation */
+    vibeTransferEnabled: boolean;
+    /** Reference images used for NovelAI Vibe Transfer */
+    vibeTransferReferenceImages: import('./src/types').VibeTransferReferenceImage[];
+    /** Named Vibe Transfer reference selections */
+    vibeTransferPresets: import('./src/types').VibeTransferPreset[];
+    /** Currently selected Vibe Transfer preset ID */
+    currentVibeTransferPresetId: string;
+    /** Reference strength sent to NovelAI Vibe Transfer (0-1) */
+    vibeTransferReferenceStrength: number;
+    /** Information Extracted sent to NovelAI Vibe Transfer (0-1) */
+    vibeTransferInformationExtracted: number;
   }
 
   interface ImagePromptMatch {

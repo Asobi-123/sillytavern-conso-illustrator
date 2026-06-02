@@ -11,6 +11,11 @@ import {generateImage, setImageSubfolderLabel} from './image_generator';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
+  buildVibeTransferConfigFromSettings,
+  mergeVibeTransferReferenceUpdates,
+} from './services/vibe_transfer';
+import {saveSettings} from './settings';
+import {
   AutoIllustratorError,
   getUserFacingErrorReason,
 } from './utils/error_utils';
@@ -172,7 +177,16 @@ async function generateImageWithStandaloneFolder(
       settings.commonStyleTags,
       settings.commonStyleTagsPosition,
       undefined,
-      buildSdStyleConfigFromSettings(settings)
+      buildSdStyleConfigFromSettings(settings),
+      buildVibeTransferConfigFromSettings(settings),
+      references => {
+        settings.vibeTransferReferenceImages =
+          mergeVibeTransferReferenceUpdates(
+            settings.vibeTransferReferenceImages,
+            references
+          );
+        saveSettings(settings, context);
+      }
     );
   } finally {
     // Restore original label (normal mode, no full override)

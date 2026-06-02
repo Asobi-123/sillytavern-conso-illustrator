@@ -9,7 +9,11 @@
 import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
 import type {CharacterFixedTagEntry} from './types';
 import type {StyleTagPosition} from './types';
-import type {PromptLibraryEntry} from './types';
+import type {
+  PromptLibraryEntry,
+  VibeTransferPreset,
+  VibeTransferReferenceImage,
+} from './types';
 
 /**
  * Extension identifier used for settings storage
@@ -19,7 +23,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.8.0';
+export const EXTENSION_VERSION = '1.9.0';
 
 /**
  * GitHub repository for update checks
@@ -261,6 +265,26 @@ export const PROMPT_LIBRARY_THUMBNAIL = {
 } as const;
 
 /**
+ * NovelAI Vibe Transfer configuration.
+ */
+export const VIBE_TRANSFER = {
+  DEFAULT_ENABLED: false,
+  DEFAULT_REFERENCE_STRENGTH: 0.6,
+  DEFAULT_INFORMATION_EXTRACTED: 1.0,
+  MIN: 0,
+  MAX: 1,
+  STEP: 0.05,
+  MAX_REFERENCES: 16,
+  MAX_ENCODED_CACHE_PER_REFERENCE: 8,
+  MAX_PRESETS: 30,
+  MAX_SOURCE_IMAGE_SIZE: 768,
+  SOURCE_IMAGE_MIME_TYPE: 'image/jpeg',
+  SOURCE_IMAGE_QUALITY: 0.86,
+  ADVANCED_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/generate-image',
+  STATUS_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/status',
+} as const;
+
+/**
  * Default settings for the extension
  * These values are used when no saved settings exist or when resetting
  */
@@ -313,6 +337,12 @@ export const DEFAULT_SETTINGS = {
   randomizeSdStylePerGeneration: false,
   sdStylePoolWhitelist: [] as string[],
   restoreSdStyleAfter: true,
+  vibeTransferEnabled: VIBE_TRANSFER.DEFAULT_ENABLED,
+  vibeTransferReferenceImages: [] as VibeTransferReferenceImage[],
+  vibeTransferPresets: [] as VibeTransferPreset[],
+  currentVibeTransferPresetId: '',
+  vibeTransferReferenceStrength: VIBE_TRANSFER.DEFAULT_REFERENCE_STRENGTH,
+  vibeTransferInformationExtracted: VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED,
 };
 
 /**
@@ -467,6 +497,34 @@ export const UI_ELEMENT_IDS = {
   SD_STYLE_POOL_LIST: 'auto_illustrator_conso_sd_style_pool_list',
   SD_STYLE_POOL_SEARCH: 'auto_illustrator_conso_sd_style_pool_search',
   SD_STYLE_POOL_REFRESH: 'auto_illustrator_conso_sd_style_pool_refresh',
+  VIBE_TRANSFER_ENABLED: 'auto_illustrator_conso_vibe_transfer_enabled',
+  VIBE_TRANSFER_INSTALL_HELP:
+    'auto_illustrator_conso_vibe_transfer_install_help',
+  VIBE_TRANSFER_UPLOAD: 'auto_illustrator_conso_vibe_transfer_upload',
+  VIBE_TRANSFER_UPLOAD_INPUT:
+    'auto_illustrator_conso_vibe_transfer_upload_input',
+  VIBE_TRANSFER_REFERENCE_LIST:
+    'auto_illustrator_conso_vibe_transfer_reference_list',
+  VIBE_TRANSFER_REFERENCE_SEARCH:
+    'auto_illustrator_conso_vibe_transfer_reference_search',
+  VIBE_TRANSFER_CLEAR: 'auto_illustrator_conso_vibe_transfer_clear',
+  VIBE_TRANSFER_PRESET_NAME: 'auto_illustrator_conso_vibe_transfer_preset_name',
+  VIBE_TRANSFER_PRESET_SELECT:
+    'auto_illustrator_conso_vibe_transfer_preset_select',
+  VIBE_TRANSFER_PRESET_SAVE: 'auto_illustrator_conso_vibe_transfer_preset_save',
+  VIBE_TRANSFER_PRESET_APPLY:
+    'auto_illustrator_conso_vibe_transfer_preset_apply',
+  VIBE_TRANSFER_PRESET_DELETE:
+    'auto_illustrator_conso_vibe_transfer_preset_delete',
+  VIBE_TRANSFER_REFERENCE_STRENGTH:
+    'auto_illustrator_conso_vibe_transfer_reference_strength',
+  VIBE_TRANSFER_REFERENCE_STRENGTH_VALUE:
+    'auto_illustrator_conso_vibe_transfer_reference_strength_value',
+  VIBE_TRANSFER_INFORMATION_EXTRACTED:
+    'auto_illustrator_conso_vibe_transfer_information_extracted',
+  VIBE_TRANSFER_INFORMATION_EXTRACTED_VALUE:
+    'auto_illustrator_conso_vibe_transfer_information_extracted_value',
+  VIBE_TRANSFER_STATUS: 'auto_illustrator_conso_vibe_transfer_status',
 } as const;
 
 /**
@@ -490,4 +548,5 @@ export const UI_SECTION_IDS = {
   CHARACTER_TAGS: 'auto_illustrator_conso_panel_character_tags',
   PROMPT_LIBRARY: 'auto_illustrator_conso_panel_prompt_library',
   MAIN_RANDOM_SD_STYLE: 'auto_illustrator_conso_panel_main_random_sd_style',
+  MAIN_VIBE_TRANSFER: 'auto_illustrator_conso_panel_main_vibe_transfer',
 } as const;

@@ -7,7 +7,7 @@
  */
 import type { CharacterFixedTagEntry } from './types';
 import type { StyleTagPosition } from './types';
-import type { PromptLibraryEntry } from './types';
+import type { PromptLibraryEntry, VibeTransferPreset, VibeTransferReferenceImage } from './types';
 /**
  * Extension identifier used for settings storage
  */
@@ -15,7 +15,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.8.0";
+export declare const EXTENSION_VERSION = "1.9.0";
 /**
  * GitHub repository for update checks
  */
@@ -223,6 +223,25 @@ export declare const PROMPT_LIBRARY_THUMBNAIL: {
     readonly QUALITY: 0.6;
 };
 /**
+ * NovelAI Vibe Transfer configuration.
+ */
+export declare const VIBE_TRANSFER: {
+    readonly DEFAULT_ENABLED: false;
+    readonly DEFAULT_REFERENCE_STRENGTH: 0.6;
+    readonly DEFAULT_INFORMATION_EXTRACTED: 1;
+    readonly MIN: 0;
+    readonly MAX: 1;
+    readonly STEP: 0.05;
+    readonly MAX_REFERENCES: 16;
+    readonly MAX_ENCODED_CACHE_PER_REFERENCE: 8;
+    readonly MAX_PRESETS: 30;
+    readonly MAX_SOURCE_IMAGE_SIZE: 768;
+    readonly SOURCE_IMAGE_MIME_TYPE: "image/jpeg";
+    readonly SOURCE_IMAGE_QUALITY: 0.86;
+    readonly ADVANCED_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/generate-image";
+    readonly STATUS_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/status";
+};
+/**
  * Default settings for the extension
  * These values are used when no saved settings exist or when resetting
  */
@@ -275,6 +294,12 @@ export declare const DEFAULT_SETTINGS: {
     randomizeSdStylePerGeneration: boolean;
     sdStylePoolWhitelist: string[];
     restoreSdStyleAfter: boolean;
+    vibeTransferEnabled: false;
+    vibeTransferReferenceImages: VibeTransferReferenceImage[];
+    vibeTransferPresets: VibeTransferPreset[];
+    currentVibeTransferPresetId: string;
+    vibeTransferReferenceStrength: 0.6;
+    vibeTransferInformationExtracted: 1;
 };
 /**
  * UI element IDs for settings controls
@@ -393,6 +418,23 @@ export declare const UI_ELEMENT_IDS: {
     readonly SD_STYLE_POOL_LIST: "auto_illustrator_conso_sd_style_pool_list";
     readonly SD_STYLE_POOL_SEARCH: "auto_illustrator_conso_sd_style_pool_search";
     readonly SD_STYLE_POOL_REFRESH: "auto_illustrator_conso_sd_style_pool_refresh";
+    readonly VIBE_TRANSFER_ENABLED: "auto_illustrator_conso_vibe_transfer_enabled";
+    readonly VIBE_TRANSFER_INSTALL_HELP: "auto_illustrator_conso_vibe_transfer_install_help";
+    readonly VIBE_TRANSFER_UPLOAD: "auto_illustrator_conso_vibe_transfer_upload";
+    readonly VIBE_TRANSFER_UPLOAD_INPUT: "auto_illustrator_conso_vibe_transfer_upload_input";
+    readonly VIBE_TRANSFER_REFERENCE_LIST: "auto_illustrator_conso_vibe_transfer_reference_list";
+    readonly VIBE_TRANSFER_REFERENCE_SEARCH: "auto_illustrator_conso_vibe_transfer_reference_search";
+    readonly VIBE_TRANSFER_CLEAR: "auto_illustrator_conso_vibe_transfer_clear";
+    readonly VIBE_TRANSFER_PRESET_NAME: "auto_illustrator_conso_vibe_transfer_preset_name";
+    readonly VIBE_TRANSFER_PRESET_SELECT: "auto_illustrator_conso_vibe_transfer_preset_select";
+    readonly VIBE_TRANSFER_PRESET_SAVE: "auto_illustrator_conso_vibe_transfer_preset_save";
+    readonly VIBE_TRANSFER_PRESET_APPLY: "auto_illustrator_conso_vibe_transfer_preset_apply";
+    readonly VIBE_TRANSFER_PRESET_DELETE: "auto_illustrator_conso_vibe_transfer_preset_delete";
+    readonly VIBE_TRANSFER_REFERENCE_STRENGTH: "auto_illustrator_conso_vibe_transfer_reference_strength";
+    readonly VIBE_TRANSFER_REFERENCE_STRENGTH_VALUE: "auto_illustrator_conso_vibe_transfer_reference_strength_value";
+    readonly VIBE_TRANSFER_INFORMATION_EXTRACTED: "auto_illustrator_conso_vibe_transfer_information_extracted";
+    readonly VIBE_TRANSFER_INFORMATION_EXTRACTED_VALUE: "auto_illustrator_conso_vibe_transfer_information_extracted_value";
+    readonly VIBE_TRANSFER_STATUS: "auto_illustrator_conso_vibe_transfer_status";
 };
 /**
  * Stable DOM section IDs for the floating panel source area.
@@ -415,4 +457,5 @@ export declare const UI_SECTION_IDS: {
     readonly CHARACTER_TAGS: "auto_illustrator_conso_panel_character_tags";
     readonly PROMPT_LIBRARY: "auto_illustrator_conso_panel_prompt_library";
     readonly MAIN_RANDOM_SD_STYLE: "auto_illustrator_conso_panel_main_random_sd_style";
+    readonly MAIN_VIBE_TRANSFER: "auto_illustrator_conso_panel_main_vibe_transfer";
 };

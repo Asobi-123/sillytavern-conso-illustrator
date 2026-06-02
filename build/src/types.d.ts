@@ -227,3 +227,53 @@ export interface PromptLibraryEntry {
     /** Timestamp when entry was last modified */
     updatedAt: number;
 }
+/** Encoded Vibe cache entry for NovelAI V4/V4.5 models. */
+export interface VibeTransferEncodedCache {
+    /** NovelAI model this encoding was created for */
+    model: string;
+    /** Information Extracted value used when encoding */
+    informationExtracted: number;
+    /** Fingerprint of the source image data */
+    sourceFingerprint: string;
+    /** Encoded vibe string returned by NovelAI */
+    encoded: string;
+    /** Timestamp when the cache was created */
+    createdAt: number;
+}
+/** Reference image saved for NovelAI Vibe Transfer. */
+export interface VibeTransferReferenceImage {
+    /** Stable local identifier */
+    id: string;
+    /** User-facing display name */
+    name: string;
+    /** Browser data URL, e.g. data:image/png;base64,... */
+    dataUrl: string;
+    /** User-defined tags for search and grouping */
+    tags: string[];
+    /** Whether this reference participates in generation */
+    enabled: boolean;
+    /** Cached V4/V4.5 encoded vibes keyed by model + information extracted */
+    encodedVibes?: VibeTransferEncodedCache[];
+    /** Timestamp when the image was added */
+    addedAt: number;
+}
+/** Named set of enabled Vibe Transfer reference images. */
+export interface VibeTransferPreset {
+    /** Stable local identifier */
+    id: string;
+    /** User-facing display name */
+    name: string;
+    /** Reference image IDs enabled by this preset */
+    referenceIds: string[];
+    /** Timestamp when the preset was created */
+    createdAt: number;
+    /** Timestamp when the preset was last modified */
+    updatedAt: number;
+}
+/** Runtime config derived from AutoIllustratorSettings. */
+export interface VibeTransferGenerationConfig {
+    enabled: boolean;
+    referenceImages: VibeTransferReferenceImage[];
+    referenceStrength: number;
+    informationExtracted: number;
+}

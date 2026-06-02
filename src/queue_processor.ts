@@ -8,9 +8,14 @@ import {generateImage} from './image_generator';
 import {createPlaceholderUrl} from './placeholder';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
+import {
+  buildVibeTransferConfigFromSettings,
+  mergeVibeTransferReferenceUpdates,
+} from './services/vibe_transfer';
 import type {QueuedPrompt, DeferredImage} from './types';
 import {createLogger} from './logger';
 import {progressManager} from './progress_manager';
+import {saveSettings} from './settings';
 
 const logger = createLogger('Processor');
 
@@ -176,7 +181,16 @@ export class QueueProcessor {
         this.settings.commonStyleTags,
         this.settings.commonStyleTagsPosition,
         undefined,
-        buildSdStyleConfigFromSettings(this.settings)
+        buildSdStyleConfigFromSettings(this.settings),
+        buildVibeTransferConfigFromSettings(this.settings),
+        references => {
+          this.settings.vibeTransferReferenceImages =
+            mergeVibeTransferReferenceUpdates(
+              this.settings.vibeTransferReferenceImages,
+              references
+            );
+          saveSettings(this.settings, context);
+        }
       );
 
       if (imageUrl) {

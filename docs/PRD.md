@@ -670,6 +670,10 @@ Result: Operations run concurrently, no conflicts (different messages)
 | Randomize SD Style | Boolean | true/false | false | Pick a random Style from the stable-diffusion extension before each `/sd` call |
 | Restore SD Style After | Boolean | true/false | true | Restore original prefix/negative after generation completes |
 | SD Style Pool Whitelist | string[] | style names | [] | Empty = all eligible; non-empty = restrict to listed styles |
+| NovelAI Vibe Transfer | Boolean | true/false | false | Use NovelAI reference-image conditioning through the companion advanced backend route |
+| Vibe Reference Images | Image[] | max 16 | [] | Reference images sent as NovelAI Vibe Transfer arrays |
+| Vibe Reference Strength | Number | 0-1 (step: 0.05) | 0.6 | Strength applied to every reference image |
+| Vibe Information Extracted | Number | 0-1 (step: 0.05) | 1.0 | Information extraction amount applied to every reference image |
 | Log Level | Choice | trace/debug/info/warn/error/silent | info | Console verbosity |
 
 ### 8.4 Examples
@@ -761,6 +765,39 @@ Result:
 - If whitelist filters to zero styles OR `extension_settings.sd.styles` is empty, the feature MUST be a no-op (fall back to existing behavior, no error, no thrown exception)
 
 **Anti-pattern**: never copy or replicate `extension_settings.sd.styles` into the extension's own settings. Styles remain a SillyTavern stable-diffusion extension artifact; this feature only randomizes the choice, never owns the data.
+
+### 8.7 NovelAI Vibe Transfer
+
+**Users can opt in to NovelAI Vibe Transfer by adding one or more reference images. This adds reference-image conditioning to NovelAI image generation while preserving the existing prompt, negative prompt, common tags, random SD Style, queue, and storage behaviors.**
+
+**VIBE-001**: When `vibeTransferEnabled` is `false` (default), the extension MUST call the normal `/sd` slash command exactly as before. The advanced backend route MUST NOT be contacted.
+
+**VIBE-002**: When enabled but no valid reference image exists, generation MUST fall back to the normal `/sd` route. It MUST NOT silently pretend Vibe Transfer was applied.
+
+**VIBE-003**: When enabled and at least one valid reference image exists, generation MUST use the NovelAI advanced backend route and send:
+- `reference_image_multiple`
+- `reference_information_extracted_multiple`
+- `reference_strength_multiple`
+
+**VIBE-004**: Positive prompts still apply. The generated prompt, common style tags, character fixed tags, SD prompt prefix, and random SD Style prefix remain part of the final prompt sent to NovelAI.
+
+**VIBE-005**: Negative prompts still apply. The SD extension negative prompt is included in the advanced NovelAI request.
+
+**VIBE-006**: Reference Strength and Information Extracted are clamped to 0-1. Malformed persisted reference entries are filtered on load.
+
+**VIBE-007**: The advanced route must save the returned image through SillyTavern image upload so existing per-chat and standalone image folder behavior still works.
+
+**VIBE-008**: If the companion advanced backend route is unavailable or NovelAI returns an error, users must receive a categorized image-generation failure reason. The extension MUST NOT return a successful image placeholder for a failed Vibe request.
+
+**VIBE-009**: For NovelAI V4/V4.5, encoded vibe cache entries MUST be keyed by current SD/NAI model, Information Extracted value, and reference-image source fingerprint. Matching cache entries are reused; cache misses call `encode-vibe`.
+
+**VIBE-010**: Vibe presets MUST store the enabled reference image IDs only. They MUST NOT pin a specific encoded cache entry.
+
+**VIBE-011**: Uploaded Vibe source images MUST be compressed before being persisted in extension settings. The extension MUST NOT store large original PNG files when compression succeeds.
+
+**VIBE-012**: Reference image tags are user labels for organization and search only. They MUST NOT be sent to NovelAI or injected into prompts.
+
+**Anti-pattern**: do not add a NovelAI token field to Auto Illustrator settings. The companion route reuses the NovelAI key already stored in SillyTavern secrets.
 
 ---
 

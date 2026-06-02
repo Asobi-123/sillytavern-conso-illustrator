@@ -2742,6 +2742,266 @@ img[data-failed-placeholder='true']:hover {
   margin-bottom: 0.25rem;
 }
 
+/* ===== NovelAI Vibe Transfer ===== */
+
+.auto-illustrator-vibe-transfer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auto-illustrator-vibe-transfer-desc {
+  display: block;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+
+.auto-illustrator-vibe-transfer-status {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.auto-illustrator-vibe-transfer-range-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.auto-illustrator-vibe-transfer-range-row input {
+  flex: 1;
+}
+
+.auto-illustrator-vibe-transfer-range-row span {
+  min-width: 3rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.auto-illustrator-vibe-transfer-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 68px;
+  padding: 0.8rem;
+  border: 2px dashed rgba(128, 128, 128, 0.35);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  opacity: 0.85;
+  transition: border-color 0.2s, background 0.2s, opacity 0.2s;
+}
+
+.auto-illustrator-vibe-transfer-upload:hover {
+  border-color: rgba(128, 128, 128, 0.7);
+  background: rgba(128, 128, 128, 0.08);
+  opacity: 1;
+}
+
+.auto-illustrator-vibe-transfer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.auto-illustrator-vibe-transfer-actions input {
+  flex: 1;
+  min-width: 0;
+}
+
+.auto-illustrator-vibe-transfer-preset-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.auto-illustrator-vibe-transfer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.auto-illustrator-vibe-transfer-install-help {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: max-content;
+  max-width: 100%;
+  padding-inline: 0.7rem !important;
+  white-space: nowrap;
+}
+
+.auto-illustrator-vibe-transfer-install-help i {
+  flex: 0 0 auto;
+}
+
+.auto-illustrator-vibe-transfer-install-help-dialog {
+  background: #18202d !important;
+  color: #f5f7fb !important;
+  border: 1px solid rgba(220, 229, 242, 0.28) !important;
+  max-width: min(720px, calc(100vw - 2rem));
+  max-height: 82vh;
+  overflow: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.75);
+}
+
+.auto-illustrator-vibe-transfer-install-help-dialog h3,
+.auto-illustrator-vibe-transfer-install-help-dialog p,
+.auto-illustrator-vibe-transfer-install-help-dialog li {
+  color: #f5f7fb !important;
+}
+
+.auto-illustrator-vibe-transfer-install-help-dialog p,
+.auto-illustrator-vibe-transfer-install-help-dialog li {
+  line-height: 1.65;
+}
+
+.auto-illustrator-vibe-transfer-install-help-dialog .auto-illustrator-dialog-buttons {
+  justify-content: stretch;
+}
+
+.auto-illustrator-vibe-transfer-install-help-dialog .auto-illustrator-dialog-buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  color: #111827 !important;
+  background: #f5f7fb !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+.auto-illustrator-vibe-transfer-install-steps {
+  margin: 0.6rem 0;
+  padding-left: 1.4rem;
+}
+
+.auto-illustrator-vibe-transfer-install-steps li {
+  margin: 0.35rem 0;
+}
+
+.auto-illustrator-vibe-transfer-install-snippet {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 32vh;
+  overflow: auto;
+  margin: 0.6rem 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(220, 229, 242, 0.3);
+  border-radius: 8px;
+  background: #0f1623;
+  color: #f8fafc;
+  font-size: 0.9rem;
+}
+
+.auto-illustrator-vibe-transfer-reference-search {
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.auto-illustrator-vibe-transfer-reference-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.auto-illustrator-vibe-transfer-empty {
+  opacity: 0.7;
+}
+
+.auto-illustrator-vibe-transfer-reference-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.auto-illustrator-vibe-transfer-reference-enabled {
+  flex: 0 0 auto;
+}
+
+.auto-illustrator-vibe-transfer-reference-item img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 7px;
+  flex: 0 0 auto;
+}
+
+.auto-illustrator-vibe-transfer-reference-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.auto-illustrator-vibe-transfer-reference-name {
+  width: 100%;
+  min-width: 0;
+}
+
+.auto-illustrator-vibe-transfer-reference-meta small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  opacity: 0.72;
+}
+
+.auto-illustrator-vibe-transfer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  min-height: 1.4rem;
+}
+
+.auto-illustrator-vibe-transfer-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.08rem 0.45rem;
+  border: 1px solid rgba(184, 207, 146, 0.45);
+  border-radius: 999px;
+  background: rgba(184, 207, 146, 0.12);
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.auto-illustrator-vibe-transfer-tag-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auto-illustrator-vibe-transfer-tag-chip i {
+  opacity: 0.72;
+}
+
+.auto-illustrator-vibe-transfer-tag-input {
+  width: 100%;
+  min-width: 0;
+}
+
 /* ===== Prompt Library ===== */
 
 .prompt-library-container {

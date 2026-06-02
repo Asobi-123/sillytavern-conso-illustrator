@@ -81,6 +81,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **World Info Injection** | Plugin-independent world book selection per chat |
 | **Common Style Tags** | Global prefix/suffix tags applied to all generated prompts |
 | **Random SD Style** | Randomly pick one Style from the stable-diffusion extension before each generation, apply its prefix/negative, then restore. Optional whitelist limits the eligible pool |
+| **NovelAI Vibe Transfer** | Optional reference-image conditioning for chat and standalone generation. V4/V4.5 encoded vibes are cached to reduce repeated Anlas usage |
 | **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
 | **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
 
@@ -117,6 +118,35 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **Which preset** | Meta Prompt Preset | Guidelines Preset |
 
 > **Recommendation:** Start with Shared API mode. Switch to Independent API if you don't want image generation consuming your main API's attention and tokens.
+
+---
+
+## NovelAI Vibe Transfer (Optional)
+
+Vibe Transfer adds reference-image conditioning on top of the existing prompt flow. Positive prompts, negative prompts, common style tags, character fixed tags, SD Styles, and randomized SD Styles still apply; Vibe only adds reference conditioning to the same NovelAI generation request.
+
+### Install the companion server plugin
+
+Vibe Transfer requires the backend plugin included in this repository:
+
+1. Copy this repository's `server-plugin/auto-illustrator-nai-advanced` folder.
+2. Paste it into `<SillyTavern root>/plugins/auto-illustrator-nai-advanced`. If an older folder with the same name already exists, replace it with the new one.
+3. Make sure SillyTavern already has a NovelAI API token configured.
+4. Set `enableServerPlugins: true` in `<SillyTavern root>/config.yaml`.
+5. Restart SillyTavern. Reloading the page alone will not load a new server plugin.
+6. Open the floating panel's **Vibe Transfer** card, enable it, and upload reference images.
+
+The panel also includes an **Install help** button with the same instructions.
+
+### Usage and cache behavior
+
+- Works in both chat image generation and standalone generation.
+- For V4/V4.5, the cache is matched by current SD/NAI model, Information Extracted value, and reference-image fingerprint. If a matching encoded vibe exists, it is reused; otherwise the plugin calls `encode-vibe`.
+- Changing the model, Information Extracted value, or reference image creates a new cache entry.
+- V3 does not use the encode-vibe cache and still sends the original reference image payload.
+- Uploaded reference images are stored as compressed Vibe source images: longest side 768px, converted to JPEG. Large original PNG files are not stored in extension settings.
+- Each reference can be named, tagged with chips, and searched by name or tag. Enabled references are sorted to the top.
+- Presets save which references are enabled, not a specific encoded cache. After applying a preset, generation still resolves the matching cache from the current model and Information Extracted value.
 
 ---
 
@@ -165,6 +195,7 @@ The following areas support fullscreen editing/preview:
 | Problem | Quick Fix |
 |---------|-----------|
 | No images generated | Make sure `/sd` command works first — the plugin depends on SillyTavern's Image Generation extension |
+| Vibe Transfer does not affect output | Make sure `auto-illustrator-nai-advanced` is installed into SillyTavern's `plugins/` directory, `enableServerPlugins: true` is set in `config.yaml`, and SillyTavern has been restarted |
 | Images appear then disappear | Check browser console for errors; verify image storage path exists |
 | Independent mode fails and you do not know where to look | The plugin now shows a failure toast with the likely reason. If the affected chat message still has no prompt tags, it also shows a **Retry Prompt Generation** button on that message. If it says the main reply was empty, first make sure your main API is switched back to Chat Completion. If it says API request failed or returned empty, check the independent LLM configuration |
 | Wrong character appearance | Use **Character Fixed Tags** to lock visual tags per character |
@@ -198,6 +229,7 @@ For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING
 | API Profile Management | - | - | Supported |
 | Character Fixed Tags | - | - | Supported |
 | Random SD Style | - | - | Supported |
+| NovelAI Vibe Transfer | - | - | Supported (requires companion server plugin) |
 | Standalone Workbench | - | - | Supported |
 | Guidelines Presets | - | - | Supported |
 | Collapsible Settings | - | - | Supported |

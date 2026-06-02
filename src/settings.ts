@@ -7,6 +7,11 @@ import {getDefaultMetaPrompt, getPresetById} from './meta_prompt_presets';
 import {getIndependentLlmPresetById} from './independent_llm_presets';
 import {createStandaloneGenerationContent} from './standalone_generation_ui';
 import {createPromptLibraryContent} from './prompt_library_ui';
+import type {
+  VibeTransferEncodedCache,
+  VibeTransferPreset,
+  VibeTransferReferenceImage,
+} from './types';
 import {
   EXTENSION_NAME,
   DEFAULT_SETTINGS,
@@ -22,6 +27,7 @@ import {
   INDEPENDENT_LLM_MAX_TOKENS,
   STANDALONE_PROMPT_COUNT,
   PROMPT_LIBRARY_MAX_ENTRIES,
+  VIBE_TRANSFER,
   UI_ELEMENT_IDS,
   UI_SECTION_IDS,
   EXTENSION_VERSION,
@@ -49,6 +55,21 @@ function clampSettingValue(
   return Math.max(min, Math.min(max, numericValue));
 }
 
+function clampFloatSettingValue(
+  value: unknown,
+  min: number,
+  max: number,
+  fallback: number
+): number {
+  const numericValue =
+    typeof value === 'number' ? value : Number.parseFloat(String(value));
+  if (!Number.isFinite(numericValue)) {
+    return fallback;
+  }
+
+  return Math.max(min, Math.min(max, numericValue));
+}
+
 /**
  * Gets the default settings for the extension
  * @returns Default settings
@@ -59,6 +80,10 @@ export function getDefaultSettings(): AutoIllustratorSettings {
     promptDetectionPatterns: [...DEFAULT_SETTINGS.promptDetectionPatterns],
     contentFilterTags: [...DEFAULT_SETTINGS.contentFilterTags],
     promptLibraryEntries: [...DEFAULT_SETTINGS.promptLibraryEntries],
+    vibeTransferReferenceImages: [
+      ...DEFAULT_SETTINGS.vibeTransferReferenceImages,
+    ],
+    vibeTransferPresets: [...DEFAULT_SETTINGS.vibeTransferPresets],
     customPresets: [],
     customIndependentLlmPresets: [],
     apiProfiles: [],
@@ -165,6 +190,123 @@ export function loadSettings(
   if (typeof merged.restoreSdStyleAfter !== 'boolean') {
     merged.restoreSdStyleAfter = true;
   }
+
+  if (typeof merged.vibeTransferEnabled !== 'boolean') {
+    merged.vibeTransferEnabled = false;
+  }
+  if (!Array.isArray(merged.vibeTransferReferenceImages)) {
+    merged.vibeTransferReferenceImages = [];
+  } else {
+    merged.vibeTransferReferenceImages = merged.vibeTransferReferenceImages
+      .map((entry: unknown): VibeTransferReferenceImage | null => {
+        if (!entry || typeof entry !== 'object') {
+          return null;
+        }
+        const candidate = entry as Partial<VibeTransferReferenceImage>;
+        if (
+          typeof candidate.id !== 'string' ||
+          typeof candidate.name !== 'string' ||
+          typeof candidate.dataUrl !== 'string' ||
+          typeof candidate.addedAt !== 'number'
+        ) {
+          return null;
+        }
+        const encodedVibes = Array.isArray(candidate.encodedVibes)
+          ? candidate.encodedVibes
+              .filter(
+                (cache: unknown): cache is VibeTransferEncodedCache =>
+                  !!cache &&
+                  typeof cache === 'object' &&
+                  typeof (cache as VibeTransferEncodedCache).model ===
+                    'string' &&
+                  typeof (cache as VibeTransferEncodedCache)
+                    .informationExtracted === 'number' &&
+                  typeof (cache as VibeTransferEncodedCache)
+                    .sourceFingerprint === 'string' &&
+                  typeof (cache as VibeTransferEncodedCache).encoded ===
+                    'string' &&
+                  typeof (cache as VibeTransferEncodedCache).createdAt ===
+                    'number'
+              )
+              .slice(0, VIBE_TRANSFER.MAX_ENCODED_CACHE_PER_REFERENCE)
+          : [];
+        const tags = Array.isArray(candidate.tags)
+          ? candidate.tags
+              .filter((tag: unknown): tag is string => typeof tag === 'string')
+              .map(tag => tag.trim())
+              .filter(tag => tag.length > 0)
+          : [];
+        return {
+          id: candidate.id,
+          name: candidate.name,
+          dataUrl: candidate.dataUrl,
+          tags: [...new Set(tags)],
+          enabled:
+            typeof candidate.enabled === 'boolean' ? candidate.enabled : true,
+          encodedVibes,
+          addedAt: candidate.addedAt,
+        };
+      })
+      .filter(
+        (
+          entry: VibeTransferReferenceImage | null
+        ): entry is VibeTransferReferenceImage => !!entry
+      )
+      .slice(0, VIBE_TRANSFER.MAX_REFERENCES);
+  }
+  if (!Array.isArray(merged.vibeTransferPresets)) {
+    merged.vibeTransferPresets = [];
+  } else {
+    const validReferenceIds = new Set(
+      merged.vibeTransferReferenceImages.map(
+        (ref: VibeTransferReferenceImage) => ref.id
+      )
+    );
+    merged.vibeTransferPresets = merged.vibeTransferPresets
+      .filter(
+        (preset: unknown): preset is VibeTransferPreset =>
+          !!preset &&
+          typeof preset === 'object' &&
+          typeof (preset as VibeTransferPreset).id === 'string' &&
+          typeof (preset as VibeTransferPreset).name === 'string' &&
+          Array.isArray((preset as VibeTransferPreset).referenceIds) &&
+          typeof (preset as VibeTransferPreset).createdAt === 'number' &&
+          typeof (preset as VibeTransferPreset).updatedAt === 'number'
+      )
+      .map(
+        (preset: VibeTransferPreset): VibeTransferPreset => ({
+          ...preset,
+          referenceIds: preset.referenceIds.filter((id: string) =>
+            validReferenceIds.has(id)
+          ),
+        })
+      )
+      .slice(0, VIBE_TRANSFER.MAX_PRESETS);
+  }
+  if (typeof merged.currentVibeTransferPresetId !== 'string') {
+    merged.currentVibeTransferPresetId = '';
+  }
+  if (
+    merged.currentVibeTransferPresetId &&
+    !merged.vibeTransferPresets.some(
+      (preset: VibeTransferPreset) =>
+        preset.id === merged.currentVibeTransferPresetId
+    )
+  ) {
+    merged.currentVibeTransferPresetId = '';
+  }
+  merged.vibeTransferReferenceStrength = clampFloatSettingValue(
+    merged.vibeTransferReferenceStrength,
+    VIBE_TRANSFER.MIN,
+    VIBE_TRANSFER.MAX,
+    VIBE_TRANSFER.DEFAULT_REFERENCE_STRENGTH
+  );
+  merged.vibeTransferInformationExtracted = clampFloatSettingValue(
+    merged.vibeTransferInformationExtracted,
+    VIBE_TRANSFER.MIN,
+    VIBE_TRANSFER.MAX,
+    VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED
+  );
 
   return merged;
 }
@@ -618,6 +760,79 @@ export function createSettingsUI(): string {
       <div id="${UI_ELEMENT_IDS.SD_STYLE_POOL_LIST}" class="auto-illustrator-sd-style-pool-list" style="max-height: 280px; overflow-y: auto; margin-top: 0.3rem; padding-right: 4px;"></div>
     </div>`;
 
+  const vibeTransferContent = `
+    <div class="auto-illustrator-vibe-transfer">
+      <div class="auto-illustrator-vibe-transfer-header">
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.VIBE_TRANSFER_ENABLED}">
+          <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_ENABLED}" type="checkbox" />
+          <span>${t('settings.vibeTransfer')}</span>
+        </label>
+        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_INSTALL_HELP}" class="menu_button auto-illustrator-vibe-transfer-install-help" type="button">
+          <i class="fa-solid fa-circle-question"></i> ${t('settings.vibeTransferInstallHelp')}
+        </button>
+      </div>
+      <small class="auto-illustrator-vibe-transfer-desc">${t('settings.vibeTransferDesc')}</small>
+      <small class="auto-illustrator-vibe-transfer-desc">${t('settings.vibeTransferCacheDesc')}</small>
+      <small class="auto-illustrator-vibe-transfer-desc">${t('settings.vibeTransferSourceImageDesc')}</small>
+
+      <div id="${UI_ELEMENT_IDS.VIBE_TRANSFER_STATUS}" class="auto-illustrator-vibe-transfer-status"></div>
+
+      <label for="${UI_ELEMENT_IDS.VIBE_TRANSFER_REFERENCE_STRENGTH}">
+        <span>${t('settings.vibeTransferReferenceStrength')}</span>
+        <small>${t('settings.vibeTransferReferenceStrengthDesc')}</small>
+        <div class="auto-illustrator-vibe-transfer-range-row">
+          <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_REFERENCE_STRENGTH}" type="range"
+                 min="${VIBE_TRANSFER.MIN}" max="${VIBE_TRANSFER.MAX}" step="${VIBE_TRANSFER.STEP}" />
+          <span id="${UI_ELEMENT_IDS.VIBE_TRANSFER_REFERENCE_STRENGTH_VALUE}"></span>
+        </div>
+      </label>
+
+      <label for="${UI_ELEMENT_IDS.VIBE_TRANSFER_INFORMATION_EXTRACTED}">
+        <span>${t('settings.vibeTransferInformationExtracted')}</span>
+        <small>${t('settings.vibeTransferInformationExtractedDesc')}</small>
+        <div class="auto-illustrator-vibe-transfer-range-row">
+          <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_INFORMATION_EXTRACTED}" type="range"
+                 min="${VIBE_TRANSFER.MIN}" max="${VIBE_TRANSFER.MAX}" step="${VIBE_TRANSFER.STEP}" />
+          <span id="${UI_ELEMENT_IDS.VIBE_TRANSFER_INFORMATION_EXTRACTED_VALUE}"></span>
+        </div>
+      </label>
+
+      <div id="${UI_ELEMENT_IDS.VIBE_TRANSFER_UPLOAD}" class="auto-illustrator-vibe-transfer-upload">
+        <i class="fa-solid fa-image"></i>
+        <span>${t('settings.vibeTransferUpload')}</span>
+        <small>${t('settings.vibeTransferUploadHint')}</small>
+        <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_UPLOAD_INPUT}" type="file" accept="image/png,image/jpeg,image/webp" multiple style="display:none;" />
+      </div>
+
+      <div class="auto-illustrator-vibe-transfer-actions">
+        <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_NAME}" class="text_pole" type="text"
+               placeholder="${t('settings.vibeTransferPresetNamePlaceholder')}" />
+        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_SAVE}" class="menu_button auto-illustrator-action-btn" type="button">
+          <i class="fa-solid fa-floppy-disk"></i> ${t('settings.vibeTransferPresetSave')}
+        </button>
+      </div>
+
+      <div class="auto-illustrator-vibe-transfer-preset-row">
+        <select id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_SELECT}" class="text_pole"></select>
+        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_APPLY}" class="menu_button auto-illustrator-action-btn" type="button">
+          <i class="fa-solid fa-check"></i> ${t('settings.vibeTransferPresetApply')}
+        </button>
+        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_DELETE}" class="menu_button auto-illustrator-action-btn" type="button">
+          <i class="fa-solid fa-trash"></i> ${t('settings.vibeTransferPresetDelete')}
+        </button>
+      </div>
+
+      <div class="auto-illustrator-vibe-transfer-actions">
+        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_CLEAR}" class="menu_button auto-illustrator-action-btn" type="button">
+          <i class="fa-solid fa-trash"></i> ${t('settings.vibeTransferClear')}
+        </button>
+      </div>
+
+      <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_REFERENCE_SEARCH}" class="text_pole auto-illustrator-vibe-transfer-reference-search" type="text"
+             placeholder="${t('settings.vibeTransferReferenceSearchPlaceholder')}" />
+      <div id="${UI_ELEMENT_IDS.VIBE_TRANSFER_REFERENCE_LIST}" class="auto-illustrator-vibe-transfer-reference-list"></div>
+    </div>`;
+
   const characterFixedTagsContent = `
     <div class="character-tag-desc">${t('settings.characterFixedTags.desc')}</div>
     <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
@@ -678,6 +893,10 @@ export function createSettingsUI(): string {
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE,
           randomSdStyleContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_VIBE_TRANSFER,
+          vibeTransferContent
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_IMAGE_SUBFOLDER,

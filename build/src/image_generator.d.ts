@@ -2,9 +2,10 @@
  * Image Generator Module
  * Handles image generation using the SD slash command and replacing prompts with images
  */
-import type { DeferredImage } from './types';
+import type { DeferredImage, VibeTransferReferenceImage } from './types';
 import { type ReconciliationConfig } from './reconciliation';
 import { type SdStyleRandomConfig } from './services/sd_style_randomizer';
+import type { VibeTransferGenerationConfig } from './types';
 /**
  * Updates reconciliation configuration
  * @param config - Partial configuration to update
@@ -42,9 +43,11 @@ export declare function setImageSubfolderLabel(label: string | null, fullOverrid
  * @param tagsPosition - Position for common tags ('prefix' or 'suffix')
  * @param signal - Optional AbortSignal for cancellation
  * @param sdStyleConfig - Optional config to randomly pick from extension_settings.sd.styles before each /sd call
+ * @param vibeTransferConfig - Optional NovelAI Vibe Transfer config
+ * @param onVibeReferencesUpdated - Optional callback for encoded Vibe cache persistence
  * @returns URL of generated image or null on failure
  */
-export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig): Promise<string | null>;
+export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig, vibeTransferConfig?: VibeTransferGenerationConfig, onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void): Promise<string | null>;
 /**
  * Parses a comma-separated string of tags into an array
  * @param tagsString - Comma-separated tags string

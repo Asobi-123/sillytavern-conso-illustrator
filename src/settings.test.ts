@@ -7,7 +7,7 @@ import {
   EXTENSION_NAME,
   createSettingsUI,
 } from './settings';
-import {UI_SECTION_IDS, UI_ELEMENT_IDS} from './constants';
+import {UI_SECTION_IDS, UI_ELEMENT_IDS, VIBE_TRANSFER} from './constants';
 
 describe('settings', () => {
   describe('createSettingsUI', () => {
@@ -61,6 +61,9 @@ describe('settings', () => {
       expect(defaultsA.contentFilterTags).not.toBe(defaultsB.contentFilterTags);
       expect(defaultsA.promptLibraryEntries).not.toBe(
         defaultsB.promptLibraryEntries
+      );
+      expect(defaultsA.vibeTransferReferenceImages).not.toBe(
+        defaultsB.vibeTransferReferenceImages
       );
     });
   });
@@ -205,6 +208,91 @@ describe('settings', () => {
       expect(loaded.randomizeSdStylePerGeneration).toBe(true);
       expect(loaded.sdStylePoolWhitelist).toEqual(['Style A', 'Style B']);
       expect(loaded.restoreSdStyleAfter).toBe(false);
+    });
+
+    it('should sanitize Vibe Transfer fields on load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            ...getDefaultSettings(),
+            vibeTransferEnabled: 'yes',
+            vibeTransferReferenceImages: [
+              {
+                id: 'ref1',
+                name: 'ref.png',
+                dataUrl: 'data:image/png;base64,AAAA',
+                tags: [' cyber ', '', 'blue', 'cyber', 123],
+                addedAt: 1,
+                encodedVibes: [
+                  {
+                    model: 'nai-diffusion-4-5-full',
+                    informationExtracted: 1,
+                    sourceFingerprint: 'abc',
+                    encoded: 'ENCODED',
+                    createdAt: 2,
+                  },
+                  {bad: 'cache'},
+                ],
+              },
+              {id: 'bad'},
+            ],
+            vibeTransferPresets: [
+              {
+                id: 'preset1',
+                name: 'Style A',
+                referenceIds: ['ref1', 'missing'],
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            ],
+            currentVibeTransferPresetId: 'preset1',
+            vibeTransferReferenceStrength: 9,
+            vibeTransferInformationExtracted: -2,
+          },
+        },
+      });
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.vibeTransferEnabled).toBe(false);
+      expect(loaded.vibeTransferReferenceImages).toHaveLength(1);
+      expect(loaded.vibeTransferReferenceImages[0].enabled).toBe(true);
+      expect(loaded.vibeTransferReferenceImages[0].tags).toEqual([
+        'cyber',
+        'blue',
+      ]);
+      expect(loaded.vibeTransferReferenceImages[0].encodedVibes).toHaveLength(
+        1
+      );
+      expect(loaded.vibeTransferPresets).toHaveLength(1);
+      expect(loaded.vibeTransferPresets[0].referenceIds).toEqual(['ref1']);
+      expect(loaded.currentVibeTransferPresetId).toBe('preset1');
+      expect(loaded.vibeTransferReferenceStrength).toBe(1);
+      expect(loaded.vibeTransferInformationExtracted).toBe(0);
+    });
+
+    it('should cap persisted Vibe Transfer references on load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            ...getDefaultSettings(),
+            vibeTransferReferenceImages: Array.from(
+              {length: VIBE_TRANSFER.MAX_REFERENCES + 3},
+              (_value, index) => ({
+                id: `ref${index}`,
+                name: `ref${index}.png`,
+                dataUrl: 'data:image/png;base64,AAAA',
+                tags: [],
+                addedAt: index,
+              })
+            ),
+          },
+        },
+      });
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.vibeTransferReferenceImages).toHaveLength(
+        VIBE_TRANSFER.MAX_REFERENCES
+      );
     });
   });
 

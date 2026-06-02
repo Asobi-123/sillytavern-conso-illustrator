@@ -238,6 +238,29 @@ AI 回复里出现奇怪的标签？        → 切到独立 API 模式
 
 > ⚠ 启用随机时，多张图的生图过程会被强制串行（一张接一张），避免并发互相踩值。如果你只想长期用同一套 Style，关掉开关 + 在酒馆 SD 扩展里手动选定那一套会更高效。
 
+### NovelAI Vibe Transfer（可选，进阶）
+
+Vibe Transfer 可以上传参考图，让 NovelAI 在原有提示词之外参考某种画风、构图或角色信息。它支持普通聊天生图和独立生图。
+
+启用前需要安装后端插件：
+
+1. 复制本仓库的 `server-plugin/auto-illustrator-nai-advanced` 文件夹
+2. 粘贴到 `<SillyTavern 根目录>/plugins/auto-illustrator-nai-advanced`
+3. 如果目标位置已经有同名旧文件夹，用新版覆盖旧版
+4. 确认 SillyTavern 已配置 NovelAI API token
+5. 在 `<SillyTavern 根目录>/config.yaml` 中设置 `enableServerPlugins: true`
+6. 重启 SillyTavern。只刷新页面不会加载新的 server plugin
+7. 打开 conso 悬浮面板，在 **Vibe Transfer** 卡片里启用功能并上传参考图
+
+使用时需要注意：
+
+- 正面提示词、负面提示词、通用样式 Tag、角色固定 Tag、SD Style 仍然生效。Vibe Transfer 只是额外加入参考图约束。
+- V4/V4.5 第一次使用某张参考图时，可能会调用 `encode-vibe` 并消耗 Anlas；后续同一张图、同一模型、同一 Information Extracted 会复用缓存。
+- 修改模型、Information Extracted 或替换参考图后，会重新生成缓存。
+- 上传的参考图会保存为压缩后的 Vibe 源图，最长边 768px，并转为 JPEG；原始大 PNG 不会保存进插件设置。
+- 每张参考图可以命名和添加标签 chip。搜索框可以按名称或标签筛选。
+- 风格组预设保存的是“启用哪些参考图”，不是某个具体编码；套用预设后会按当前模型和 Information Extracted 自动找缓存。
+
 ### 角色固定 Tag（非必须，可选，觉得API生成得不好再放入，）
 
 为每个角色锁定固定的外貌标签，这样不管 LLM 怎么生成提示词，角色的外貌都是一致的。
@@ -337,4 +360,4 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 
 ---
 
-*本教程适用于 Conso Illustrator v1.7.3+*
+*本教程适用于 Conso Illustrator v1.9.0+*

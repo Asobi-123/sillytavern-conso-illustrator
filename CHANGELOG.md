@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.9.0] - 2026-06-02
+
+### Added
+
+- **NovelAI Vibe Transfer** - Added an opt-in floating panel section for NovelAI reference-image conditioning. It supports both chat image generation and standalone generation, keeps the existing positive prompt, negative prompt, common tags, character fixed tags, and SD Style behavior, and uses the companion `auto-illustrator-nai-advanced` server plugin route to reuse the NovelAI token already stored in SillyTavern.
+- **Vibe encode cache for NovelAI V4/V4.5** - V4/V4.5 references are encoded once per reference image, current SD/NAI model, Information Extracted value, and source fingerprint. Matching generations reuse the cached encoded vibe instead of repeatedly calling `encode-vibe`; changing the model, Information Extracted value, or reference image creates a new cache entry. V3 references still use the original image payload path.
+- **Vibe reference management** - Added compressed reference storage, per-reference enable toggles, editable names, tag chips, search by name or tag, enabled-reference sorting, cache status display, and named presets. Presets save which references are enabled, not a specific encoded cache.
+- **Vibe install help dialog** - Added an in-panel install help button explaining how to copy the server plugin folder, enable `enableServerPlugins: true`, and restart SillyTavern.
+
 ## [1.8.0] - 2026-05-01
 
 ### Added

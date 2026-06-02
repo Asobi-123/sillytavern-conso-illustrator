@@ -83,6 +83,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **世界书注入** | 插件独立的世界书选择，按聊天保存 |
 | **通用样式 Tag** | 全局前缀/后缀标签，应用到所有生成的提示词 |
 | **随机 SD Style** | 每次生图前从酒馆 SD 扩展保存的 Style 列表中随机抽一条临时套用，可用白名单限定参与抽签的范围 |
+| **NovelAI Vibe Transfer** | 可选参考图生图增强；支持文生图和独立生图，V4/V4.5 会缓存 vibe 编码以减少重复 Anlas 消耗 |
 | **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
 | **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
 
@@ -119,6 +120,35 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **用哪个预设** | 元提示预设 | 指南预设 |
 
 > **建议：** 先用共享 API 模式。如果不想让生图占用主 API 的注意力和 token，再切到独立 API。
+
+---
+
+## NovelAI Vibe Transfer（可选）
+
+Vibe Transfer 会在原有提示词之外加入参考图条件。启用后，正面提示词、负面提示词、通用样式 Tag、角色固定 Tag、SD Style 和随机 SD Style 仍然会生效；Vibe 只是在同一次 NovelAI 生图请求里追加参考图风格/信息约束。
+
+### 安装 companion server plugin
+
+Vibe Transfer 需要仓库内的后端插件：
+
+1. 复制本仓库的 `server-plugin/auto-illustrator-nai-advanced` 文件夹。
+2. 粘贴到 `<SillyTavern 根目录>/plugins/auto-illustrator-nai-advanced`。如果已经有同名旧文件夹，用新版覆盖旧版。
+3. 确认 SillyTavern 已配置 NovelAI API token。
+4. 在 `<SillyTavern 根目录>/config.yaml` 中设置 `enableServerPlugins: true`。
+5. 重启 SillyTavern。只刷新页面不会加载新的 server plugin。
+6. 回到插件悬浮面板的 **Vibe Transfer** 卡片，启用并上传参考图。
+
+面板里也有 **安装提示** 按钮，会显示同一套安装说明。
+
+### 使用与缓存规则
+
+- 支持普通聊天生图和独立生图。
+- V4/V4.5 会按当前 SD/NAI 模型、Information Extracted、参考图内容自动匹配缓存。命中缓存就复用 encoded vibe；找不到才重新 encode vibe。
+- 修改模型、Information Extracted 或替换参考图后，会生成新的缓存。
+- V3 不走 encode-vibe 缓存，仍按原图参考路径发送。
+- 上传参考图会保存压缩后的 Vibe 源图，最长边限制为 768px，并转为 JPEG；不会把原始大 PNG 存进插件设置。
+- 每张参考图可以命名、加标签 chip、按名称或标签搜索。勾选启用的参考图会排在前面。
+- 风格组预设保存的是“启用哪些参考图”，不是某个具体编码；套用预设后仍会按当前模型和 Information Extracted 自动找缓存。
 
 ---
 
@@ -167,6 +197,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | 问题 | 快速解决 |
 |------|----------|
 | 图片不生成 | 先确认 `/sd` 命令能用——插件依赖酒馆的图像生成扩展 |
+| Vibe Transfer 没生效 | 确认已安装 `auto-illustrator-nai-advanced` 到 SillyTavern 的 `plugins/` 目录，`config.yaml` 已启用 `enableServerPlugins: true`，并已重启 SillyTavern |
 | 图片出现后消失 | 检查浏览器控制台报错；确认图片存储路径存在 |
 | 独立模式失败但不知道该查哪里 | 现在会直接弹出失败原因；若这条聊天消息里还没有 prompt，会出现 **重试生成提示词** 按钮；若提示“主回复为空”，先确认主 API 已切回聊天补全；若提示 API 请求失败/返回为空，再检查独立 LLM 配置 |
 | 角色外貌不对 | 使用 **角色固定 Tag** 锁定每个角色的外貌标签 |
@@ -200,6 +231,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | API 配置档案 | - | - | 支持 |
 | 角色固定 Tag | - | - | 支持 |
 | 随机 SD Style | - | - | 支持 |
+| NovelAI Vibe Transfer | - | - | 支持（需 companion server plugin） |
 | 独立生图工作台 | - | - | 支持 |
 | 指南预设 | - | - | 支持 |
 | 折叠式设置面板 | - | - | 支持 |

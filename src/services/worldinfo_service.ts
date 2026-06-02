@@ -5,11 +5,9 @@
 
 import {createLogger} from '../logger';
 import type {WorldInfoEntry} from '../types';
+import {clearCsrfTokenCache, getInternalRequestHeaders} from '../utils/api';
 
 const logger = createLogger('WorldInfoService');
-
-/** Cached CSRF token */
-let csrfToken: string | null = null;
 
 /** World book entries cache: bookName -> { entries, expiry } */
 const entryCache = new Map<
@@ -19,33 +17,6 @@ const entryCache = new Map<
 
 /** Cache TTL in milliseconds (5 minutes) */
 const CACHE_TTL_MS = 5 * 60 * 1000;
-
-/**
- * Fetches the CSRF token from SillyTavern (lazy, cached).
- */
-async function fetchCsrfToken(): Promise<string> {
-  if (csrfToken) return csrfToken;
-
-  const response = await fetch('/csrf-token');
-  if (!response.ok) {
-    throw new Error(`Failed to fetch CSRF token: ${response.status}`);
-  }
-  const data = await response.json();
-  csrfToken = data.token as string;
-  logger.debug('CSRF token acquired');
-  return csrfToken;
-}
-
-/**
- * Returns headers required for SillyTavern internal API calls.
- */
-async function getInternalRequestHeaders(): Promise<Record<string, string>> {
-  const token = await fetchCsrfToken();
-  return {
-    'Content-Type': 'application/json',
-    'X-CSRF-Token': token,
-  };
-}
 
 /**
  * Fetches all world book names from SillyTavern settings.
@@ -157,6 +128,6 @@ export function getCharacterWorldBookName(): string | null {
 export function clearWorldBookCache(): void {
   entryCache.clear();
   // Also reset CSRF token so it refreshes on next call
-  csrfToken = null;
+  clearCsrfTokenCache();
   logger.debug('World book cache cleared');
 }

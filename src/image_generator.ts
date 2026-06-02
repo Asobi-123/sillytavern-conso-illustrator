@@ -4,7 +4,7 @@
  */
 
 import Bottleneck from 'bottleneck';
-import type {DeferredImage} from './types';
+import type {DeferredImage, VibeTransferReferenceImage} from './types';
 import {createLogger} from './logger';
 import {attachRegenerationHandlers} from './manual_generation';
 import {renderMessageUpdate} from './utils/message_renderer';
@@ -22,6 +22,11 @@ import {
   withRandomSdStyle,
   type SdStyleRandomConfig,
 } from './services/sd_style_randomizer';
+import {
+  generateNovelAiVibeTransferImage,
+  shouldUseVibeTransfer,
+} from './services/vibe_transfer';
+import type {VibeTransferGenerationConfig} from './types';
 
 const logger = createLogger('Generator');
 
@@ -207,6 +212,8 @@ function installImageUploadInterceptor(): () => void {
  * @param tagsPosition - Position for common tags ('prefix' or 'suffix')
  * @param signal - Optional AbortSignal for cancellation
  * @param sdStyleConfig - Optional config to randomly pick from extension_settings.sd.styles before each /sd call
+ * @param vibeTransferConfig - Optional NovelAI Vibe Transfer config
+ * @param onVibeReferencesUpdated - Optional callback for encoded Vibe cache persistence
  * @returns URL of generated image or null on failure
  */
 export async function generateImage(
@@ -215,7 +222,9 @@ export async function generateImage(
   commonTags?: string,
   tagsPosition?: 'prefix' | 'suffix',
   signal?: AbortSignal,
-  sdStyleConfig?: SdStyleRandomConfig
+  sdStyleConfig?: SdStyleRandomConfig,
+  vibeTransferConfig?: VibeTransferGenerationConfig,
+  onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void
 ): Promise<string | null> {
   // If limiter not initialized, create with default values
   if (!imageLimiter) {
@@ -260,31 +269,26 @@ export async function generateImage(
     const removeInterceptor = installImageUploadInterceptor();
 
     try {
-      const sdCommand = context.SlashCommandParser?.commands?.['sd'];
-      if (!sdCommand || !sdCommand.callback) {
-        logger.error('SD command not available');
-        logger.info(
-          'Available commands:',
-          Object.keys(context.SlashCommandParser?.commands || {})
-        );
-        throw new AutoIllustratorError(
-          'image-command-unavailable',
-          'SD command not available'
-        );
-      }
-
-      logger.debug('Calling SD command...');
-      const sdCallback = sdCommand.callback;
       const effectiveSdStyleConfig: SdStyleRandomConfig = sdStyleConfig ?? {
         enabled: false,
         whitelist: [],
         restoreAfter: true,
       };
-      const imageUrl = await withRandomSdStyle(
-        context,
-        effectiveSdStyleConfig,
-        () => sdCallback({quiet: 'true'}, enhancedPrompt)
-      );
+      const imageUrl = shouldUseVibeTransfer(vibeTransferConfig)
+        ? await withRandomSdStyle(context, effectiveSdStyleConfig, () =>
+            generateNovelAiVibeTransferImage(
+              enhancedPrompt,
+              context,
+              vibeTransferConfig,
+              onVibeReferencesUpdated,
+              signal
+            )
+          )
+        : await generateImageViaSdCommand(
+            enhancedPrompt,
+            context,
+            effectiveSdStyleConfig
+          );
 
       if (!imageUrl) {
         throw new AutoIllustratorError(
@@ -319,6 +323,31 @@ export async function generateImage(
       removeInterceptor();
     }
   });
+}
+
+async function generateImageViaSdCommand(
+  prompt: string,
+  context: SillyTavernContext,
+  sdStyleConfig: SdStyleRandomConfig
+): Promise<string> {
+  const sdCommand = context.SlashCommandParser?.commands?.['sd'];
+  if (!sdCommand || !sdCommand.callback) {
+    logger.error('SD command not available');
+    logger.info(
+      'Available commands:',
+      Object.keys(context.SlashCommandParser?.commands || {})
+    );
+    throw new AutoIllustratorError(
+      'image-command-unavailable',
+      'SD command not available'
+    );
+  }
+
+  logger.debug('Calling SD command...');
+  const sdCallback = sdCommand.callback;
+  return withRandomSdStyle(context, sdStyleConfig, () =>
+    sdCallback({quiet: 'true'}, prompt)
+  );
 }
 
 /**
