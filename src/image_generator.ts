@@ -27,6 +27,14 @@ import {
   shouldUseVibeTransfer,
 } from './services/vibe_transfer';
 import type {VibeTransferGenerationConfig} from './types';
+import {applyCommonTags} from './services/prompt_tags';
+
+export {
+  applyCommonTags,
+  deduplicateTags,
+  parseCommonTags,
+  validateCommonTags,
+} from './services/prompt_tags';
 
 const logger = createLogger('Generator');
 
@@ -348,118 +356,6 @@ async function generateImageViaSdCommand(
   return withRandomSdStyle(context, sdStyleConfig, () =>
     sdCallback({quiet: 'true'}, prompt)
   );
-}
-
-/**
- * Parses a comma-separated string of tags into an array
- * @param tagsString - Comma-separated tags string
- * @returns Array of trimmed tag strings
- */
-export function parseCommonTags(tagsString: string): string[] {
-  if (!tagsString || tagsString.trim() === '') {
-    return [];
-  }
-
-  return tagsString
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-/**
- * Deduplicates tags in a case-insensitive manner
- * Preserves the original case of the first occurrence
- * @param tags - Array of tag strings
- * @returns Deduplicated array of tags
- */
-export function deduplicateTags(tags: string[]): string[] {
-  const seen = new Map<string, string>();
-
-  for (const tag of tags) {
-    const lowerTag = tag.toLowerCase();
-    if (!seen.has(lowerTag)) {
-      seen.set(lowerTag, tag);
-    }
-  }
-
-  return Array.from(seen.values());
-}
-
-/**
- * Validates common tags input
- * @param tags - Comma-separated tags string
- * @returns Validation result with error message if invalid
- */
-export function validateCommonTags(tags: string): {
-  valid: boolean;
-  error?: string;
-} {
-  if (!tags || tags.trim() === '') {
-    return {valid: true}; // Empty is valid
-  }
-
-  // Check for invalid characters (no special HTML/JS chars)
-  const invalidChars = /[<>{}[\]\\]/;
-  if (invalidChars.test(tags)) {
-    return {
-      valid: false,
-      error: 'Invalid characters detected. Avoid using < > { } [ ] \\',
-    };
-  }
-
-  return {valid: true};
-}
-
-/**
- * Applies common style tags to a prompt based on position setting
- * Deduplicates tags to avoid repetition
- * @param prompt - Original image generation prompt
- * @param commonTags - Comma-separated common tags
- * @param position - Where to add tags ('prefix' or 'suffix')
- * @returns Enhanced prompt with common tags applied
- */
-export function applyCommonTags(
-  prompt: string,
-  commonTags: string,
-  position: 'prefix' | 'suffix'
-): string {
-  // If no common tags, return original prompt
-  if (!commonTags || commonTags.trim() === '') {
-    return prompt;
-  }
-
-  // Extract {}-wrapped character tag groups before parsing
-  // These must be preserved intact (not split by comma or deduplicated)
-  const charGroupRegex = /\{[^}]+\}/g;
-  const charGroups: string[] = [];
-  let promptWithoutGroups = prompt.replace(charGroupRegex, match => {
-    charGroups.push(match);
-    return '';
-  });
-  // Clean up leading/trailing commas and whitespace left by extraction
-  promptWithoutGroups = promptWithoutGroups
-    .replace(/^[\s,]+|[\s,]+$/g, '')
-    .replace(/,\s*,/g, ',');
-
-  // Parse remaining prompt tags and common style tags
-  const promptTags = parseCommonTags(promptWithoutGroups);
-  const styleTags = parseCommonTags(commonTags);
-
-  // Combine based on position
-  const combined =
-    position === 'prefix'
-      ? [...styleTags, ...promptTags]
-      : [...promptTags, ...styleTags];
-
-  // Deduplicate and join
-  const deduplicated = deduplicateTags(combined);
-  const flatPart = deduplicated.join(', ');
-
-  // Prepend character groups back (they always go first)
-  if (charGroups.length > 0) {
-    return `${charGroups.join(', ')}, ${flatPart}`;
-  }
-  return flatPart;
 }
 
 /**

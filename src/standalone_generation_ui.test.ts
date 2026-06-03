@@ -3,15 +3,19 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 const {
   generateStandalonePromptsMock,
   generateImageMock,
+  openInpaintingEditorMock,
   setImageSubfolderLabelMock,
   toastrErrorMock,
   toastrWarningMock,
+  toastrSuccessMock,
 } = vi.hoisted(() => ({
   generateStandalonePromptsMock: vi.fn(),
   generateImageMock: vi.fn(),
+  openInpaintingEditorMock: vi.fn(),
   setImageSubfolderLabelMock: vi.fn(),
   toastrErrorMock: vi.fn(),
   toastrWarningMock: vi.fn(),
+  toastrSuccessMock: vi.fn(),
 }));
 
 vi.mock('./i18n', () => ({
@@ -37,20 +41,26 @@ vi.mock('./image_generator', () => ({
   setImageSubfolderLabel: setImageSubfolderLabelMock,
 }));
 
+vi.mock('./inpainting_editor', () => ({
+  openInpaintingEditor: openInpaintingEditorMock,
+}));
+
 describe('standalone_generation_ui', () => {
   beforeEach(() => {
     vi.resetModules();
     document.body.innerHTML = '';
     generateStandalonePromptsMock.mockReset();
     generateImageMock.mockReset();
+    openInpaintingEditorMock.mockReset();
     setImageSubfolderLabelMock.mockReset();
     toastrErrorMock.mockReset();
     toastrWarningMock.mockReset();
+    toastrSuccessMock.mockReset();
     global.toastr = {
       error: toastrErrorMock,
       warning: toastrWarningMock,
       info: vi.fn(),
-      success: vi.fn(),
+      success: toastrSuccessMock,
     } as any;
   });
 
@@ -176,5 +186,63 @@ describe('standalone_generation_ui', () => {
     expect(String(toastrErrorMock.mock.calls[0][0])).toContain(
       'errorReason.imageCommandUnavailable'
     );
+  });
+
+  it('should allow editing a generated standalone image with Inpaint', async () => {
+    generateImageMock.mockResolvedValue('/user/images/standalone/base.png');
+    openInpaintingEditorMock.mockResolvedValue({
+      imageUrl: '/user/images/standalone/edited.png',
+      promptText: 'edited prompt',
+      insertionMode: 'append-after-image',
+    });
+
+    const standaloneUi = await import('./standalone_generation_ui');
+    document.body.innerHTML = standaloneUi.createStandaloneGenerationContent();
+    const context = {generateRaw: vi.fn()} as unknown as SillyTavernContext;
+    const settings = {characterFixedTags: {}} as AutoIllustratorSettings;
+    standaloneUi.initializeStandaloneGeneration(context, settings, undefined);
+
+    const manualRadio = document.getElementById(
+      'auto_illustrator_conso_standalone_mode_manual'
+    ) as HTMLInputElement;
+    const promptInput = document.getElementById(
+      'auto_illustrator_conso_standalone_manual_prompt'
+    ) as HTMLTextAreaElement;
+    const generateButton = document.getElementById(
+      'auto_illustrator_conso_standalone_manual_generate'
+    ) as HTMLButtonElement;
+    const imageContainer = document.getElementById(
+      'auto_illustrator_conso_standalone_manual_image'
+    ) as HTMLElement;
+
+    manualRadio.checked = true;
+    manualRadio.dispatchEvent(new Event('change', {bubbles: true}));
+    promptInput.value = '1girl, moonlight';
+    generateButton.click();
+
+    await vi.waitFor(() => {
+      expect(imageContainer.querySelector('img')?.getAttribute('src')).toBe(
+        '/user/images/standalone/base.png'
+      );
+    });
+
+    const editButton = imageContainer.querySelector(
+      '.standalone-image-edit-btn'
+    ) as HTMLButtonElement;
+    expect(editButton).not.toBeNull();
+    editButton.click();
+
+    await vi.waitFor(() => {
+      expect(openInpaintingEditorMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          imageUrl: '/user/images/standalone/base.png',
+          promptText: '1girl, moonlight',
+          messageText: '1girl, moonlight',
+          context,
+          settings,
+        })
+      );
+      expect(imageContainer.querySelectorAll('img')).toHaveLength(2);
+    });
   });
 });

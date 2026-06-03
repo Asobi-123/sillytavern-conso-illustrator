@@ -84,6 +84,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **通用样式 Tag** | 全局前缀/后缀标签，应用到所有生成的提示词 |
 | **随机 SD Style** | 每次生图前从酒馆 SD 扩展保存的 Style 列表中随机抽一条临时套用，可用白名单限定参与抽签的范围 |
 | **NovelAI Vibe Transfer** | 可选参考图生图增强；支持文生图和独立生图，V4/V4.5 会缓存 vibe 编码以减少重复 Anlas 消耗 |
+| **NovelAI 局部重绘** | 在已有图片上绘制遮罩，预览重绘结果后再选择追加或替换原图；支持缩放画布、边缘羽化、遮罩外扩和边界保护 |
 | **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
 | **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
 
@@ -123,24 +124,28 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 ---
 
-## NovelAI Vibe Transfer（可选）
+## NovelAI 高级后端功能（可选）
 
-Vibe Transfer 会在原有提示词之外加入参考图条件。启用后，正面提示词、负面提示词、通用样式 Tag、角色固定 Tag、SD Style 和随机 SD Style 仍然会生效；Vibe 只是在同一次 NovelAI 生图请求里追加参考图风格/信息约束。
+部分 NovelAI 高级功能需要配套后端插件：Vibe Transfer、局部重绘。只安装前端扩展时，普通 `/sd` 生图可以运行，但这些功能不可用。
 
 ### 安装 companion server plugin
-
-Vibe Transfer 需要仓库内的后端插件：
 
 1. 复制本仓库的 `server-plugin/auto-illustrator-nai-advanced` 文件夹。
 2. 粘贴到 `<SillyTavern 根目录>/plugins/auto-illustrator-nai-advanced`。如果已经有同名旧文件夹，用新版覆盖旧版。
 3. 确认 SillyTavern 已配置 NovelAI API token。
 4. 在 `<SillyTavern 根目录>/config.yaml` 中设置 `enableServerPlugins: true`。
 5. 重启 SillyTavern。只刷新页面不会加载新的 server plugin。
-6. 回到插件悬浮面板的 **Vibe Transfer** 卡片，启用并上传参考图。
+6. 刷新页面后，再使用 Vibe Transfer 或局部重绘。
 
-面板里也有 **安装提示** 按钮，会显示同一套安装说明。
+面板信息卡片里也有 **后端安装提示** 按钮，会显示同一套安装说明。
 
-### 使用与缓存规则
+### NovelAI Vibe Transfer
+
+Vibe Transfer 会在原有提示词之外加入参考图条件。启用后，正面提示词、负面提示词、通用样式 Tag、角色固定 Tag、SD Style 和随机 SD Style 仍然会生效；Vibe 只是在同一次 NovelAI 生图请求里追加参考图风格/信息约束。
+
+安装后端插件后，回到插件悬浮面板的 **Vibe Transfer** 卡片，启用并上传参考图。
+
+#### 使用与缓存规则
 
 - 支持普通聊天生图和独立生图。
 - V4/V4.5 会按当前 SD/NAI 模型、Information Extracted、参考图内容自动匹配缓存。命中缓存就复用 encoded vibe；找不到才重新 encode vibe。
@@ -149,6 +154,25 @@ Vibe Transfer 需要仓库内的后端插件：
 - 上传参考图会保存压缩后的 Vibe 源图，最长边限制为 768px，并转为 JPEG；不会把原始大 PNG 存进插件设置。
 - 每张参考图可以命名、加标签 chip、按名称或标签搜索。勾选启用的参考图会排在前面。
 - 风格组预设保存的是“启用哪些参考图”，不是某个具体编码；套用预设后仍会按当前模型和 Information Extracted 自动找缓存。
+
+### NovelAI 局部重绘
+
+局部重绘会基于已有图片和你绘制的遮罩生成编辑结果。遮罩决定哪里重绘，提示词决定遮罩区域要变成什么。它不会走普通自动生图队列，必须从已有图片的操作入口进入。
+
+使用流程：
+
+1. 在已生成图片的操作入口中选择 **NovelAI 局部重绘**。
+2. 用画笔/橡皮调整遮罩，可用画布缩放放大细节区域。
+3. 修改提示词、负面提示词、强度、遮罩外扩、边缘羽化、边界保护等参数。
+4. 生成编辑图后，先在编辑器内预览结果。
+5. 满意后选择 **插入结果并结束**；可追加到原图后，也可显式选择替换原图。
+
+参数提示：
+
+- **遮罩外扩**：发送给 NovelAI 的遮罩会变大，适合让模型获得更多上下文；过高会影响遮罩外区域。
+- **边缘羽化**：让重绘区域和原图柔和融合；过高可能让边缘变脏或颜色渗出。
+- **边界保护**：最终贴回原图时向内收缩边缘，适合衣服靠近头发或皮肤的场景；过高会留下旧颜色边。
+- **强度**：越高越容易改变内容；越低越保守。没有绝对正确参数，以预览结果为准，建议小幅多试。
 
 ---
 
@@ -232,6 +256,7 @@ Vibe Transfer 需要仓库内的后端插件：
 | 角色固定 Tag | - | - | 支持 |
 | 随机 SD Style | - | - | 支持 |
 | NovelAI Vibe Transfer | - | - | 支持（需 companion server plugin） |
+| NovelAI 局部重绘 | - | - | 支持（需 companion server plugin） |
 | 独立生图工作台 | - | - | 支持 |
 | 指南预设 | - | - | 支持 |
 | 折叠式设置面板 | - | - | 支持 |

@@ -648,6 +648,10 @@ Result: Operations run concurrently, no conflicts (different messages)
 
 **SETTINGS-005**: Reset button restores defaults with confirmation dialog
 
+**SETTINGS-006**: Plugin-owned panels, dialogs, and editors must keep text inputs, textareas, selects, placeholders, readonly states, and disabled states readable across SillyTavern themes. They must not rely only on inherited `SmartThemeBodyColor`.
+
+**SETTINGS-007**: Floating panel content must use panel-local theme variables for text, muted text, success states, field backgrounds, and borders so light and dark panel themes remain readable after theme switching.
+
 ### 8.3 Available Settings
 
 | Setting | Type | Range/Values | Default | Description |
@@ -767,6 +771,60 @@ Result:
 **Anti-pattern**: never copy or replicate `extension_settings.sd.styles` into the extension's own settings. Styles remain a SillyTavern stable-diffusion extension artifact; this feature only randomizes the choice, never owns the data.
 
 ### 8.7 NovelAI Vibe Transfer
+
+### 8.8 NovelAI Inpaint
+
+**Desired Behavior**
+
+Users should be able to edit an existing generated image by painting a mask, then generate a NovelAI inpaint result without losing the original image by default.
+
+**Requirements**
+
+**INPAINT-001**: The entry point must be attached to an existing image action flow. Inpaint must not run inside the normal automatic text-to-image queue because that queue has no base image or mask.
+
+**INPAINT-002**: The editor must load the actual source image URL from the chat message or a freshly generated standalone result. Prompt Library thumbnails are compressed references and must not be treated as reliable original images.
+
+**INPAINT-003**: Users can paint and erase a mask, undo recent mask edits, clear the mask, edit the prompt, and adjust inpainting strength, edge feather, mask padding, and edge guard before generation.
+
+**INPAINT-004**: The editor supports local mask painting only. Canvas expansion/outpaint is not part of the supported workflow because real-image tests produced unacceptable blur.
+
+**INPAINT-005**: The default insertion mode is append-after-source-image. Replace-image is allowed only as an explicit user choice.
+
+**INPAINT-006**: A failed inpaint request must not delete or replace the source image.
+
+**INPAINT-007**: The generated image must be linked to the original prompt node when the prompt is unchanged. If the user edits the prompt, create a child prompt node and link the generated image to the child.
+
+**INPAINT-008**: The client must send the base image, mask image, dimensions, strength, color correction flag, and the current NovelAI generation parameters through the companion server plugin route.
+
+**INPAINT-009**: Large source images, masks, and edit history must not be stored in extension settings. The editor should keep bitmap state temporary and only persist normal image/prompt registry data after generation.
+
+**INPAINT-010**: The generated result is composited back onto the source image using the mask as alpha so only the selected region changes. When edge feather is greater than zero, a blurred mask is used so the redrawn region fades into the original with no hard seam. A feather/composite failure must fall back to the raw generated result rather than failing the edit.
+
+**INPAINT-011**: Inpaint should use focused requests when possible: crop the base image and mask around the painted area plus surrounding context, send the smaller crop to NovelAI, then composite the generated crop back into the full source image.
+
+**INPAINT-012**: After a successful edit generation, the editor should preview the generated result inside the canvas area without closing. Users must be able to switch back to the original mask canvas and regenerate with the same mask, prompt, and parameters preserved. The generated preview must not be inserted into the chat or standalone result area until the user explicitly confirms the current preview.
+
+**INPAINT-013**: Each user-facing editor parameter must include a short explanation of what it affects and when high values are risky, especially mask padding, edge feather, color matching, and strength.
+
+**INPAINT-014**: Edge guard must affect only the final compositing mask. The request mask can still be padded for NovelAI context, but the pasted result should be inset from the user-painted mask boundary when edge guard is greater than zero.
+
+**INPAINT-015**: The editor must not close from backdrop clicks or dialog cancel events because that loses the current mask, prompt, and parameter state. Exiting the editor requires an explicit close, cancel, or insert-and-finish action.
+
+**INPAINT-016**: High-frequency mask editing controls, including brush size, canvas zoom, brush/eraser mode, undo, and clear mask, should be placed next to the canvas so they are reachable before scrolling through generation parameters.
+
+**INPAINT-017**: The editor should present parameter guidance as outcome-based advice: there is no universally correct value, preview quality is the source of truth, and users should be encouraged to adjust in small experiments.
+
+**INPAINT-018**: The mobile editor layout must constrain non-canvas controls to the dialog width. Large image canvases may scroll inside the canvas viewport, but prompts, hints, and parameter controls must not be clipped by horizontal overflow.
+
+**SERVER-PLUGIN-001**: The frontend must check the companion server plugin status route and compare a backend version fingerprint against the frontend's expected fingerprint. If the server plugin is missing or stale, the main info card should show that manual server-plugin folder update is required.
+
+**Anti-Patterns**
+
+❌ **DO NOT** use Prompt Library thumbnails as original images.
+❌ **DO NOT** replace the source image by default.
+❌ **DO NOT** remove the source image when generation fails.
+❌ **DO NOT** combine Vibe Transfer and Inpaint unless the request schema has been tested with NovelAI.
+❌ **DO NOT** reintroduce outpaint/canvas expansion without proving the generated result is sharp on real test images.
 
 **Users can opt in to NovelAI Vibe Transfer by adding one or more reference images. This adds reference-image conditioning to NovelAI image generation while preserving the existing prompt, negative prompt, common tags, random SD Style, queue, and storage behaviors.**
 

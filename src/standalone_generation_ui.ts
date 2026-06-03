@@ -14,6 +14,7 @@ import {
   buildVibeTransferConfigFromSettings,
   mergeVibeTransferReferenceUpdates,
 } from './services/vibe_transfer';
+import {openInpaintingEditor} from './inpainting_editor';
 import {saveSettings} from './settings';
 import {
   AutoIllustratorError,
@@ -46,6 +47,92 @@ function showStandaloneToast(
     t(key, {reason: getUserFacingErrorReason(error)}),
     t('extensionName')
   );
+}
+
+function renderStandaloneImageResult(
+  container: HTMLElement,
+  imageUrl: string,
+  promptText: string,
+  messageText: string,
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings,
+  mode: 'replace-container' | 'append-after-block' = 'replace-container',
+  targetBlock?: HTMLElement
+): void {
+  const block = document.createElement('div');
+  block.className = 'standalone-image-result';
+
+  const image = document.createElement('img');
+  image.src = imageUrl;
+  image.alt = t('standalone.generatedImageAlt');
+  image.style.cursor = 'pointer';
+  image.addEventListener('click', () => {
+    window.open(imageUrl, '_blank');
+  });
+
+  const actions = document.createElement('div');
+  actions.className = 'standalone-image-actions';
+
+  const editButton = document.createElement('button');
+  editButton.type = 'button';
+  editButton.className =
+    'menu_button auto-illustrator-action-btn standalone-image-edit-btn';
+  editButton.textContent = t('inpaint.editImage');
+  editButton.addEventListener('click', async () => {
+    editButton.disabled = true;
+    try {
+      const renderResult = (
+        result: Awaited<ReturnType<typeof openInpaintingEditor>>
+      ) => {
+        if (!result) {
+          return;
+        }
+
+        renderStandaloneImageResult(
+          container,
+          result.imageUrl,
+          result.promptText,
+          messageText,
+          context,
+          settings,
+          result.insertionMode === 'replace-image'
+            ? 'replace-container'
+            : 'append-after-block',
+          block
+        );
+      };
+
+      const result = await openInpaintingEditor({
+        imageUrl,
+        promptText,
+        messageText,
+        context,
+        settings,
+      });
+
+      renderResult(result);
+    } catch (error) {
+      logger.error('Standalone Inpaint edit failed:', error);
+      toastr.error(getUserFacingErrorReason(error), t('extensionName'));
+    } finally {
+      editButton.disabled = false;
+    }
+  });
+
+  actions.appendChild(editButton);
+  block.append(image, actions);
+
+  if (mode === 'append-after-block' && targetBlock?.parentElement) {
+    targetBlock.insertAdjacentElement('afterend', block);
+    return;
+  }
+
+  if (targetBlock?.parentElement) {
+    targetBlock.replaceWith(block);
+    return;
+  }
+
+  container.replaceChildren(block);
 }
 
 /**
@@ -111,7 +198,7 @@ export function createStandaloneGenerationContent(): string {
 
       <div id="standalone_manual_panel" style="display:none;">
         <label for="${UI_ELEMENT_IDS.STANDALONE_MANUAL_PROMPT_INPUT}">
-          <span>Prompt</span>
+          <span>${t('standalone.prompt')}</span>
           <textarea id="${UI_ELEMENT_IDS.STANDALONE_MANUAL_PROMPT_INPUT}" class="text_pole textarea_compact" rows="3" placeholder="${t('standalone.manualPromptPlaceholder')}"></textarea>
         </label>
         <button id="${UI_ELEMENT_IDS.STANDALONE_MANUAL_GENERATE_BTN}" class="menu_button auto-illustrator-action-btn" style="margin-top: 0.5rem;">
@@ -276,12 +363,12 @@ async function generateForCard(
 
   if (!textarea || !imageContainer) return;
 
-  let prompt = textarea.value.trim();
-  if (!prompt) return;
+  const rawPrompt = textarea.value.trim();
+  if (!rawPrompt) return;
 
   // Apply character fixed tags using scene description as context
-  prompt = applyCharacterFixedTags(
-    prompt,
+  const prompt = applyCharacterFixedTags(
+    rawPrompt,
     sceneDescription,
     settings.characterFixedTags
   );
@@ -297,12 +384,14 @@ async function generateForCard(
       settings
     );
     if (imageUrl) {
-      imageContainer.innerHTML = `<img src="${imageUrl}" alt="Generated image" style="max-width: 100%; border-radius: 6px; cursor: pointer;" />`;
-      // Click to open in new tab
-      const img = imageContainer.querySelector('img');
-      img?.addEventListener('click', () => {
-        window.open(imageUrl, '_blank');
-      });
+      renderStandaloneImageResult(
+        imageContainer,
+        imageUrl,
+        rawPrompt,
+        sceneDescription,
+        context,
+        settings
+      );
     } else {
       const error = new AutoIllustratorError(
         'image-empty-response',
@@ -594,9 +683,9 @@ export function initializeStandaloneGeneration(
     const imageContainer = document.getElementById(
       UI_ELEMENT_IDS.STANDALONE_MANUAL_IMAGE
     );
-    let prompt = promptInput?.value?.trim();
+    const rawPrompt = promptInput?.value?.trim();
 
-    if (!prompt) {
+    if (!rawPrompt) {
       toastr.warning(t('standalone.noPrompt'), t('extensionName'));
       return;
     }
@@ -604,9 +693,9 @@ export function initializeStandaloneGeneration(
     if (!imageContainer) return;
 
     // In manual mode, use the prompt itself as messageText for character tag matching
-    prompt = applyCharacterFixedTags(
-      prompt,
-      prompt,
+    const prompt = applyCharacterFixedTags(
+      rawPrompt,
+      rawPrompt,
       settings.characterFixedTags
     );
 
@@ -620,11 +709,14 @@ export function initializeStandaloneGeneration(
         settings
       );
       if (imageUrl) {
-        imageContainer.innerHTML = `<img src="${imageUrl}" alt="Generated image" style="max-width: 100%; border-radius: 6px; cursor: pointer;" />`;
-        const img = imageContainer.querySelector('img');
-        img?.addEventListener('click', () => {
-          window.open(imageUrl, '_blank');
-        });
+        renderStandaloneImageResult(
+          imageContainer,
+          imageUrl,
+          rawPrompt,
+          rawPrompt,
+          context,
+          settings
+        );
       } else {
         const error = new AutoIllustratorError(
           'image-empty-response',

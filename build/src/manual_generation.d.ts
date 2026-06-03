@@ -11,6 +11,11 @@
  * - Click-to-regenerate image handlers
  * - Image click listeners
  */
+import type { ImageInsertionMode } from './types';
+export declare function insertEditedImageIntoMessageText(messageText: string, targetUrl: string, newImgTag: string, mode: ImageInsertionMode): {
+    text: string;
+    inserted: boolean;
+};
 /**
  * Handles click on an image to regenerate it
  *

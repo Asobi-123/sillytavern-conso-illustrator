@@ -23,7 +23,19 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.9.0';
+export const EXTENSION_VERSION = '1.10.0';
+
+/**
+ * User-facing highlights for the current bundled version.
+ * Keep this local so users can see what changed even after updating to latest.
+ */
+export const CURRENT_VERSION_HIGHLIGHTS = [
+  'NovelAI 局部重绘：可在原图上涂抹遮罩，生成预览后再选择追加或替换原图。',
+  '局部重绘预览循环：生成结果先在编辑器内预览，确认后才插入聊天或独立生图结果区。',
+  '局部重绘边缘处理：支持画布缩放、遮罩外扩、边缘羽化、边界保护、负面提示词和保留原图色调。',
+  '后端插件提示：信息卡会检测后端插件状态，并提示需要手动更新 server-plugin 文件夹。',
+  '界面可读性修复：输入框、信息卡版本号和浅色面板主题的文字对比度更稳定。',
+] as const;
 
 /**
  * GitHub repository for update checks
@@ -265,6 +277,16 @@ export const PROMPT_LIBRARY_THUMBNAIL = {
 } as const;
 
 /**
+ * Companion server plugin fingerprint.
+ * Bump VERSION whenever server-plugin/auto-illustrator-nai-advanced changes.
+ */
+export const SERVER_PLUGIN = {
+  ID: 'auto-illustrator-nai-advanced',
+  VERSION: '2026-06-03-inpaint-v3',
+  STATUS_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/status',
+} as const;
+
+/**
  * NovelAI Vibe Transfer configuration.
  */
 export const VIBE_TRANSFER = {
@@ -281,7 +303,37 @@ export const VIBE_TRANSFER = {
   SOURCE_IMAGE_MIME_TYPE: 'image/jpeg',
   SOURCE_IMAGE_QUALITY: 0.86,
   ADVANCED_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/generate-image',
-  STATUS_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/status',
+  STATUS_ROUTE: SERVER_PLUGIN.STATUS_ROUTE,
+} as const;
+
+/**
+ * NovelAI Inpainting configuration.
+ */
+export const NAI_IMAGE_EDIT = {
+  DEFAULT_INPAINTING_STRENGTH: 0.45,
+  MIN_STRENGTH: 0,
+  MAX_STRENGTH: 1,
+  STRENGTH_STEP: 0.05,
+  MAX_INPAINTING_STEPS: 24,
+  FOCUSED_CONTEXT_PX: 192,
+  FOCUSED_MIN_SIZE: 512,
+  FOCUSED_DIMENSION_STEP: 64,
+  FOCUSED_MAX_FULL_CANVAS_RATIO: 0.85,
+  DEFAULT_MASK_PADDING_PX: 24,
+  MIN_MASK_PADDING_PX: 0,
+  MAX_MASK_PADDING_PX: 128,
+  DEFAULT_MASK_FEATHER_PX: 24,
+  MIN_MASK_FEATHER_PX: 0,
+  MAX_MASK_FEATHER_PX: 80,
+  MASK_FEATHER_STEP: 1,
+  DEFAULT_MASK_EDGE_GUARD_PX: 4,
+  MIN_MASK_EDGE_GUARD_PX: 0,
+  MAX_MASK_EDGE_GUARD_PX: 32,
+  MIN_ZOOM_PERCENT: 25,
+  MAX_ZOOM_PERCENT: 300,
+  ZOOM_STEP_PERCENT: 25,
+  INPAINT_ROUTE:
+    '/api/plugins/auto-illustrator-nai-advanced/generate-inpaint-image',
 } as const;
 
 /**
@@ -446,6 +498,14 @@ export const UI_ELEMENT_IDS = {
   API_PROFILE_DELETE: 'auto_illustrator_conso_api_profile_delete',
   VERSION_DISPLAY: 'auto_illustrator_conso_version_display',
   VERSION_STATUS: 'auto_illustrator_conso_version_status',
+  UPDATE_NOTICE: 'auto_illustrator_conso_update_notice',
+  UPDATE_NOTICE_TITLE: 'auto_illustrator_conso_update_notice_title',
+  UPDATE_NOTICE_LIST: 'auto_illustrator_conso_update_notice_list',
+  UPDATE_NOTICE_MORE: 'auto_illustrator_conso_update_notice_more',
+  UPDATE_NOTICE_LINK: 'auto_illustrator_conso_update_notice_link',
+  SERVER_PLUGIN_STATUS: 'auto_illustrator_conso_server_plugin_status',
+  SERVER_PLUGIN_INSTALL_HELP:
+    'auto_illustrator_conso_server_plugin_install_help',
   TUTORIAL_LINK: 'auto_illustrator_conso_tutorial_link',
   CHARACTER_FIXED_TAGS_LIST: 'auto_illustrator_conso_character_fixed_tags_list',
   CHARACTER_TAG_SEARCH: 'auto_illustrator_conso_character_tag_search',
@@ -498,8 +558,6 @@ export const UI_ELEMENT_IDS = {
   SD_STYLE_POOL_SEARCH: 'auto_illustrator_conso_sd_style_pool_search',
   SD_STYLE_POOL_REFRESH: 'auto_illustrator_conso_sd_style_pool_refresh',
   VIBE_TRANSFER_ENABLED: 'auto_illustrator_conso_vibe_transfer_enabled',
-  VIBE_TRANSFER_INSTALL_HELP:
-    'auto_illustrator_conso_vibe_transfer_install_help',
   VIBE_TRANSFER_UPLOAD: 'auto_illustrator_conso_vibe_transfer_upload',
   VIBE_TRANSFER_UPLOAD_INPUT:
     'auto_illustrator_conso_vibe_transfer_upload_input',

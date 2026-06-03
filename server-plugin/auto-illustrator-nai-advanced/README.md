@@ -1,13 +1,15 @@
 # Auto Illustrator NovelAI Advanced Server Plugin
 
-This companion server plugin adds the advanced NovelAI route used by Conso Illustrator's Vibe Transfer feature.
+This companion server plugin adds the advanced NovelAI routes used by Conso Illustrator's Vibe Transfer and Inpaint features.
 
 ## Routes
 
 - `GET /api/plugins/auto-illustrator-nai-advanced/status`
 - `POST /api/plugins/auto-illustrator-nai-advanced/generate-image`
+- `POST /api/plugins/auto-illustrator-nai-advanced/generate-inpaint-image`
 
-Auto Illustrator uses this route only when NovelAI Vibe Transfer is enabled and reference images are configured.
+Auto Illustrator uses the image generation route only when NovelAI Vibe Transfer is enabled and reference images are configured.
+The inpaint route is used only from the image editing flow and requires a base image plus a mask image.
 
 ## Install
 

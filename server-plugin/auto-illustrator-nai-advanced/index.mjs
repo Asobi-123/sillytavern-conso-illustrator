@@ -11,6 +11,8 @@ const REFERENCE_PIXEL_COUNT = 1011712;
 const SIGMA_MAGIC_NUMBER = 19;
 const SIGMA_MAGIC_NUMBER_V4_5 = 58;
 const MAX_ENCODED_CACHE_PER_REFERENCE = 8;
+const INPAINT_TIMEOUT_MS = 120000;
+const SERVER_PLUGIN_VERSION = '2026-06-03-inpaint-v3';
 
 export const info = {
   id: 'auto-illustrator-nai-advanced',
@@ -47,6 +49,17 @@ function isV4Model(modelName) {
   return String(modelName ?? '').includes('nai-diffusion-4');
 }
 
+function resolveInpaintingModel(modelName) {
+  const model = String(modelName ?? 'nai-diffusion');
+  if (model.includes('inpainting')) {
+    return model;
+  }
+  if (model === 'nai-diffusion') {
+    return 'nai-diffusion-inpainting';
+  }
+  return `${model.replace('-preview', '')}-inpainting`;
+}
+
 function normalizeBase64Image(image) {
   if (typeof image !== 'string') {
     return '';
@@ -59,6 +72,32 @@ function normalizeBase64Image(image) {
       ? trimmed.slice(commaIndex + 1)
       : trimmed;
   return payload.replace(/\s+/g, '');
+}
+
+function createRequestId(prefix) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
+
+function summarizeInpaintRequest(body, routeRequestId) {
+  const {parameters} = body;
+  return {
+    requestId: routeRequestId,
+    action: body.action,
+    model: body.model,
+    width: parameters.width,
+    height: parameters.height,
+    steps: parameters.steps,
+    sampler: parameters.sampler,
+    scheduler: parameters.noise_schedule,
+    strength: parameters.strength,
+    noise: parameters.noise,
+    color_correct: parameters.img2img?.color_correct,
+    imageLength: parameters.image?.length ?? 0,
+    maskLength: parameters.mask?.length ?? 0,
+    timeoutMs: INPAINT_TIMEOUT_MS,
+  };
 }
 
 async function readNovelAiKey(request) {
@@ -134,6 +173,88 @@ function buildNovelAiRequestBody(requestBody, references) {
   };
 }
 
+function buildNovelAiInpaintRequestBody(requestBody) {
+  const prompt = requestBody.prompt ?? '';
+  const model = resolveInpaintingModel(requestBody.model);
+  const width = requestBody.width ?? 512;
+  const height = requestBody.height ?? 512;
+  const negativePrompt = requestBody.negative_prompt ?? '';
+  const seed =
+    requestBody.seed >= 0
+      ? requestBody.seed
+      : Math.floor(Math.random() * 9999999999);
+  const extraNoiseSeed =
+    requestBody.extra_noise_seed >= 0
+      ? requestBody.extra_noise_seed
+      : seed;
+  const strength = requestBody.strength ?? 0.6;
+  const noise = requestBody.noise ?? 0;
+  const parameters = {
+    params_version: 3,
+    prefer_brownian: true,
+    negative_prompt: negativePrompt,
+    height,
+    width,
+    scale: requestBody.scale ?? 9,
+    seed,
+    sampler: requestBody.sampler ?? 'k_dpmpp_2m',
+    noise_schedule: requestBody.scheduler ?? 'karras',
+    steps: requestBody.steps ?? 28,
+    n_samples: 1,
+    ucPreset: 0,
+    qualityToggle: false,
+    add_original_image: true,
+    controlnet_strength: 1,
+    deliberate_euler_ancestral_bug: false,
+    dynamic_thresholding: requestBody.decrisper ?? false,
+    legacy: false,
+    legacy_v3_extend: false,
+    sm: requestBody.sm ?? false,
+    sm_dyn: requestBody.sm_dyn ?? false,
+    uncond_scale: 1,
+    skip_cfg_above_sigma: requestBody.variety_boost
+      ? calculateSkipCfgAboveSigma(width, height, model)
+      : null,
+    use_coords: false,
+    characterPrompts: [],
+    reference_image_multiple: [],
+    reference_information_extracted_multiple: [],
+    reference_strength_multiple: [],
+    image: normalizeBase64Image(requestBody.image),
+    mask: normalizeBase64Image(requestBody.mask),
+    strength,
+    noise,
+    extra_noise_seed: extraNoiseSeed,
+    img2img: {
+      strength,
+      noise,
+      extra_noise_seed: extraNoiseSeed,
+      color_correct: requestBody.color_correct ?? false,
+    },
+    v4_negative_prompt: {
+      caption: {
+        base_caption: negativePrompt,
+        char_captions: [],
+      },
+    },
+    v4_prompt: {
+      caption: {
+        base_caption: prompt,
+        char_captions: [],
+      },
+      use_coords: false,
+      use_order: true,
+    },
+  };
+
+  return {
+    action: 'infill',
+    input: prompt,
+    model,
+    parameters,
+  };
+}
+
 function validateRequestBody(body) {
   const references = body.reference_image_multiple;
   const information = body.reference_information_extracted_multiple;
@@ -162,6 +283,36 @@ function validateRequestBody(body) {
     !references.every(value => typeof value === 'string' && value.length > 0)
   ) {
     return 'reference images must be non-empty base64 strings';
+  }
+
+  return null;
+}
+
+function validateInpaintRequestBody(body) {
+  if (typeof body.prompt !== 'string' || body.prompt.trim() === '') {
+    return 'prompt is required';
+  }
+
+  if (typeof body.image !== 'string' || body.image.trim() === '') {
+    return 'image is required';
+  }
+
+  if (typeof body.mask !== 'string' || body.mask.trim() === '') {
+    return 'mask is required';
+  }
+
+  const width = Number(body.width);
+  const height = Number(body.height);
+  if (!Number.isFinite(width) || width <= 0) {
+    return 'width must be a positive number';
+  }
+  if (!Number.isFinite(height) || height <= 0) {
+    return 'height must be a positive number';
+  }
+
+  const strength = Number(body.strength ?? 0.6);
+  if (!Number.isFinite(strength) || strength < 0 || strength > 1) {
+    return 'strength must be between 0 and 1';
   }
 
   return null;
@@ -312,6 +463,80 @@ async function generateBase64Image(requestBody, key) {
   };
 }
 
+async function generateBase64InpaintImage(requestBody, key, routeRequestId) {
+  const {extractFileFromZipBuffer} = await loadSillyTavernInternals();
+  const controller = new AbortController();
+  const startedAt = Date.now();
+  const timeout = setTimeout(() => controller.abort(), INPAINT_TIMEOUT_MS);
+  const body = buildNovelAiInpaintRequestBody(requestBody);
+  const summary = summarizeInpaintRequest(body, routeRequestId);
+  console.info('[auto-illustrator] NovelAI inpaint request', summary);
+
+  let generateResult;
+  let upstreamErrorLogged = false;
+  try {
+    generateResult = await fetch(`${IMAGE_NOVELAI}/ai/generate-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify(body),
+    });
+
+    if (!generateResult.ok) {
+      const text = await generateResult.text();
+      upstreamErrorLogged = true;
+      console.error('[auto-illustrator] NovelAI inpaint response failed', {
+        requestId: routeRequestId,
+        elapsedMs: Date.now() - startedAt,
+        status: generateResult.status,
+        text,
+      });
+      throw new Error(
+        `NovelAI inpaint generation failed: ${generateResult.status} ${text}`
+      );
+    }
+
+    const archiveBuffer = await generateResult.arrayBuffer();
+    const imageBuffer = await extractFileFromZipBuffer(archiveBuffer, '.png');
+
+    if (!imageBuffer) {
+      upstreamErrorLogged = true;
+      console.error('[auto-illustrator] NovelAI inpaint response missing PNG', {
+        requestId: routeRequestId,
+        elapsedMs: Date.now() - startedAt,
+      });
+      throw new Error('NovelAI inpaint response did not contain a PNG file');
+    }
+
+    console.info('[auto-illustrator] NovelAI inpaint response ok', {
+      requestId: routeRequestId,
+      elapsedMs: Date.now() - startedAt,
+      bytes: imageBuffer.length,
+    });
+    return Buffer.from(imageBuffer).toString('base64');
+  } catch (error) {
+    const elapsedMs = Date.now() - startedAt;
+    if (!upstreamErrorLogged) {
+      console.error('[auto-illustrator] NovelAI inpaint request failed', {
+        requestId: routeRequestId,
+        elapsedMs,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+    if (error?.name === 'AbortError') {
+      throw new Error(
+        `NovelAI inpaint generation timed out after ${INPAINT_TIMEOUT_MS}ms`
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function upscaleBase64Image(requestBody, base64Image, key) {
   const upscaleRatio = Number(requestBody.upscale_ratio ?? 1);
   if (!Number.isFinite(upscaleRatio) || upscaleRatio <= 1) {
@@ -371,15 +596,55 @@ async function callNovelAi(request, response) {
   });
 }
 
+async function callNovelAiInpaint(request, response) {
+  const validationError = validateInpaintRequestBody(request.body || {});
+  if (validationError) {
+    response.status(400).json({error: validationError});
+    return;
+  }
+
+  const key = await readNovelAiKey(request);
+  if (!key) {
+    response.status(401).json({
+      error: 'NovelAI API key is not configured in SillyTavern secrets',
+    });
+    return;
+  }
+
+  const routeRequestId = createRequestId('inpaint');
+  const image = await generateBase64InpaintImage(
+    request.body,
+    key,
+    routeRequestId
+  );
+  response.json({
+    format: 'png',
+    data: image,
+  });
+}
+
 export async function init(router) {
   router.use(express.json({limit: '50mb'}));
 
   router.get('/status', (_request, response) => {
-    response.json({ok: true, plugin: info.id});
+    response.json({
+      ok: true,
+      plugin: info.id,
+      version: SERVER_PLUGIN_VERSION,
+      features: ['vibe-transfer', 'inpaint'],
+    });
   });
 
   router.post('/generate-image', (request, response) => {
     callNovelAi(request, response).catch(error => {
+      response.status(500).json({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+  });
+
+  router.post('/generate-inpaint-image', (request, response) => {
+    callNovelAiInpaint(request, response).catch(error => {
       response.status(500).json({
         error: error instanceof Error ? error.message : String(error),
       });

@@ -72,9 +72,30 @@ vi.mock('./metadata', () => ({
 }));
 
 vi.mock('./reconciliation', () => ({
+  DEFAULT_RECONCILIATION_CONFIG: {
+    enableMarkers: true,
+    enableValidation: true,
+    enableReconciliation: true,
+    insertionDelayMs: 0,
+  },
+  checkIdempotency: vi.fn(() => ({
+    alreadyInserted: false,
+    markerPosition: -1,
+  })),
+  createImageTag: vi.fn(
+    (imageUrl: string, prompt: string, promptId: string) =>
+      `<img src="${imageUrl}" data-prompt-id="${promptId}" alt="${prompt}">`
+  ),
+  microDelay: vi.fn().mockResolvedValue(undefined),
   reconcileMessage: vi.fn(() => ({
     updatedText: 'message text',
     result: {restoredCount: 0, missingCount: 0, errors: []},
+  })),
+  validateMessageState: vi.fn(() => ({
+    modified: false,
+    originalHash: '',
+    currentHash: '',
+    changePercent: 0,
   })),
 }));
 

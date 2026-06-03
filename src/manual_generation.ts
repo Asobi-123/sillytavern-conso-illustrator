@@ -29,11 +29,14 @@ import {
   applyPromptUpdate,
   type PromptNode,
 } from './prompt_updater';
-import {findImageBySrc, htmlEncode} from './utils/dom_utils';
+import {findImageBySrc, htmlDecode, htmlEncode} from './utils/dom_utils';
 import {renderMessageUpdate} from './utils/message_renderer';
 import {openImageModal} from './modal_viewer';
 import {scheduleDomOperation} from './dom_queue';
 import {collectAllImagesFromChat, normalizeImageUrl} from './image_utils';
+import {openInpaintingEditor} from './inpainting_editor';
+import {createImageTag} from './reconciliation';
+import {getUserFacingErrorReason} from './utils/error_utils';
 
 const logger = createLogger('ManualGen');
 
@@ -50,6 +53,67 @@ function buildMessageUrlCandidates(imageUrl: string): string[] {
       htmlEncode(imageUrl),
     ])
   ).filter(Boolean);
+}
+
+function safeDecodeUri(value: string): string {
+  try {
+    return decodeURI(value);
+  } catch {
+    return value;
+  }
+}
+
+function extractImageSrcAttribute(imgTag: string): string | null {
+  const match = /\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(imgTag);
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? null;
+}
+
+function buildMessageUrlMatchSet(imageUrl: string): Set<string> {
+  const values = new Set<string>();
+  for (const candidate of buildMessageUrlCandidates(imageUrl)) {
+    const decodedHtml = htmlDecode(candidate);
+    const decodedUri = safeDecodeUri(decodedHtml);
+    for (const value of [candidate, decodedHtml, decodedUri]) {
+      values.add(value);
+      values.add(normalizeImageUrl(value));
+    }
+  }
+  return values;
+}
+
+function imageTagMatchesUrl(
+  imgTag: string,
+  targetValues: Set<string>
+): boolean {
+  const src = extractImageSrcAttribute(imgTag);
+  if (!src) {
+    return false;
+  }
+
+  const decodedHtml = htmlDecode(src);
+  const decodedUri = safeDecodeUri(decodedHtml);
+  return [src, decodedHtml, decodedUri, normalizeImageUrl(decodedUri)].some(
+    value => targetValues.has(value)
+  );
+}
+
+export function insertEditedImageIntoMessageText(
+  messageText: string,
+  targetUrl: string,
+  newImgTag: string,
+  mode: ImageInsertionMode
+): {text: string; inserted: boolean} {
+  const targetValues = buildMessageUrlMatchSet(targetUrl);
+  let inserted = false;
+  const text = messageText.replace(/<img\b[^>]*>/gi, imgTag => {
+    if (!imageTagMatchesUrl(imgTag, targetValues)) {
+      return imgTag;
+    }
+    inserted = true;
+    return mode === 'replace-image' ? newImgTag : `${imgTag}\n${newImgTag}`;
+  });
+
+  return {text, inserted};
 }
 
 /**
@@ -123,7 +187,10 @@ async function showRegenerationDialog(
   settings: AutoIllustratorSettings,
   context?: SillyTavernContext,
   messageId?: number
-): Promise<ImageInsertionMode | 'update-prompt' | null> {
+): Promise<ImageInsertionMode | 'update-prompt' | 'inpaint' | null> {
+  void context;
+  void messageId;
+
   // Check if dialog already exists and close it (mobile behavior)
   const existingDialog = $('#auto_illustrator_regen_dialog');
   if (existingDialog.length > 0) {
@@ -135,127 +202,139 @@ async function showRegenerationDialog(
 
   const dialogMessage = t('dialog.whatToDo');
 
-  return new Promise<ImageInsertionMode | 'update-prompt' | null>(resolve => {
-    // Create backdrop
-    const backdrop = $('<div>').addClass('auto-illustrator-dialog-backdrop');
+  return new Promise<ImageInsertionMode | 'update-prompt' | 'inpaint' | null>(
+    resolve => {
+      // Create backdrop
+      const backdrop = $('<div>').addClass('auto-illustrator-dialog-backdrop');
 
-    const dialog = $('<div>')
-      .attr('id', 'auto_illustrator_regen_dialog')
-      .addClass('auto-illustrator-dialog');
+      const dialog = $('<div>')
+        .attr('id', 'auto_illustrator_regen_dialog')
+        .addClass('auto-illustrator-dialog');
 
-    dialog.append($('<p>').text(dialogMessage));
+      dialog.append($('<p>').text(dialogMessage));
 
-    const modeGroup = $('<div>').addClass('auto-illustrator-mode-group');
+      const modeGroup = $('<div>').addClass('auto-illustrator-mode-group');
 
-    // Map settings mode to ImageInsertionMode
-    const defaultMode =
-      settings.manualGenerationMode === 'append'
-        ? 'append-after-image'
-        : 'replace-image';
+      // Map settings mode to ImageInsertionMode
+      const defaultMode =
+        settings.manualGenerationMode === 'append'
+          ? 'append-after-image'
+          : 'replace-image';
 
-    const replaceOption = $('<label>')
-      .addClass('auto-illustrator-mode-option')
-      .append(
-        $('<input>')
-          .attr('type', 'radio')
-          .attr('name', 'regen_mode')
-          .val('replace-image')
-          .prop('checked', defaultMode === 'replace-image')
-      )
-      .append(
-        $('<span>').html(
-          `<strong>${t('dialog.replace')}</strong> ${t('dialog.replaceRegen')}`
+      const replaceOption = $('<label>')
+        .addClass('auto-illustrator-mode-option')
+        .append(
+          $('<input>')
+            .attr('type', 'radio')
+            .attr('name', 'regen_mode')
+            .val('replace-image')
+            .prop('checked', defaultMode === 'replace-image')
         )
-      );
+        .append(
+          $('<span>').html(
+            `<strong>${t('dialog.replace')}</strong> ${t('dialog.replaceRegen')}`
+          )
+        );
 
-    const appendOption = $('<label>')
-      .addClass('auto-illustrator-mode-option')
-      .append(
-        $('<input>')
-          .attr('type', 'radio')
-          .attr('name', 'regen_mode')
-          .val('append-after-image')
-          .prop('checked', defaultMode === 'append-after-image')
-      )
-      .append(
-        $('<span>').html(
-          `<strong>${t('dialog.append')}</strong> ${t('dialog.appendRegen')}`
+      const appendOption = $('<label>')
+        .addClass('auto-illustrator-mode-option')
+        .append(
+          $('<input>')
+            .attr('type', 'radio')
+            .attr('name', 'regen_mode')
+            .val('append-after-image')
+            .prop('checked', defaultMode === 'append-after-image')
         )
-      );
+        .append(
+          $('<span>').html(
+            `<strong>${t('dialog.append')}</strong> ${t('dialog.appendRegen')}`
+          )
+        );
 
-    modeGroup.append(appendOption).append(replaceOption);
-    dialog.append(modeGroup);
+      modeGroup.append(appendOption).append(replaceOption);
+      dialog.append(modeGroup);
 
-    const buttons = $('<div>').addClass('auto-illustrator-dialog-buttons');
+      const buttons = $('<div>').addClass('auto-illustrator-dialog-buttons');
 
-    const generateBtn = $('<button>')
-      .text(t('dialog.generate'))
-      .addClass('menu_button')
-      .on('click', () => {
-        const selectedMode = dialog
-          .find('input[name="regen_mode"]:checked')
-          .val() as ImageInsertionMode;
+      const generateBtn = $('<button>')
+        .text(t('dialog.generate'))
+        .addClass('menu_button')
+        .on('click', () => {
+          const selectedMode = dialog
+            .find('input[name="regen_mode"]:checked')
+            .val() as ImageInsertionMode;
+          backdrop.remove();
+          dialog.remove();
+          resolve(selectedMode);
+        });
+
+      const updateBtn = $('<button>')
+        .text(t('dialog.updatePrompt'))
+        .addClass('menu_button')
+        .on('click', () => {
+          backdrop.remove();
+          dialog.remove();
+          resolve('update-prompt');
+        });
+
+      const inpaintBtn = $('<button>')
+        .text(t('inpaint.editImage'))
+        .addClass('menu_button')
+        .on('click', () => {
+          backdrop.remove();
+          dialog.remove();
+          resolve('inpaint');
+        });
+
+      const deleteBtn = $('<button>')
+        .text(t('dialog.delete'))
+        .addClass('menu_button caution')
+        .on('click', async () => {
+          backdrop.remove();
+          dialog.remove();
+          // Delete the image directly
+          await deleteImage(imageUrl);
+          resolve(null);
+        });
+
+      const viewAllBtn = $('<button>')
+        .text(t('dialog.viewAll'))
+        .addClass('menu_button')
+        .on('click', () => {
+          backdrop.remove();
+          dialog.remove();
+          // Open global image viewer starting from this image
+          openGlobalViewerFromImage(imageUrl);
+          resolve(null);
+        });
+
+      const cancelBtn = $('<button>')
+        .text(t('dialog.cancel'))
+        .addClass('menu_button')
+        .on('click', () => {
+          backdrop.remove();
+          dialog.remove();
+          resolve(null);
+        });
+
+      buttons
+        .append(generateBtn)
+        .append(updateBtn)
+        .append(inpaintBtn)
+        .append(deleteBtn)
+        .append(viewAllBtn)
+        .append(cancelBtn);
+      dialog.append(buttons);
+
+      backdrop.on('click', () => {
         backdrop.remove();
         dialog.remove();
-        resolve(selectedMode);
-      });
-
-    const updateBtn = $('<button>')
-      .text(t('dialog.updatePrompt'))
-      .addClass('menu_button')
-      .on('click', () => {
-        backdrop.remove();
-        dialog.remove();
-        resolve('update-prompt');
-      });
-
-    const deleteBtn = $('<button>')
-      .text(t('dialog.delete'))
-      .addClass('menu_button caution')
-      .on('click', async () => {
-        backdrop.remove();
-        dialog.remove();
-        // Delete the image directly
-        await deleteImage(imageUrl);
         resolve(null);
       });
 
-    const viewAllBtn = $('<button>')
-      .text(t('dialog.viewAll'))
-      .addClass('menu_button')
-      .on('click', () => {
-        backdrop.remove();
-        dialog.remove();
-        // Open global image viewer starting from this image
-        openGlobalViewerFromImage(imageUrl);
-        resolve(null);
-      });
-
-    const cancelBtn = $('<button>')
-      .text(t('dialog.cancel'))
-      .addClass('menu_button')
-      .on('click', () => {
-        backdrop.remove();
-        dialog.remove();
-        resolve(null);
-      });
-
-    buttons
-      .append(generateBtn)
-      .append(updateBtn)
-      .append(deleteBtn)
-      .append(viewAllBtn)
-      .append(cancelBtn);
-    dialog.append(buttons);
-
-    backdrop.on('click', () => {
-      backdrop.remove();
-      dialog.remove();
-      resolve(null);
-    });
-
-    $('body').append(backdrop).append(dialog);
-  });
+      $('body').append(backdrop).append(dialog);
+    }
+  );
 }
 
 /**
@@ -825,6 +904,17 @@ export async function handleImageRegenerationClick(
     }
     return;
   }
+  if (choice === 'inpaint') {
+    logger.info('User chose to edit image with Inpaint');
+    await performInpaintingEdit(
+      imageUrl,
+      normalizedUrl,
+      messageId,
+      context,
+      settings
+    );
+    return;
+  }
   // If not update-prompt, check if it's a valid regeneration mode
   if (!choice) {
     logger.debug('User cancelled regeneration or deleted image');
@@ -839,6 +929,140 @@ export async function handleImageRegenerationClick(
     context,
     settings
   );
+}
+
+async function insertEditedImageIntoMessage(
+  targetUrl: string,
+  generatedUrl: string,
+  promptText: string,
+  promptId: string,
+  mode: ImageInsertionMode,
+  messageId: number,
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings
+): Promise<boolean> {
+  return scheduleDomOperation(
+    messageId,
+    async () => {
+      const message = context.chat?.[messageId];
+      if (!message) {
+        return false;
+      }
+
+      const newImgTag = createImageTag(
+        generatedUrl,
+        promptText,
+        promptId,
+        false,
+        false,
+        settings.imageDisplayWidth
+      ).trim();
+      const updatedText = String(message.mes ?? '');
+      const result = insertEditedImageIntoMessageText(
+        updatedText,
+        targetUrl,
+        newImgTag,
+        mode
+      );
+
+      if (result.inserted) {
+        message.mes = result.text;
+        await renderMessageUpdate(messageId);
+        attachRegenerationHandlers(messageId, context, settings);
+        return true;
+      }
+
+      return false;
+    },
+    'insert-inpaint-result'
+  );
+}
+
+async function performInpaintingEdit(
+  imageUrl: string,
+  normalizedUrl: string,
+  messageId: number,
+  context: SillyTavernContext,
+  settings: AutoIllustratorSettings
+): Promise<void> {
+  const metadata = getMetadata();
+  let promptNode = getPromptForImage(normalizedUrl, metadata);
+
+  if (!promptNode) {
+    promptNode = await rebuildPromptFromMessage(
+      messageId,
+      normalizedUrl,
+      context,
+      metadata
+    );
+  }
+
+  if (!promptNode) {
+    toastr.error(t('toast.promptNotFoundForImage'), t('extensionName'));
+    return;
+  }
+
+  const message = context.chat?.[messageId];
+  const messageText = String(message?.mes ?? '');
+
+  try {
+    const insertResult = async (
+      result: Awaited<ReturnType<typeof openInpaintingEditor>>
+    ) => {
+      if (!result) {
+        return;
+      }
+
+      let targetPromptId = promptNode.id;
+      if (result.promptText.trim() !== promptNode.text.trim()) {
+        const child = await refinePrompt(
+          promptNode.id,
+          result.promptText.trim(),
+          'inpaint-edit',
+          'manual-refined',
+          metadata
+        );
+        targetPromptId = child.id;
+      }
+
+      const inserted = await insertEditedImageIntoMessage(
+        normalizedUrl,
+        result.imageUrl,
+        result.promptText,
+        targetPromptId,
+        result.insertionMode,
+        messageId,
+        context,
+        settings
+      );
+
+      if (!inserted) {
+        toastr.error(t('toast.imageNotFound'), t('extensionName'));
+        return;
+      }
+
+      await linkImageToPrompt(targetPromptId, result.imageUrl, metadata);
+    };
+
+    const result = await openInpaintingEditor({
+      imageUrl,
+      promptText: promptNode.text,
+      messageText,
+      context,
+      settings,
+    });
+
+    if (!result) {
+      logger.debug('User closed Inpaint editor');
+      return;
+    }
+
+    await insertResult(result);
+    toastr.success(t('inpaint.generated'), t('extensionName'));
+  } catch (error) {
+    logger.error('Inpaint editor failed', error);
+    toastr.error(getUserFacingErrorReason(error), t('extensionName'));
+  }
 }
 
 /**

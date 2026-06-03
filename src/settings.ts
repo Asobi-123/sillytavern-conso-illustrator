@@ -767,9 +767,6 @@ export function createSettingsUI(): string {
           <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_ENABLED}" type="checkbox" />
           <span>${t('settings.vibeTransfer')}</span>
         </label>
-        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_INSTALL_HELP}" class="menu_button auto-illustrator-vibe-transfer-install-help" type="button">
-          <i class="fa-solid fa-circle-question"></i> ${t('settings.vibeTransferInstallHelp')}
-        </button>
       </div>
       <small class="auto-illustrator-vibe-transfer-desc">${t('settings.vibeTransferDesc')}</small>
       <small class="auto-illustrator-vibe-transfer-desc">${t('settings.vibeTransferCacheDesc')}</small>
@@ -908,16 +905,37 @@ export function createSettingsUI(): string {
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_INFO,
-          `<div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
-            <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" style="font-size:0.85em; opacity:0.75;">
-              v${EXTENSION_VERSION} <span id="${UI_ELEMENT_IDS.VERSION_STATUS}">${t('version.checking')}</span>
+          `<div class="auto-illustrator-info-card">
+            <div class="auto-illustrator-info-row">
+              <div class="auto-illustrator-version-block">
+                <span class="auto-illustrator-info-label">${t('info.version')}</span>
+                <div id="${UI_ELEMENT_IDS.VERSION_DISPLAY}" class="auto-illustrator-version-display">
+                  <span class="auto-illustrator-current-version">v${EXTENSION_VERSION}</span>
+                  <span id="${UI_ELEMENT_IDS.VERSION_STATUS}" class="auto-illustrator-version-status">${t('version.checking')}</span>
+                </div>
+              </div>
+              <div class="auto-illustrator-info-actions">
+                <a id="${UI_ELEMENT_IDS.TUTORIAL_LINK}" href="${TUTORIAL_URL}" target="_blank"
+                   class="menu_button menu_button_icon auto-illustrator-info-action" title="${t('settings.tutorialLink')}">
+                  <i class="fa-solid fa-book"></i>
+                  <span>${t('settings.tutorialLink')}</span>
+                </a>
+                <button id="${UI_ELEMENT_IDS.SERVER_PLUGIN_INSTALL_HELP}" class="menu_button menu_button_icon auto-illustrator-info-action" type="button">
+                  <i class="fa-solid fa-circle-question"></i>
+                  <span>${t('settings.serverPluginInstallHelp')}</span>
+                </button>
+              </div>
             </div>
-            <a id="${UI_ELEMENT_IDS.TUTORIAL_LINK}" href="${TUTORIAL_URL}" target="_blank"
-               class="menu_button menu_button_icon" title="${t('settings.tutorialLink')}"
-               style="height:auto; padding:2px 8px; font-size:0.85em;">
-              <i class="fa-solid fa-book"></i>
-              <span>${t('settings.tutorialLink')}</span>
-            </a>
+            <div class="auto-illustrator-status-stack">
+              <div id="${UI_ELEMENT_IDS.SERVER_PLUGIN_STATUS}" class="auto-illustrator-server-plugin-status is-checking">${t('serverPlugin.checking')}</div>
+            </div>
+            <details id="${UI_ELEMENT_IDS.UPDATE_NOTICE}" class="auto-illustrator-update-notice" hidden>
+              <summary id="${UI_ELEMENT_IDS.UPDATE_NOTICE_TITLE}" class="auto-illustrator-update-title"></summary>
+              <div class="auto-illustrator-update-body">
+                <ul id="${UI_ELEMENT_IDS.UPDATE_NOTICE_LIST}" class="auto-illustrator-update-list"></ul>
+                <a id="${UI_ELEMENT_IDS.UPDATE_NOTICE_LINK}" class="auto-illustrator-update-link" href="#" target="_blank"></a>
+              </div>
+            </details>
           </div>`
         )}
         ${floatingSourceSection(

@@ -90,6 +90,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#8892a9',
     '--accent': '#7aaef5',
     '--accent-soft': 'rgba(122, 174, 245, 0.15)',
+    '--success': '#67e27a',
     '--switch-off': '#3f495e',
     '--switch-on': '#5f88c3',
     '--switch-knob': '#dfe6f6',
@@ -109,6 +110,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#989898',
     '--accent': '#a8b0bf',
     '--accent-soft': 'rgba(168, 176, 191, 0.16)',
+    '--success': '#67e27a',
     '--switch-off': '#4b4b4b',
     '--switch-on': '#7c8799',
     '--switch-knob': '#efefef',
@@ -128,6 +130,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#86a3c0',
     '--accent': '#69b8ff',
     '--accent-soft': 'rgba(105, 184, 255, 0.16)',
+    '--success': '#67e27a',
     '--switch-off': '#38556e',
     '--switch-on': '#63a9e6',
     '--switch-knob': '#edf6ff',
@@ -147,6 +150,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#a78f7a',
     '--accent': '#e0a85f',
     '--accent-soft': 'rgba(224, 168, 95, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#665243',
     '--switch-on': '#c98d4a',
     '--switch-knob': '#f7efe8',
@@ -166,6 +170,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#718197',
     '--accent': '#7a94c9',
     '--accent-soft': 'rgba(122, 148, 201, 0.18)',
+    '--success': '#167a3d',
     '--switch-off': '#b7c4d3',
     '--switch-on': '#7d97ca',
     '--switch-knob': '#ffffff',
@@ -185,6 +190,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#8e7a68',
     '--accent': '#c48c52',
     '--accent-soft': 'rgba(196, 140, 82, 0.18)',
+    '--success': '#167a3d',
     '--switch-off': '#d3c2b0',
     '--switch-on': '#c69157',
     '--switch-knob': '#fffdf9',
@@ -204,6 +210,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#6f8b9d',
     '--accent': '#5d9fd6',
     '--accent-soft': 'rgba(93, 159, 214, 0.18)',
+    '--success': '#167a3d',
     '--switch-off': '#b8cedc',
     '--switch-on': '#659fd2',
     '--switch-knob': '#ffffff',
@@ -223,6 +230,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#af95a3',
     '--accent': '#d28faf',
     '--accent-soft': 'rgba(210, 143, 175, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#69566a',
     '--switch-on': '#cf8dac',
     '--switch-knob': '#fff8fc',
@@ -242,6 +250,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#88aaa1',
     '--accent': '#6dc7b0',
     '--accent-soft': 'rgba(109, 199, 176, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#43665f',
     '--switch-on': '#68c3ac',
     '--switch-knob': '#f2fffb',
@@ -261,6 +270,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#9890bd',
     '--accent': '#a89ae6',
     '--accent-soft': 'rgba(168, 154, 230, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#57537e',
     '--switch-on': '#9f92df',
     '--switch-knob': '#fbfaff',
@@ -280,6 +290,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#7f8967',
     '--accent': '#9bad57',
     '--accent-soft': 'rgba(155, 173, 87, 0.18)',
+    '--success': '#167a3d',
     '--switch-off': '#c5cda7',
     '--switch-on': '#93aa55',
     '--switch-knob': '#ffffff',
@@ -299,6 +310,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#787878',
     '--accent': '#8a8a8a',
     '--accent-soft': 'rgba(138, 138, 138, 0.14)',
+    '--success': '#67e27a',
     '--switch-off': '#3a3a3a',
     '--switch-on': '#6e6e6e',
     '--switch-knob': '#e0e0e0',
@@ -318,6 +330,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#888888',
     '--accent': '#555555',
     '--accent-soft': 'rgba(85, 85, 85, 0.12)',
+    '--success': '#167a3d',
     '--switch-off': '#cccccc',
     '--switch-on': '#666666',
     '--switch-knob': '#ffffff',
@@ -337,6 +350,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#7096cc',
     '--accent': '#4d8aff',
     '--accent-soft': 'rgba(77, 138, 255, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#2c4a78',
     '--switch-on': '#4c85f2',
     '--switch-knob': '#e8f0ff',
@@ -356,6 +370,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#9e8878',
     '--accent': '#c09070',
     '--accent-soft': 'rgba(192, 144, 112, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#5a483c',
     '--switch-on': '#b58568',
     '--switch-knob': '#f5ede6',
@@ -375,6 +390,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#997080',
     '--accent': '#d4738e',
     '--accent-soft': 'rgba(212, 115, 142, 0.16)',
+    '--success': '#167a3d',
     '--switch-off': '#d6bfc9',
     '--switch-on': '#d07590',
     '--switch-knob': '#ffffff',
@@ -394,6 +410,7 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--text-3': '#9888b0',
     '--accent': '#b088e0',
     '--accent-soft': 'rgba(176, 136, 224, 0.18)',
+    '--success': '#67e27a',
     '--switch-off': '#504468',
     '--switch-on': '#a880d8',
     '--switch-knob': '#f5f0fa',
@@ -732,6 +749,7 @@ function ensureStyle(): void {
       --text-3: #8892a9;
       --accent: #7aaef5;
       --accent-soft: rgba(122, 174, 245, 0.15);
+      --success: #67e27a;
       --switch-off: #3f495e;
       --switch-on: #5f88c3;
       --switch-knob: #dfe6f6;
@@ -783,8 +801,8 @@ function ensureStyle(): void {
 
     .ai-floating-panel {
       position: relative;
-      width: min(430px, calc(100vw - 24px));
-      height: min(820px, calc(100dvh - 24px));
+      width: min(640px, calc(100vw - 32px));
+      height: min(880px, calc(100dvh - 32px));
       border: 1px solid var(--line);
       border-radius: 20px;
       overflow: hidden;
@@ -829,7 +847,7 @@ function ensureStyle(): void {
 
     .ai-floating-panel-tabs {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 6px;
       padding: 10px 14px;
       border-bottom: 1px solid var(--line);
@@ -1097,6 +1115,38 @@ function ensureStyle(): void {
       color: var(--text) !important;
       border: 1px solid var(--line) !important;
       border-radius: 10px !important;
+      caret-color: var(--accent) !important;
+      opacity: 1 !important;
+    }
+
+    .ai-floating-panel-root .text_pole:focus,
+    .ai-floating-panel-root .input:focus,
+    .ai-floating-panel-root textarea:focus,
+    .ai-floating-panel-root select:focus {
+      border-color: var(--accent) !important;
+      outline: none !important;
+      box-shadow: 0 0 0 2px var(--accent-soft) !important;
+    }
+
+    .ai-floating-panel-root input::placeholder,
+    .ai-floating-panel-root textarea::placeholder {
+      color: var(--text-3) !important;
+      opacity: 1 !important;
+    }
+
+    .ai-floating-panel-root select option {
+      background: var(--panel-2) !important;
+      color: var(--text) !important;
+    }
+
+    .ai-floating-panel-root input:disabled,
+    .ai-floating-panel-root textarea:disabled,
+    .ai-floating-panel-root select:disabled,
+    .ai-floating-panel-root textarea[readonly],
+    .ai-floating-panel-root input[readonly] {
+      background: var(--panel-soft) !important;
+      color: var(--text-2) !important;
+      opacity: 1 !important;
     }
 
     .ai-floating-panel-root label {
@@ -1133,6 +1183,18 @@ function ensureStyle(): void {
     .ai-floating-panel-root .standalone-status,
     .ai-floating-panel-root .standalone-reasoning {
       color: var(--text-3);
+    }
+
+    .ai-floating-panel-root .auto-illustrator-info-card .auto-illustrator-current-version {
+      color: var(--text) !important;
+    }
+
+    .ai-floating-panel-root .auto-illustrator-info-card .auto-illustrator-version-status {
+      color: var(--text-2) !important;
+    }
+
+    .ai-floating-panel-root .auto-illustrator-info-card .auto-illustrator-version-status.is-latest {
+      color: var(--success) !important;
     }
 
     .ai-floating-panel-gallery-host > .ai-img-gallery-widget-global {

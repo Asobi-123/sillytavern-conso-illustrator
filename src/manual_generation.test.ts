@@ -3,7 +3,10 @@
  */
 
 import {describe, it, expect, beforeEach, vi, afterEach} from 'vitest';
-import {attachRegenerationHandlers} from './manual_generation';
+import {
+  attachRegenerationHandlers,
+  insertEditedImageIntoMessageText,
+} from './manual_generation';
 
 // Mock dependencies
 vi.mock('./logger', () => ({
@@ -247,5 +250,40 @@ describe('Handler Attachment After DOM Updates', () => {
       expect.any(Function)
     );
     expect(handlerCallback).not.toBeNull();
+  });
+});
+
+describe('insertEditedImageIntoMessageText', () => {
+  it('replaces the matching image instead of appending when replace mode is selected', () => {
+    const original =
+      '<p>before</p><img src="/user/images/base.png" class="auto-illustrator-img" /><p>after</p>';
+    const edited = '<img src="/user/images/edited.png" />';
+
+    const result = insertEditedImageIntoMessageText(
+      original,
+      '/user/images/base.png',
+      edited,
+      'replace-image'
+    );
+
+    expect(result.inserted).toBe(true);
+    expect(result.text).toContain(edited);
+    expect(result.text).not.toContain('/user/images/base.png');
+  });
+
+  it('matches encoded and single-quoted image src values', () => {
+    const original =
+      "<img src='/user/images/%E5%B0%8F%E8%AF%B4%E5%AE%B6/base.png' class='auto-illustrator-img' />";
+    const edited = '<img src="/user/images/edited.png" />';
+
+    const result = insertEditedImageIntoMessageText(
+      original,
+      '/user/images/小说家/base.png',
+      edited,
+      'replace-image'
+    );
+
+    expect(result.inserted).toBe(true);
+    expect(result.text).toBe(edited);
   });
 });

@@ -43,8 +43,10 @@ import {
   DEFAULT_CONTENT_FILTER_TAGS,
   PROMPT_GENERATION_MODE,
   EXTENSION_VERSION,
+  CURRENT_VERSION_HIGHLIGHTS,
   GITHUB_REPO,
   VIBE_TRANSFER,
+  SERVER_PLUGIN,
 } from './constants';
 import type {VibeTransferPreset, VibeTransferReferenceImage} from './types';
 import {
@@ -553,52 +555,52 @@ function removeVibeTransferReferenceTag(id: string, tag: string): void {
   renderVibeTransferReferenceList();
 }
 
-function showVibeTransferInstallHelpDialog(): void {
-  $('#auto_illustrator_vibe_transfer_install_help_dialog').remove();
-  $('.auto-illustrator-vibe-transfer-install-help-backdrop').remove();
+function showServerPluginInstallHelpDialog(): void {
+  $('#auto_illustrator_server_plugin_install_help_dialog').remove();
+  $('.auto-illustrator-server-plugin-install-help-backdrop').remove();
 
   const backdrop = $('<div>')
     .addClass('auto-illustrator-dialog-backdrop')
-    .addClass('auto-illustrator-vibe-transfer-install-help-backdrop');
+    .addClass('auto-illustrator-server-plugin-install-help-backdrop');
   const dialog = $('<div>')
-    .attr('id', 'auto_illustrator_vibe_transfer_install_help_dialog')
+    .attr('id', 'auto_illustrator_server_plugin_install_help_dialog')
     .addClass('auto-illustrator-dialog')
-    .addClass('auto-illustrator-vibe-transfer-install-help-dialog');
+    .addClass('auto-illustrator-server-plugin-install-help-dialog');
 
-  dialog.append($('<h3>').text(t('settings.vibeTransferInstallHelpTitle')));
-  dialog.append($('<p>').text(t('settings.vibeTransferInstallHelpIntro')));
+  dialog.append($('<h3>').text(t('settings.serverPluginInstallHelpTitle')));
+  dialog.append($('<p>').text(t('settings.serverPluginInstallHelpIntro')));
 
   const steps = $('<ol>').addClass(
-    'auto-illustrator-vibe-transfer-install-steps'
+    'auto-illustrator-server-plugin-install-steps'
   );
   [
-    t('settings.vibeTransferInstallHelpStepCopy'),
-    t('settings.vibeTransferInstallHelpStepConfig'),
-    t('settings.vibeTransferInstallHelpStepToken'),
-    t('settings.vibeTransferInstallHelpStepRestart'),
-    t('settings.vibeTransferInstallHelpStepRefresh'),
+    t('settings.serverPluginInstallHelpStepCopy'),
+    t('settings.serverPluginInstallHelpStepConfig'),
+    t('settings.serverPluginInstallHelpStepToken'),
+    t('settings.serverPluginInstallHelpStepRestart'),
+    t('settings.serverPluginInstallHelpStepRefresh'),
   ].forEach(step => {
     steps.append($('<li>').text(step));
   });
   dialog.append(steps);
 
   const pre = $('<pre>')
-    .addClass('auto-illustrator-vibe-transfer-install-snippet')
+    .addClass('auto-illustrator-server-plugin-install-snippet')
     .text(
       [
-        t('settings.vibeTransferInstallHelpCopyFrom'),
+        t('settings.serverPluginInstallHelpCopyFrom'),
         'server-plugin/auto-illustrator-nai-advanced',
         '',
-        t('settings.vibeTransferInstallHelpCopyTo'),
+        t('settings.serverPluginInstallHelpCopyTo'),
         'SillyTavern/plugins/auto-illustrator-nai-advanced',
         '',
-        t('settings.vibeTransferInstallHelpConfigExample'),
+        t('settings.serverPluginInstallHelpConfigExample'),
         'enableServerPlugins: true',
       ].join('\n')
     );
   dialog.append(pre);
   dialog.append(
-    $('<p>').text(t('settings.vibeTransferInstallHelpRestartNote'))
+    $('<p>').text(t('settings.serverPluginInstallHelpRestartNote'))
   );
 
   const buttons = $('<div>').addClass('auto-illustrator-dialog-buttons');
@@ -3127,13 +3129,145 @@ function handleApiProfileDelete(): void {
 /**
  * Checks for extension updates from GitHub releases API
  */
+type GitHubRelease = {
+  tag_name?: string;
+  html_url?: string;
+  body?: string;
+  draft?: boolean;
+  prerelease?: boolean;
+};
+
+function parseVersionParts(version: string): number[] {
+  return version
+    .replace(/^v/i, '')
+    .split(/[.-]/)
+    .map(part => Number.parseInt(part, 10))
+    .map(value => (Number.isFinite(value) ? value : 0));
+}
+
+function compareVersions(a: string, b: string): number {
+  const aParts = parseVersionParts(a);
+  const bParts = parseVersionParts(b);
+  const length = Math.max(aParts.length, bParts.length);
+  for (let index = 0; index < length; index += 1) {
+    const aValue = aParts[index] ?? 0;
+    const bValue = bParts[index] ?? 0;
+    if (aValue !== bValue) {
+      return aValue > bValue ? 1 : -1;
+    }
+  }
+  return 0;
+}
+
+function extractReleaseHighlights(body: string): string[] {
+  return body
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => /^[-*]\s+/.test(line))
+    .map(line =>
+      line
+        .replace(/^[-*]\s+/, '')
+        .replace(/\*\*/g, '')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+        .trim()
+    )
+    .filter(Boolean);
+}
+
+function renderVersionHighlights(
+  titleText: string,
+  highlights: readonly string[],
+  linkUrl: string,
+  linkText: string,
+  expanded = false
+): void {
+  const notice = document.getElementById(
+    UI_ELEMENT_IDS.UPDATE_NOTICE
+  ) as HTMLDetailsElement | null;
+  const title = document.getElementById(UI_ELEMENT_IDS.UPDATE_NOTICE_TITLE);
+  const list = document.getElementById(UI_ELEMENT_IDS.UPDATE_NOTICE_LIST);
+  const link = document.getElementById(
+    UI_ELEMENT_IDS.UPDATE_NOTICE_LINK
+  ) as HTMLAnchorElement | null;
+
+  if (!notice || !title || !list || !link) {
+    return;
+  }
+
+  const visibleHighlights = highlights.slice(0, 5);
+  title.textContent = titleText;
+  list.innerHTML = '';
+  const items = visibleHighlights.length
+    ? visibleHighlights
+    : [t('version.updateSummaryFallback')];
+  items.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    list.append(li);
+  });
+  if (highlights.length > visibleHighlights.length) {
+    const li = document.createElement('li');
+    li.className = 'auto-illustrator-update-more';
+    li.textContent = t('version.updateSummaryMore', {
+      count: highlights.length - visibleHighlights.length,
+    });
+    list.append(li);
+  }
+
+  link.href = linkUrl;
+  link.textContent = linkText;
+  notice.open = expanded;
+  notice.hidden = false;
+}
+
+function renderCurrentVersionHighlights(): void {
+  renderVersionHighlights(
+    t('version.currentSummaryTitle', {version: EXTENSION_VERSION}),
+    CURRENT_VERSION_HIGHLIGHTS,
+    `https://github.com/${GITHUB_REPO}/releases/tag/v${EXTENSION_VERSION}`,
+    t('version.releaseNotes'),
+    false
+  );
+}
+
+function renderUpdateNotice(
+  currentVersion: string,
+  latestVersion: string,
+  releases: GitHubRelease[],
+  latestUrl: string
+): void {
+  const updateReleases = releases.filter(release => {
+    const version = (release.tag_name || '').replace(/^v/i, '');
+    return (
+      version &&
+      compareVersions(version, currentVersion) > 0 &&
+      compareVersions(version, latestVersion) <= 0
+    );
+  });
+  const highlights = updateReleases.flatMap(release =>
+    extractReleaseHighlights(release.body || '')
+  );
+  renderVersionHighlights(
+    t('version.updateSummaryTitle', {
+      current: currentVersion,
+      latest: latestVersion,
+    }),
+    highlights,
+    latestUrl || `https://github.com/${GITHUB_REPO}/releases`,
+    t('version.releaseNotes'),
+    true
+  );
+}
+
 async function checkForUpdates(): Promise<void> {
   const statusEl = document.getElementById(UI_ELEMENT_IDS.VERSION_STATUS);
   if (!statusEl) return;
 
+  renderCurrentVersionHighlights();
+
   try {
     const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
+      `https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=20`,
       {signal: AbortSignal.timeout(10000)}
     );
 
@@ -3142,17 +3276,110 @@ async function checkForUpdates(): Promise<void> {
       return;
     }
 
-    const data = await response.json();
-    const latestVersion = (data.tag_name || '').replace(/^v/, '');
+    const releases = ((await response.json()) as GitHubRelease[]).filter(
+      release => !release.draft && !release.prerelease
+    );
+    const latestRelease = releases[0];
+    const latestVersion = (latestRelease?.tag_name || '').replace(/^v/i, '');
 
-    if (latestVersion && latestVersion !== EXTENSION_VERSION) {
-      statusEl.innerHTML = `→ <a href="${data.html_url}" target="_blank" style="color: var(--SmartThemeQuoteColor, #e49e2c);">${t('version.updateAvailable', {version: latestVersion})}</a>`;
+    if (
+      latestVersion &&
+      compareVersions(latestVersion, EXTENSION_VERSION) > 0
+    ) {
+      statusEl.textContent = '→ ';
+      const link = document.createElement('a');
+      link.href =
+        latestRelease.html_url || `https://github.com/${GITHUB_REPO}/releases`;
+      link.target = '_blank';
+      link.className = 'auto-illustrator-version-update-link';
+      link.textContent = t('version.updateAvailable', {
+        version: latestVersion,
+      });
+      statusEl.append(link);
+      renderUpdateNotice(
+        EXTENSION_VERSION,
+        latestVersion,
+        releases,
+        latestRelease.html_url || ''
+      );
     } else {
       statusEl.textContent = `✓ ${t('version.latest')}`;
-      statusEl.style.color = 'var(--SmartThemeGreenColor, #4caf50)';
+      statusEl.classList.add('is-latest');
     }
   } catch {
     statusEl.textContent = t('version.checkFailed');
+  }
+}
+
+function setServerPluginStatus(
+  statusEl: HTMLElement,
+  state: 'checking' | 'synced' | 'warning' | 'unavailable',
+  text: string
+): void {
+  statusEl.classList.remove(
+    'is-checking',
+    'is-synced',
+    'is-warning',
+    'is-unavailable'
+  );
+  statusEl.classList.add(`is-${state}`);
+  statusEl.textContent = text;
+}
+
+/**
+ * Checks whether the companion server plugin matches the frontend bundle.
+ */
+async function checkServerPluginStatus(): Promise<void> {
+  const statusEl = document.getElementById(UI_ELEMENT_IDS.SERVER_PLUGIN_STATUS);
+  if (!statusEl) return;
+
+  setServerPluginStatus(statusEl, 'checking', t('serverPlugin.checking'));
+
+  try {
+    const response = await fetch(SERVER_PLUGIN.STATUS_ROUTE, {
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!response.ok) {
+      setServerPluginStatus(
+        statusEl,
+        'unavailable',
+        t('serverPlugin.unavailable')
+      );
+      return;
+    }
+
+    const data = (await response.json()) as {
+      ok?: boolean;
+      plugin?: string;
+      version?: string;
+    };
+
+    if (!data.ok || data.plugin !== SERVER_PLUGIN.ID) {
+      setServerPluginStatus(
+        statusEl,
+        'unavailable',
+        t('serverPlugin.unavailable')
+      );
+      return;
+    }
+
+    if (data.version !== SERVER_PLUGIN.VERSION) {
+      setServerPluginStatus(
+        statusEl,
+        'warning',
+        t('serverPlugin.updateRequired')
+      );
+      return;
+    }
+
+    setServerPluginStatus(statusEl, 'synced', t('serverPlugin.synced'));
+  } catch {
+    setServerPluginStatus(
+      statusEl,
+      'unavailable',
+      t('serverPlugin.unavailable')
+    );
   }
 }
 
@@ -3793,12 +4020,12 @@ function initialize(): void {
       handleSettingsChange
     );
 
-    const vibeTransferInstallHelpButton = document.getElementById(
-      UI_ELEMENT_IDS.VIBE_TRANSFER_INSTALL_HELP
+    const serverPluginInstallHelpButton = document.getElementById(
+      UI_ELEMENT_IDS.SERVER_PLUGIN_INSTALL_HELP
     );
-    vibeTransferInstallHelpButton?.addEventListener(
+    serverPluginInstallHelpButton?.addEventListener(
       'click',
-      showVibeTransferInstallHelpDialog
+      showServerPluginInstallHelpDialog
     );
 
     const vibeStrengthInput = document.getElementById(
@@ -4145,6 +4372,9 @@ function initialize(): void {
     // Check for updates (non-blocking)
     checkForUpdates().catch(error => {
       logger.debug('Update check failed:', error);
+    });
+    checkServerPluginStatus().catch(error => {
+      logger.debug('Server plugin status check failed:', error);
     });
 
     // Register world info event listeners and initialize panel (non-blocking)

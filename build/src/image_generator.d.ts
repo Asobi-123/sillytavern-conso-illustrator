@@ -6,6 +6,7 @@ import type { DeferredImage, VibeTransferReferenceImage } from './types';
 import { type ReconciliationConfig } from './reconciliation';
 import { type SdStyleRandomConfig } from './services/sd_style_randomizer';
 import type { VibeTransferGenerationConfig } from './types';
+export { applyCommonTags, deduplicateTags, parseCommonTags, validateCommonTags, } from './services/prompt_tags';
 /**
  * Updates reconciliation configuration
  * @param config - Partial configuration to update
@@ -48,37 +49,6 @@ export declare function setImageSubfolderLabel(label: string | null, fullOverrid
  * @returns URL of generated image or null on failure
  */
 export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig, vibeTransferConfig?: VibeTransferGenerationConfig, onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void): Promise<string | null>;
-/**
- * Parses a comma-separated string of tags into an array
- * @param tagsString - Comma-separated tags string
- * @returns Array of trimmed tag strings
- */
-export declare function parseCommonTags(tagsString: string): string[];
-/**
- * Deduplicates tags in a case-insensitive manner
- * Preserves the original case of the first occurrence
- * @param tags - Array of tag strings
- * @returns Deduplicated array of tags
- */
-export declare function deduplicateTags(tags: string[]): string[];
-/**
- * Validates common tags input
- * @param tags - Comma-separated tags string
- * @returns Validation result with error message if invalid
- */
-export declare function validateCommonTags(tags: string): {
-    valid: boolean;
-    error?: string;
-};
-/**
- * Applies common style tags to a prompt based on position setting
- * Deduplicates tags to avoid repetition
- * @param prompt - Original image generation prompt
- * @param commonTags - Comma-separated common tags
- * @param position - Where to add tags ('prefix' or 'suffix')
- * @returns Enhanced prompt with common tags applied
- */
-export declare function applyCommonTags(prompt: string, commonTags: string, position: 'prefix' | 'suffix'): string;
 /**
  * Unified batch insertion for both streaming and regeneration modes
  * Handles new images (streaming) and regenerated images atomically

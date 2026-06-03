@@ -9,7 +9,7 @@
  *   e.g. {lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}
  */
 
-import {parseCommonTags} from '../image_generator';
+import {parseCommonTags} from './prompt_tags';
 import type {CharacterFixedTagEntry} from '../types';
 
 /**
