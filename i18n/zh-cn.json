@@ -352,7 +352,7 @@
   "version.checkFailed": "",
   "version.currentSummaryTitle": "当前版本新增功能：v{version}",
   "version.updateSummaryTitle": "更新提示：v{current} → v{latest}",
-  "version.updateSummaryFallback": "新版本已发布，建议查看完整更新日志后决定是否更新。",
+  "version.updateSummaryFallback": "未读取到 Release 摘要，请打开完整更新日志查看。",
   "version.updateSummaryMore": "还有 {count} 条更新未显示。",
   "version.releaseNotes": "查看完整更新日志",
   "serverPlugin.checking": "后端插件：检查中...",

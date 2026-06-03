@@ -17,11 +17,6 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
  */
 export declare const EXTENSION_VERSION = "1.10.0";
 /**
- * User-facing highlights for the current bundled version.
- * Keep this local so users can see what changed even after updating to latest.
- */
-export declare const CURRENT_VERSION_HIGHLIGHTS: readonly ["NovelAI 局部重绘：可在原图上涂抹遮罩，生成预览后再选择追加或替换原图。", "局部重绘预览循环：生成结果先在编辑器内预览，确认后才插入聊天或独立生图结果区。", "局部重绘边缘处理：支持画布缩放、遮罩外扩、边缘羽化、边界保护、负面提示词和保留原图色调。", "后端插件提示：信息卡会检测后端插件状态，并提示需要手动更新 server-plugin 文件夹。", "界面可读性修复：输入框、信息卡版本号和浅色面板主题的文字对比度更稳定。"];
-/**
  * GitHub repository for update checks
  */
 export declare const GITHUB_REPO = "Asobi-123/sillytavern-conso-illustrator";

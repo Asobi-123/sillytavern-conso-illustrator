@@ -11,32 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **NovelAI Inpaint editing** - Added an image-click entry for local mask editing. Edited results append after the source image by default, with an explicit replace option for users who want to overwrite the visible image in the message.
-- **NovelAI inpaint server route** - Added `POST /api/plugins/auto-illustrator-nai-advanced/generate-inpaint-image` to the companion server plugin. The route reuses the NovelAI token already stored in SillyTavern secrets.
-- **Inpaint edge feathering and seam removal** - Inpaint results are now blended back onto the original image through an adjustable edge feather, so the redrawn area fades into the source instead of leaving a hard rectangular seam. The default inpainting strength is lowered to 0.45 for closer-to-original results, and NovelAI color correction is enabled so the patched region matches the source tone. Added an "Edge Feather (px)" control to the editor.
-- **Inpaint precision controls** - Added canvas zoom and mask padding controls to the image editor. The editor can now show the source at pixel size or enlarged for more precise mask painting, and the sent mask can be expanded before generation while the final result is softly composited back into the original image to reduce visible edit seams.
-- **Focused inpaint requests** - Inpaint now sends only the masked region plus surrounding context to NovelAI when possible, then composites the generated crop back into the full source image. This reduces timeout risk on large images and keeps small edits more local.
-- **Inpaint negative prompt** - Added an optional negative prompt field in the inpaint editor. It is appended to the global negative prompt, making it easier to steer edits (e.g. add the old color to negatives when recoloring a region).
-- **Inpaint result preview loop** - The editor now previews the latest generated edit inside the canvas area while staying open, so users can inspect the result before deciding whether to keep editing the same mask, prompt, and parameters. Generated previews are inserted only after the user confirms with "Insert Result and Finish".
-- **Inpaint parameter explanations** - Added inline explanations for brush size, canvas zoom, mask padding, edge feather, source-tone preservation, and inpainting strength.
-- **Inpaint edge guard** - Added an "Edge Guard (px)" control that shrinks the final pasted mask inward without changing the mask sent to NovelAI, making clothing masks more forgiving near hair and skin edges.
+- **NovelAI Inpaint editing** - Added local redraw for existing images. Users can paint a mask on the source image, write edit prompts, adjust inpaint parameters, preview the generated edit, then append or replace manually.
+- **Inpaint editor controls** - Added brush, eraser, undo, clear mask, canvas zoom, negative prompt, inpaint strength, mask padding, edge feather, edge guard, and source-tone preservation controls.
+- **Inpaint server route** - Added `POST /api/plugins/auto-illustrator-nai-advanced/generate-inpaint-image` to the companion server plugin. The route reuses the NovelAI token already stored in SillyTavern secrets.
+- **Backend plugin status detection** - Added an info-card status check for the companion server plugin, including missing, unavailable, and version-mismatch states.
+- **Current version summary** - Added a collapsible info-card summary that reads the current version's GitHub Release description instead of hard-coded frontend text.
 
 ### Fixed
 
-- **Inpaint editor scrolling** - Fixed the desktop editor layout so the parameter panel has a real scroll area when the controls exceed the dialog height.
-- **Inpaint editor accidental close protection** - Clicking outside the editor or triggering the dialog cancel event no longer closes the editor, preventing accidental loss of the current mask and parameters. Users must use an explicit editor button to exit.
-- **Inpaint editor quick controls** - Moved brush size, canvas zoom, brush/eraser, undo, and clear-mask controls directly under the canvas so mask editing is reachable before scrolling through generation parameters.
-- **Inpaint parameter guidance** - Added a styled parameter tip explaining that inpaint settings have no universally correct values and should be judged by preview results, then adjusted through small experiments.
-- **Server plugin sync status** - The info card now checks the companion backend plugin status route and warns when the installed server plugin is missing or older than the frontend bundle.
-- **Floating panel desktop size** - Increased the desktop floating panel width and tab layout so Auto Illustrator controls are less cramped while preserving the full-screen mobile layout.
-- **Mobile inpaint layout clipping** - Fixed the mobile inpaint editor width constraints so prompt text and parameter descriptions are not clipped by horizontal overflow.
-- **Outpaint cleanup** - Removed the experimental outpaint controls and canvas-expansion code after real-image testing showed unacceptable blur. Normal inpaint remains available and isolated from the removed outpaint path.
-- **Inpaint replace insertion** - Fixed "replace source image" in the inpaint editor so the final insert action reads the current replace/append choice and matches the original image tag robustly across encoded URLs and quote styles.
-- **Inpaint diagnostics** - Added request ids, dimensions, key generation parameters, elapsed time, response status, and a 120 second server-side timeout for NovelAI inpaint calls without logging image or mask base64 data.
-- **Backend install help placement** - Moved the server plugin install help from the Vibe Transfer card into the info card and generalized the copy for all backend-dependent features, currently Vibe Transfer and Inpaint.
-- **Info card update summary** - The info card now shows a collapsible summary of what the current bundled version adds, so users can see what changed after updating.
-- **Panel input contrast** - Plugin-controlled text inputs, textareas, select boxes, placeholders, readonly/disabled fields, and select options now use scoped high-contrast colors instead of inheriting unreadable SillyTavern theme text colors.
-- **Floating panel theme contrast** - The floating panel now uses panel-local text and success colors for the version display, so light panel themes no longer hide the current version number.
+- **Backend install help placement** - Moved companion server plugin install help from the Vibe Transfer card into the info card and made the text apply to all backend-dependent features.
+- **Floating panel readability** - Plugin-controlled text inputs, textareas, select boxes, placeholders, readonly states, disabled states, and version badges now use panel-scoped contrast colors so they remain readable across more SillyTavern and floating-panel themes.
 
 ## [1.9.0] - 2026-06-02
 

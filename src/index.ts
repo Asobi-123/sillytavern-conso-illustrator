@@ -43,7 +43,6 @@ import {
   DEFAULT_CONTENT_FILTER_TAGS,
   PROMPT_GENERATION_MODE,
   EXTENSION_VERSION,
-  CURRENT_VERSION_HIGHLIGHTS,
   GITHUB_REPO,
   VIBE_TRANSFER,
   SERVER_PLUGIN,
@@ -3137,6 +3136,10 @@ type GitHubRelease = {
   prerelease?: boolean;
 };
 
+function normalizeReleaseVersion(version: string): string {
+  return version.replace(/^v/i, '');
+}
+
 function parseVersionParts(version: string): number[] {
   return version
     .replace(/^v/i, '')
@@ -3159,15 +3162,59 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+function isSummaryHeading(title: string): boolean {
+  const normalized = title.trim().toLowerCase();
+  return (
+    normalized === '更新摘要' ||
+    normalized === '更新摘要（面板显示）' ||
+    normalized === '更新摘要(面板显示)' ||
+    normalized === 'highlights' ||
+    normalized === 'summary' ||
+    normalized === "what's new" ||
+    normalized === 'whats new'
+  );
+}
+
+function getReleaseSummaryLines(body: string): string[] {
+  const lines = body.split(/\r?\n/);
+  let summaryStart = -1;
+  let summaryLevel = 0;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(/^(#{2,6})\s+(.+?)\s*$/);
+    if (match && isSummaryHeading(match[2])) {
+      summaryStart = index + 1;
+      summaryLevel = match[1].length;
+      break;
+    }
+  }
+
+  if (summaryStart < 0) {
+    return lines;
+  }
+
+  const summaryLines: string[] = [];
+  for (let index = summaryStart; index < lines.length; index += 1) {
+    const match = lines[index].match(/^(#{2,6})\s+(.+?)\s*$/);
+    if (match && match[1].length <= summaryLevel) {
+      break;
+    }
+    summaryLines.push(lines[index]);
+  }
+
+  return summaryLines;
+}
+
 function extractReleaseHighlights(body: string): string[] {
-  return body
-    .split(/\r?\n/)
+  return getReleaseSummaryLines(body)
     .map(line => line.trim())
     .filter(line => /^[-*]\s+/.test(line))
     .map(line =>
       line
         .replace(/^[-*]\s+/, '')
+        .replace(/^\[[ xX]\]\s+/, '')
         .replace(/\*\*/g, '')
+        .replace(/`([^`]+)`/g, '$1')
         .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
         .trim()
     )
@@ -3194,25 +3241,16 @@ function renderVersionHighlights(
     return;
   }
 
-  const visibleHighlights = highlights.slice(0, 5);
   title.textContent = titleText;
   list.innerHTML = '';
-  const items = visibleHighlights.length
-    ? visibleHighlights
+  const items = highlights.length
+    ? highlights
     : [t('version.updateSummaryFallback')];
   items.forEach(item => {
     const li = document.createElement('li');
     li.textContent = item;
     list.append(li);
   });
-  if (highlights.length > visibleHighlights.length) {
-    const li = document.createElement('li');
-    li.className = 'auto-illustrator-update-more';
-    li.textContent = t('version.updateSummaryMore', {
-      count: highlights.length - visibleHighlights.length,
-    });
-    list.append(li);
-  }
 
   link.href = linkUrl;
   link.textContent = linkText;
@@ -3220,11 +3258,25 @@ function renderVersionHighlights(
   notice.hidden = false;
 }
 
-function renderCurrentVersionHighlights(): void {
+function findReleaseByVersion(
+  releases: readonly GitHubRelease[],
+  version: string
+): GitHubRelease | undefined {
+  return releases.find(release => {
+    const releaseVersion = normalizeReleaseVersion(release.tag_name || '');
+    return releaseVersion && compareVersions(releaseVersion, version) === 0;
+  });
+}
+
+function renderCurrentVersionHighlights(
+  releases: readonly GitHubRelease[]
+): void {
+  const currentRelease = findReleaseByVersion(releases, EXTENSION_VERSION);
   renderVersionHighlights(
     t('version.currentSummaryTitle', {version: EXTENSION_VERSION}),
-    CURRENT_VERSION_HIGHLIGHTS,
-    `https://github.com/${GITHUB_REPO}/releases/tag/v${EXTENSION_VERSION}`,
+    extractReleaseHighlights(currentRelease?.body || ''),
+    currentRelease?.html_url ||
+      `https://github.com/${GITHUB_REPO}/releases/tag/v${EXTENSION_VERSION}`,
     t('version.releaseNotes'),
     false
   );
@@ -3236,14 +3288,20 @@ function renderUpdateNotice(
   releases: GitHubRelease[],
   latestUrl: string
 ): void {
-  const updateReleases = releases.filter(release => {
-    const version = (release.tag_name || '').replace(/^v/i, '');
-    return (
-      version &&
-      compareVersions(version, currentVersion) > 0 &&
-      compareVersions(version, latestVersion) <= 0
-    );
-  });
+  const updateReleases = releases
+    .filter(release => {
+      const version = normalizeReleaseVersion(release.tag_name || '');
+      return (
+        version &&
+        compareVersions(version, currentVersion) > 0 &&
+        compareVersions(version, latestVersion) <= 0
+      );
+    })
+    .sort((a, b) => {
+      const aVersion = normalizeReleaseVersion(a.tag_name || '');
+      const bVersion = normalizeReleaseVersion(b.tag_name || '');
+      return compareVersions(aVersion, bVersion);
+    });
   const highlights = updateReleases.flatMap(release =>
     extractReleaseHighlights(release.body || '')
   );
@@ -3263,7 +3321,7 @@ async function checkForUpdates(): Promise<void> {
   const statusEl = document.getElementById(UI_ELEMENT_IDS.VERSION_STATUS);
   if (!statusEl) return;
 
-  renderCurrentVersionHighlights();
+  statusEl.classList.remove('is-latest');
 
   try {
     const response = await fetch(
@@ -3279,8 +3337,15 @@ async function checkForUpdates(): Promise<void> {
     const releases = ((await response.json()) as GitHubRelease[]).filter(
       release => !release.draft && !release.prerelease
     );
-    const latestRelease = releases[0];
-    const latestVersion = (latestRelease?.tag_name || '').replace(/^v/i, '');
+    const sortedReleases = [...releases].sort((a, b) => {
+      const aVersion = normalizeReleaseVersion(a.tag_name || '');
+      const bVersion = normalizeReleaseVersion(b.tag_name || '');
+      return compareVersions(bVersion, aVersion);
+    });
+    const latestRelease = sortedReleases[0];
+    const latestVersion = normalizeReleaseVersion(
+      latestRelease?.tag_name || ''
+    );
 
     if (
       latestVersion &&
@@ -3299,12 +3364,13 @@ async function checkForUpdates(): Promise<void> {
       renderUpdateNotice(
         EXTENSION_VERSION,
         latestVersion,
-        releases,
+        sortedReleases,
         latestRelease.html_url || ''
       );
     } else {
       statusEl.textContent = `✓ ${t('version.latest')}`;
       statusEl.classList.add('is-latest');
+      renderCurrentVersionHighlights(sortedReleases);
     }
   } catch {
     statusEl.textContent = t('version.checkFailed');
