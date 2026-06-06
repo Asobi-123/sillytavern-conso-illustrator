@@ -2,20 +2,35 @@
 
 /* ===== Nested Drawer Styling ===== */
 /* Level 2 drawers: indented inside the main extension drawer */
-.auto-illustrator-settings > .inline-drawer > .inline-drawer-content > .inline-drawer {
+.auto-illustrator-settings
+  > .inline-drawer
+  > .inline-drawer-content
+  > .inline-drawer {
   margin-left: 0.75rem;
-  border-left: 3px solid var(--SmartThemeQuoteColor, #e49e2c);
+  border-left: 3px solid var(--ai-panel-accent);
   padding-left: 0.75rem;
 }
 
 /* Level 3 drawers: further indented inside level 2 */
-.auto-illustrator-settings > .inline-drawer > .inline-drawer-content > .inline-drawer .inline-drawer-content .inline-drawer {
+.auto-illustrator-settings
+  > .inline-drawer
+  > .inline-drawer-content
+  > .inline-drawer
+  .inline-drawer-content
+  .inline-drawer {
   margin-left: 0.5rem;
-  border-left: 2px solid var(--SmartThemeBorderColor, #555);
+  border-left: 2px solid var(--ai-panel-border);
   padding-left: 0.5rem;
 }
 
-.auto-illustrator-settings > .inline-drawer > .inline-drawer-content > .inline-drawer .inline-drawer-content .inline-drawer > .inline-drawer-header b {
+.auto-illustrator-settings
+  > .inline-drawer
+  > .inline-drawer-content
+  > .inline-drawer
+  .inline-drawer-content
+  .inline-drawer
+  > .inline-drawer-header
+  b {
   font-size: 0.9em;
   font-weight: 600;
   opacity: 0.85;
@@ -25,6 +40,19 @@
 .auto-illustrator-settings,
 .auto-illustrator-dialog,
 dialog.ai-inpaint-dialog {
+  --ai-panel-bg: #151923;
+  --ai-panel-bg-2: #1f2634;
+  --ai-panel-bg-3: #293241;
+  --ai-panel-overlay: rgba(18, 24, 34, 0.96);
+  --ai-panel-border: rgba(220, 229, 242, 0.28);
+  --ai-panel-accent: #8fb8ff;
+  --ai-panel-accent-soft: rgba(143, 184, 255, 0.16);
+  --ai-panel-text: #f4f7fb;
+  --ai-panel-text-2: rgba(244, 247, 251, 0.78);
+  --ai-panel-text-3: rgba(244, 247, 251, 0.58);
+  --ai-panel-success: #67e27a;
+  --ai-panel-warning: #e0a85f;
+  --ai-panel-danger: #e07b7b;
   --ai-control-bg: #141b27;
   --ai-control-bg-focus: #101722;
   --ai-control-bg-disabled: rgba(15, 22, 35, 0.72);
@@ -36,13 +64,22 @@ dialog.ai-inpaint-dialog {
   --ai-control-focus-ring: rgba(143, 184, 255, 0.22);
 }
 
-.auto-illustrator-settings input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+.auto-illustrator-settings
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']),
 .auto-illustrator-settings textarea,
 .auto-illustrator-settings select,
-.auto-illustrator-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+.auto-illustrator-dialog
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']),
 .auto-illustrator-dialog textarea,
 .auto-illustrator-dialog select,
-dialog.ai-inpaint-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+dialog.ai-inpaint-dialog
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']),
 dialog.ai-inpaint-dialog textarea,
 dialog.ai-inpaint-dialog select {
   background: var(--ai-control-bg) !important;
@@ -52,13 +89,22 @@ dialog.ai-inpaint-dialog select {
   opacity: 1 !important;
 }
 
-.auto-illustrator-settings input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):focus,
+.auto-illustrator-settings
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']):focus,
 .auto-illustrator-settings textarea:focus,
 .auto-illustrator-settings select:focus,
-.auto-illustrator-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):focus,
+.auto-illustrator-dialog
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']):focus,
 .auto-illustrator-dialog textarea:focus,
 .auto-illustrator-dialog select:focus,
-dialog.ai-inpaint-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):focus,
+dialog.ai-inpaint-dialog
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']):focus,
 dialog.ai-inpaint-dialog textarea:focus,
 dialog.ai-inpaint-dialog select:focus {
   background: var(--ai-control-bg-focus) !important;
@@ -84,17 +130,26 @@ dialog.ai-inpaint-dialog select option {
   color: var(--ai-control-text) !important;
 }
 
-.auto-illustrator-settings input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):disabled,
+.auto-illustrator-settings
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']):disabled,
 .auto-illustrator-settings textarea:disabled,
 .auto-illustrator-settings select:disabled,
 .auto-illustrator-settings input[readonly],
 .auto-illustrator-settings textarea[readonly],
-.auto-illustrator-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):disabled,
+.auto-illustrator-dialog
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']):disabled,
 .auto-illustrator-dialog textarea:disabled,
 .auto-illustrator-dialog select:disabled,
 .auto-illustrator-dialog input[readonly],
 .auto-illustrator-dialog textarea[readonly],
-dialog.ai-inpaint-dialog input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):disabled,
+dialog.ai-inpaint-dialog
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ):not([type='color']):disabled,
 dialog.ai-inpaint-dialog textarea:disabled,
 dialog.ai-inpaint-dialog select:disabled,
 dialog.ai-inpaint-dialog input[readonly],
@@ -108,20 +163,20 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 .world-info-book-list {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid var(--SmartThemeBorderColor, #444);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 6px;
   padding: 0.25rem;
 }
 
 .world-info-book-item {
-  border: 1px solid var(--SmartThemeBorderColor, #333);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 4px;
   margin-bottom: 0.25rem;
-  background: var(--SmartThemeBlurTintColor, rgba(30, 30, 40, 0.5));
+  background: var(--ai-panel-bg-2);
 }
 
 .world-info-book-item.selected {
-  border-color: var(--SmartThemeQuoteColor, #9b59b6);
+  border-color: var(--ai-panel-accent);
 }
 
 .world-info-book-header {
@@ -178,7 +233,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 }
 
 .world-info-entry-item.enabled {
-  color: var(--SmartThemeQuoteColor, #9b59b6);
+  color: var(--ai-panel-accent);
 }
 
 .world-info-entry-keys {
@@ -192,8 +247,8 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   font-size: 0.7em;
   padding: 1px 5px;
   border-radius: 3px;
-  background: var(--SmartThemeQuoteColor, #9b59b6);
-  color: #fff;
+  background: var(--ai-panel-accent);
+  color: var(--ai-panel-bg);
   margin-left: 0.25rem;
   vertical-align: middle;
 }
@@ -204,8 +259,8 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   font-weight: bold;
   padding: 1px 4px;
   border-radius: 3px;
-  background: var(--SmartThemeFontColorInverted, #555);
-  color: var(--SmartThemeFontColor, #fff);
+  background: var(--ai-panel-bg-3);
+  color: var(--ai-panel-text);
   margin-left: 0.15rem;
   vertical-align: middle;
 }
@@ -233,7 +288,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 }
 
 .character-tag-item {
-  border: 1px solid var(--SmartThemeBorderColor, #333);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 4px;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
@@ -260,8 +315,8 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   font-size: 0.7em;
   padding: 1px 5px;
   border-radius: 3px;
-  background: var(--SmartThemeQuoteColor, #9b59b6);
-  color: white;
+  background: var(--ai-panel-accent);
+  color: var(--ai-panel-bg);
   flex-shrink: 0;
 }
 
@@ -280,8 +335,8 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   font-size: 0.8em;
   padding: 1px 6px;
   border-radius: 3px;
-  background: var(--SmartThemeBlurTintColor, rgba(255, 255, 255, 0.1));
-  border: 1px solid var(--SmartThemeBorderColor, #555);
+  background: var(--ai-panel-bg-2);
+  border: 1px solid var(--ai-panel-border);
 }
 
 .character-tag-aliases .alias-chip .alias-remove {
@@ -298,7 +353,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   font-size: 0.8em;
   padding: 1px 4px;
   width: 80px;
-  border: 1px solid var(--SmartThemeBorderColor, #555);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 3px;
   background: transparent;
   color: inherit;
@@ -366,6 +421,26 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   text-align: center;
 }
 
+.auto-illustrator-settings button,
+.auto-illustrator-dialog-buttons button,
+.auto-illustrator-action-btn,
+.preset-toolbar button,
+.preset-edit-actions button,
+.character-tag-actions button,
+.world-info-entry-toolbar button,
+.auto-illustrator-vibe-transfer-actions button,
+.prompt-library-edit-overlay button,
+.prompt-library-card-actions button,
+.tag-catalog-actions button,
+.tag-catalog-item,
+.tag-catalog-selected-chip,
+.preset-import-actions button,
+.preset-import-file-picker {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: nowrap;
+}
+
 .auto-illustrator-action-btn i {
   flex-shrink: 0;
 }
@@ -392,15 +467,15 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 .standalone-status {
   font-size: 0.9em;
   font-weight: 600;
-  color: var(--SmartThemeQuoteColor, #e49e2c);
+  color: var(--ai-panel-accent);
   margin-bottom: 0.25rem;
 }
 
 .standalone-prompt-card {
-  border: 1px solid var(--SmartThemeBorderColor, #333);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 6px;
   padding: 0.75rem;
-  background: var(--SmartThemeBlurTintColor, rgba(30, 30, 40, 0.5));
+  background: var(--ai-panel-bg-2);
 }
 
 .standalone-prompt-card textarea {
@@ -436,7 +511,9 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 .standalone-image-container img {
   max-width: 100%;
   border-radius: 6px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .standalone-image-container img:hover {
@@ -541,11 +618,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #10b981,
-    #059669
-  );
+  background: linear-gradient(135deg, #10b981, #059669);
   border: 2px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   font-size: 1.2rem;
@@ -554,9 +627,10 @@ dialog.ai-inpaint-dialog textarea[readonly] {
     0 4px 14px rgba(16, 185, 129, 0.4),
     0 1px 6px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -565,11 +639,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 .ai-img-progress-fab:hover {
   transform: scale(1.1) translateY(-2px);
-  background: linear-gradient(
-    135deg,
-    #34d399,
-    #10b981
-  );
+  background: linear-gradient(135deg, #34d399, #10b981);
   box-shadow:
     0 8px 20px rgba(16, 185, 129, 0.6),
     0 4px 12px rgba(0, 0, 0, 0.4),
@@ -910,12 +980,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 .ai-img-progress-bar {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    #9b59b6 0%,
-    #bb79d6 50%,
-    #9b59b6 100%
-  );
+  background: linear-gradient(90deg, #9b59b6 0%, #bb79d6 50%, #9b59b6 100%);
   background-size: 200% 100%;
   border-radius: 3px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1774,9 +1839,12 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 .preset-toolbar {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .preset-toolbar .flex_fill {
@@ -1822,12 +1890,16 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 .preset-edit-actions {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .preset-edit-actions button {
-  flex: 1;
+  flex: 0 0 auto;
+  min-width: max-content;
 }
 
 .preset-edit-actions button:disabled {
@@ -1874,12 +1946,12 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 /* Manual Generation Button */
 .auto_illustrator_manual_gen {
-  color: #9b59b6 !important;
+  color: var(--ai-panel-accent) !important;
   cursor: pointer;
 }
 
 .auto_illustrator_manual_gen:hover {
-  color: #bb79d6 !important;
+  color: var(--ai-control-border-focus) !important;
 }
 
 .auto_illustrator_manual_gen:disabled {
@@ -1904,8 +1976,8 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   top: 10vh;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--SmartThemeBlurTintColor, #2a2a2a);
-  border: 2px solid var(--SmartThemeBorderColor, #666);
+  background: var(--ai-panel-bg);
+  border: 2px solid var(--ai-panel-border);
   border-radius: 8px;
   padding: 1.5rem;
   max-width: 500px;
@@ -1913,7 +1985,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   width: 90%;
   z-index: 10000;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-  color: #ffffff;
+  color: var(--ai-panel-text);
   overflow-y: auto;
   box-sizing: border-box;
 }
@@ -1949,20 +2021,20 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   margin: 0 0 1rem 0;
   line-height: 1.6;
   white-space: pre-line;
-  color: #ffffff;
+  color: var(--ai-panel-text);
   font-size: 1rem;
 }
 
 .auto-illustrator-dialog h3 {
   margin: 0 0 1rem 0;
-  color: #ffffff;
+  color: var(--ai-panel-text);
   font-size: 1.2rem;
 }
 
 .auto-illustrator-dialog label {
   display: block;
   margin: 0.5rem 0 0.25rem 0;
-  color: #ffffff;
+  color: var(--ai-panel-text);
   font-size: 0.9rem;
 }
 
@@ -1970,10 +2042,10 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   width: 100%;
   min-height: 80px;
   padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--SmartThemeBorderColor, #666);
+  background: var(--ai-control-bg);
+  border: 1px solid var(--ai-control-border);
   border-radius: 4px;
-  color: #ffffff;
+  color: var(--ai-control-text);
   font-family: inherit;
   font-size: 0.9rem;
   resize: vertical;
@@ -1982,12 +2054,12 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 .auto-illustrator-dialog textarea:focus {
   outline: none;
-  border-color: #9b59b6;
-  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--ai-control-border-focus);
+  background: var(--ai-control-bg-focus);
 }
 
 .auto-illustrator-dialog textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--ai-control-text-muted);
 }
 
 .auto-illustrator-feedback-textarea {
@@ -1997,9 +2069,9 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 .auto-illustrator-current-prompt {
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--ai-panel-text-2);
   font-family: monospace;
   font-size: 0.9em;
   line-height: 1.4;
@@ -2021,16 +2093,16 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.75rem;
-  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border: 1px solid var(--ai-panel-border);
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.2);
+  color: var(--ai-panel-text);
+  background: var(--ai-panel-bg-2);
 }
 
 .auto-illustrator-mode-option span {
-  color: #ffffff;
+  color: var(--ai-panel-text);
   line-height: 1.5;
 }
 
@@ -2038,7 +2110,7 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.auto-illustrator-mode-option input[type="radio"] {
+.auto-illustrator-mode-option input[type='radio'] {
   margin-top: 0.2rem;
   cursor: pointer;
   flex-shrink: 0;
@@ -2080,10 +2152,10 @@ dialog.ai-inpaint-dialog {
   max-height: min(92dvh, 900px);
   margin: auto;
   padding: 0;
-  border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.2));
+  border: 1px solid var(--ai-panel-border);
   border-radius: 14px;
-  background: var(--SmartThemeBlurTintColor, rgba(24, 24, 28, 0.96));
-  color: var(--ai-control-text, #f4f7fb);
+  background: var(--ai-panel-bg);
+  color: var(--ai-panel-text);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   flex-direction: column;
@@ -2103,7 +2175,7 @@ dialog.ai-inpaint-dialog::backdrop {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.16));
+  border-bottom: 1px solid var(--ai-panel-border);
 }
 
 .ai-inpaint-close {
@@ -2141,10 +2213,13 @@ dialog.ai-inpaint-dialog::backdrop {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.16));
+  border: 1px solid var(--ai-panel-border);
   border-radius: 12px;
-  background:
-    linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+  background: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.05) 25%,
+      transparent 25%
+    ),
     linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
     linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
@@ -2164,7 +2239,7 @@ dialog.ai-inpaint-dialog::backdrop {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
   padding: 0.75rem;
-  border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.16));
+  border: 1px solid var(--ai-panel-border);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.08);
 }
@@ -2242,10 +2317,13 @@ dialog.ai-inpaint-dialog::backdrop {
   gap: 0.35rem;
   padding: 0.75rem 0.85rem;
   border: 1px solid rgba(228, 158, 44, 0.35);
-  border-left: 4px solid var(--SmartThemeQuoteColor, #e49e2c);
+  border-left: 4px solid var(--ai-panel-warning);
   border-radius: 12px;
-  background:
-    linear-gradient(135deg, rgba(228, 158, 44, 0.14), rgba(255, 255, 255, 0.04)),
+  background: linear-gradient(
+      135deg,
+      rgba(228, 158, 44, 0.14),
+      rgba(255, 255, 255, 0.04)
+    ),
     rgba(0, 0, 0, 0.06);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
@@ -2312,7 +2390,7 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
 }
 
 .ai-inpaint-tool-row .active {
-  outline: 2px solid var(--SmartThemeQuoteColor, #e49e2c);
+  outline: 2px solid var(--ai-panel-warning);
 }
 
 .ai-inpaint-status {
@@ -2337,15 +2415,14 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   dialog.ai-inpaint-dialog {
     width: calc(100vw - 16px);
     height: calc(
-      100dvh - env(safe-area-inset-top, 0px) -
-        env(safe-area-inset-bottom, 0px) - 24px
+      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
+        24px
     );
     max-height: calc(
-      100dvh - env(safe-area-inset-top, 0px) -
-        env(safe-area-inset-bottom, 0px) - 24px
+      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
+        24px
     );
-    margin:
-      calc(env(safe-area-inset-top, 0px) + 12px) auto
+    margin: calc(env(safe-area-inset-top, 0px) + 12px) auto
       calc(env(safe-area-inset-bottom, 0px) + 12px);
   }
 
@@ -2410,14 +2487,14 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
 }
 
 .auto-illustrator-info-card .auto-illustrator-current-version {
-  color: var(--SmartThemeBodyColor, #f4f7fb) !important;
+  color: var(--ai-panel-text) !important;
   font-size: 0.96rem;
   font-weight: 600;
   opacity: 1 !important;
 }
 
 .auto-illustrator-info-card .auto-illustrator-version-status {
-  color: var(--SmartThemeBodyColor, #f4f7fb) !important;
+  color: var(--ai-panel-text-2) !important;
   font-size: 0.86rem;
   opacity: 0.78 !important;
 }
@@ -2430,7 +2507,7 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
 
 .auto-illustrator-version-update-link,
 .auto-illustrator-update-link {
-  color: var(--SmartThemeQuoteColor, #e49e2c) !important;
+  color: var(--ai-panel-warning) !important;
 }
 
 .auto-illustrator-info-actions {
@@ -2468,26 +2545,26 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   box-sizing: border-box;
   padding: 0.62rem 0.75rem;
   border-radius: 10px;
-  border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.18));
+  border: 1px solid var(--ai-panel-border);
   font-size: 0.86rem;
   line-height: 1.35;
   background: rgba(255, 255, 255, 0.04);
 }
 
 .auto-illustrator-server-plugin-status.is-synced {
-  color: var(--SmartThemeGreenColor, #4caf50);
+  color: var(--ai-panel-success);
   border-color: rgba(76, 175, 80, 0.35);
   background: rgba(76, 175, 80, 0.1);
 }
 
 .auto-illustrator-server-plugin-status.is-warning {
-  color: var(--SmartThemeQuoteColor, #e49e2c);
+  color: var(--ai-panel-warning);
   border-color: rgba(228, 158, 44, 0.4);
   background: rgba(228, 158, 44, 0.12);
 }
 
 .auto-illustrator-server-plugin-status.is-unavailable {
-  color: var(--SmartThemeEmColor, #d65f5f);
+  color: var(--ai-panel-danger);
   border-color: rgba(214, 95, 95, 0.4);
   background: rgba(214, 95, 95, 0.1);
 }
@@ -2496,8 +2573,11 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   padding: 0;
   border: 1px solid rgba(228, 158, 44, 0.35);
   border-radius: 12px;
-  background:
-    linear-gradient(135deg, rgba(228, 158, 44, 0.12), rgba(255, 255, 255, 0.03)),
+  background: linear-gradient(
+      135deg,
+      rgba(228, 158, 44, 0.12),
+      rgba(255, 255, 255, 0.03)
+    ),
     rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
@@ -2511,12 +2591,12 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   padding: 0.65rem 0.85rem;
   font-size: 0.88rem;
   font-weight: 700;
-  color: var(--SmartThemeQuoteColor, #e49e2c);
+  color: var(--ai-panel-warning);
   list-style-position: inside;
 }
 
 .auto-illustrator-update-title::marker {
-  color: var(--SmartThemeQuoteColor, #e49e2c);
+  color: var(--ai-panel-warning);
 }
 
 .auto-illustrator-update-body {
@@ -2575,9 +2655,10 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
     0 0 0 1px rgba(255, 255, 255, 0.05) inset,
     0 2px 4px rgba(155, 89, 182, 0.2);
   /* Only animate visual properties, not dimensions */
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden; /* Keep this to clip rounded corners properly */
 }
 
@@ -2603,11 +2684,7 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #8b5cf6,
-    #7c3aed
-  );
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   border: 2px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   font-size: 1.15rem; /* Optimized for fa-images icon */
@@ -2616,9 +2693,10 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
     0 4px 14px rgba(139, 92, 246, 0.4),
     0 1px 6px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2775,7 +2853,9 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   gap: 0.5rem;
   padding: 0.75rem;
   cursor: pointer;
-  transition: background 0.3s, padding 0.3s;
+  transition:
+    background 0.3s,
+    padding 0.3s;
   position: relative;
 }
 
@@ -2801,7 +2881,9 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.3s, color 0.3s;
+  transition:
+    transform 0.3s,
+    color 0.3s;
 }
 
 /* Expanded state animation */
@@ -3352,7 +3434,10 @@ img[data-failed-placeholder='true']:hover {
   cursor: pointer;
   text-align: center;
   opacity: 0.85;
-  transition: border-color 0.2s, background 0.2s, opacity 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    opacity 0.2s;
 }
 
 .auto-illustrator-vibe-transfer-upload:hover {
@@ -3409,11 +3494,14 @@ img[data-failed-placeholder='true']:hover {
   line-height: 1.65;
 }
 
-.auto-illustrator-server-plugin-install-help-dialog .auto-illustrator-dialog-buttons {
+.auto-illustrator-server-plugin-install-help-dialog
+  .auto-illustrator-dialog-buttons {
   justify-content: stretch;
 }
 
-.auto-illustrator-server-plugin-install-help-dialog .auto-illustrator-dialog-buttons button {
+.auto-illustrator-server-plugin-install-help-dialog
+  .auto-illustrator-dialog-buttons
+  button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3563,7 +3651,9 @@ img[data-failed-placeholder='true']:hover {
   border: 2px dashed rgba(155, 89, 182, 0.4);
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   text-align: center;
   font-size: 0.85rem;
   opacity: 0.7;
@@ -3602,7 +3692,9 @@ img[data-failed-placeholder='true']:hover {
   padding: 0.5rem;
   border: 1px solid rgba(155, 89, 182, 0.25);
   border-radius: 8px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -3711,10 +3803,12 @@ img[data-failed-placeholder='true']:hover {
 .prompt-library-card-actions {
   display: flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   gap: 0.3rem;
   justify-content: flex-end;
   border-top: 1px solid rgba(155, 89, 182, 0.15);
   padding-top: 0.35rem;
+  overflow-x: auto;
 }
 
 .prompt-library-card-actions .menu_button_icon {
@@ -3740,7 +3834,7 @@ img[data-failed-placeholder='true']:hover {
 .prompt-library-edit-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--ai-panel-overlay);
   backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
@@ -3759,8 +3853,9 @@ img[data-failed-placeholder='true']:hover {
   gap: 0.5rem;
   padding: 1rem;
   border-radius: 10px;
-  border: 1px solid rgba(155, 89, 182, 0.3);
-  background: var(--SmartThemeBlurTintColor, rgba(30, 30, 40, 0.95));
+  border: 1px solid var(--ai-panel-border);
+  background: var(--ai-panel-bg);
+  color: var(--ai-panel-text);
 }
 
 .prompt-library-edit-header {
@@ -3777,5 +3872,488 @@ img[data-failed-placeholder='true']:hover {
 
 .prompt-library-edit-panel label > span {
   font-size: 0.8rem;
-  opacity: 0.7;
+  color: var(--ai-panel-text-2);
+}
+
+/* Tag Catalog */
+.tag-catalog-container,
+.preset-import-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tag-catalog-container {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tag-catalog-meta,
+.tag-catalog-total,
+.tag-catalog-bridge-summary,
+.tag-catalog-count,
+.tag-catalog-candidate-summary,
+.tag-catalog-candidate-rules,
+.tag-catalog-page-status,
+.preset-import-summary {
+  font-size: 0.78rem;
+  opacity: 0.72;
+}
+
+.tag-catalog-candidate-rules {
+  line-height: 1.45;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--ai-panel-border);
+  border-radius: 6px;
+  background: var(--ai-panel-bg);
+}
+
+.tag-catalog-last-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 0;
+}
+
+.tag-catalog-last-meta,
+.tag-catalog-last-source {
+  font-size: 0.76rem;
+  color: var(--ai-panel-text-2);
+  line-height: 1.4;
+}
+
+.tag-catalog-last-source {
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--ai-panel-border);
+  border-radius: 6px;
+  background: var(--ai-panel-bg);
+  max-height: min(34vh, 220px);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tag-catalog-last-bucket {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tag-catalog-last-bucket strong {
+  font-size: 0.76rem;
+  color: var(--ai-panel-text);
+}
+
+.tag-catalog-last-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tag-catalog-last-tags span {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.18rem 0.4rem;
+  border: 1px solid rgba(128, 128, 128, 0.24);
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.1);
+  color: var(--ai-panel-text);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.tag-catalog-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.42fr) minmax(
+      110px,
+      0.36fr
+    );
+  gap: 0.5rem;
+}
+
+.tag-catalog-selected-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tag-catalog-selected-hint {
+  color: var(--ai-panel-text-3);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.tag-catalog-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  min-height: 28px;
+  align-items: center;
+}
+
+.tag-catalog-actions,
+.preset-import-actions,
+.tag-catalog-page-controls {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tag-catalog-actions .menu_button,
+.tag-catalog-page-controls .menu_button,
+.tag-catalog-settings .menu_button,
+.tag-catalog-custom-form .menu_button,
+.tag-catalog-bridge-form .menu_button,
+.tag-catalog-edit-bridge,
+.tag-catalog-delete-custom,
+.preset-import-actions .menu_button,
+.preset-import-file-picker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: max-content;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+}
+
+.tag-catalog-settings {
+  border: 1px solid var(--ai-panel-border);
+  border-radius: 6px;
+  padding: 0.45rem 0.55rem;
+  background: var(--ai-panel-bg-2);
+}
+
+.tag-catalog-settings summary {
+  cursor: pointer;
+  color: var(--ai-panel-text);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.tag-catalog-settings[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tag-catalog-limit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 0.4rem;
+}
+
+.tag-catalog-limit-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.tag-catalog-limit-item span {
+  color: var(--ai-panel-text-2);
+  font-size: 0.72rem;
+}
+
+.tag-catalog-limit-item input {
+  min-width: 0;
+}
+
+.tag-catalog-custom-form {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr) minmax(120px, 0.75fr) minmax(140px, 0.85fr)
+    minmax(130px, 0.65fr)
+    max-content;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.tag-catalog-bridge-form {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.65fr) minmax(180px, 1fr) max-content;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.tag-catalog-bridge-existing {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: var(--ai-panel-text-2);
+}
+
+.tag-catalog-page-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.tag-catalog-page-controls {
+  align-items: center;
+}
+
+.tag-catalog-page-controls select {
+  width: auto;
+  min-width: 90px;
+}
+
+.preset-import-file-picker {
+  width: fit-content;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.preset-import-file-picker input {
+  display: none;
+}
+
+.preset-import-file-picker span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.tag-catalog-list-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tag-catalog-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.35rem;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  padding-right: 4px;
+  align-content: start;
+}
+
+.tag-catalog-item,
+.tag-catalog-selected-chip {
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  background: rgba(128, 128, 128, 0.12);
+  color: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tag-catalog-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'tag'
+    'category'
+    'triggers';
+  gap: 0.1rem 0.35rem;
+  padding: 0.4rem 0.45rem;
+  text-align: left;
+}
+
+.tag-catalog-item.selected {
+  border-color: rgba(122, 174, 245, 0.75);
+  background: rgba(122, 174, 245, 0.18);
+}
+
+.tag-catalog-tag {
+  grid-area: tag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.tag-catalog-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-catalog-category {
+  grid-area: category;
+  font-size: 0.68rem;
+  opacity: 0.65;
+}
+
+.tag-catalog-triggers {
+  grid-area: triggers;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+  margin-top: 0.15rem;
+}
+
+.tag-catalog-triggers-title {
+  font-size: 0.66rem;
+  color: var(--ai-panel-text-3);
+}
+
+.tag-catalog-trigger-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem;
+  min-width: 0;
+  max-height: 4.8rem;
+  overflow-y: auto;
+}
+
+.tag-catalog-trigger-list span {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid rgba(128, 128, 128, 0.22);
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.1);
+  color: var(--ai-panel-text-2);
+  font-size: 0.66rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.tag-catalog-trigger-list .tag-catalog-trigger-empty {
+  color: var(--ai-panel-text-3);
+  border-style: dashed;
+}
+
+.tag-catalog-card-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.tag-catalog-source {
+  margin-left: 0.35rem;
+  color: var(--ai-panel-accent);
+}
+
+.tag-catalog-source-warning {
+  color: var(--ai-panel-warning);
+}
+
+.tag-catalog-delete-custom,
+.tag-catalog-edit-bridge {
+  flex: 0 0 auto;
+  min-width: max-content;
+  height: 1.45rem;
+  padding: 0 0.35rem;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.08);
+  opacity: 0.85;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.tag-catalog-delete-custom {
+  width: 1.45rem;
+  padding: 0;
+  color: var(--ai-panel-danger);
+}
+
+.tag-catalog-delete-custom:hover {
+  background: rgba(216, 111, 114, 0.14);
+  opacity: 1;
+}
+
+.tag-catalog-edit-bridge {
+  color: var(--ai-panel-accent);
+}
+
+.tag-catalog-edit-bridge:hover {
+  background: var(--ai-panel-accent-soft);
+  opacity: 1;
+}
+
+.tag-catalog-selected-chip {
+  padding: 0.25rem 0.45rem;
+  font-size: 0.78rem;
+}
+
+.tag-catalog-empty {
+  opacity: 0.65;
+  font-size: 0.82rem;
+}
+
+.preset-import-container label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.preset-import-container label.preset-import-file-picker {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.preset-import-result {
+  border: 1px solid rgba(128, 128, 128, 0.22);
+  border-radius: 6px;
+  padding: 0.55rem;
+  max-height: 480px;
+  overflow-y: auto;
+  background: rgba(128, 128, 128, 0.08);
+  white-space: normal;
+}
+
+.preset-import-result pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.76rem;
+  margin: 0.45rem 0 0;
+}
+
+@media (max-width: 520px) {
+  .tag-catalog-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tag-catalog-custom-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tag-catalog-bridge-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tag-catalog-list {
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 0.28rem;
+    min-height: 220px;
+  }
+
+  .tag-catalog-item {
+    padding: 0.32rem 0.38rem;
+  }
+
+  .tag-catalog-selected-hint,
+  .tag-catalog-meta,
+  .tag-catalog-total {
+    font-size: 0.7rem;
+  }
 }

@@ -8,9 +8,11 @@
 
 import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
 import type {CharacterFixedTagEntry} from './types';
+import type {CharacterFixedTagInjectionMode} from './types';
 import type {StyleTagPosition} from './types';
 import type {
   PromptLibraryEntry,
+  TagCatalogEntry,
   VibeTransferPreset,
   VibeTransferReferenceImage,
 } from './types';
@@ -264,6 +266,44 @@ export const PROMPT_LIBRARY_THUMBNAIL = {
   QUALITY: 0.6,
 } as const;
 
+export const TAG_CATALOG_CATEGORIES = [
+  'subject',
+  'hair',
+  'eyes',
+  'expression',
+  'pose_action',
+  'clothing',
+  'scene',
+  'camera',
+  'lighting_style',
+  'undesired_content',
+  'general',
+] as const;
+
+export const TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS: Record<string, number> = {
+  subject: 8,
+  hair: 8,
+  eyes: 6,
+  expression: 8,
+  pose_action: 10,
+  clothing: 8,
+  scene: 10,
+  camera: 8,
+  lighting_style: 8,
+  general: 6,
+};
+
+export const TAG_CATALOG_CANDIDATE_LIMIT = {
+  MIN: 0,
+  MAX: 50,
+} as const;
+
+export const TAG_CATALOG_PAGE_SIZE = {
+  DEFAULT: 500,
+  ALL: 0,
+  OPTIONS: [200, 500, 1000, 2000, 0],
+} as const;
+
 /**
  * Companion server plugin fingerprint.
  * Bump VERSION whenever server-plugin/auto-illustrator-nai-advanced changes.
@@ -370,10 +410,14 @@ export const DEFAULT_SETTINGS = {
   apiProfiles: [] as ApiProfile[],
   currentApiProfileId: '',
   characterFixedTags: {} as Record<string, CharacterFixedTagEntry>,
+  characterFixedTagInjectionMode: 'legacy' as CharacterFixedTagInjectionMode,
   standalonePromptCount: STANDALONE_PROMPT_COUNT.DEFAULT,
   promptLibraryEntries: [] as PromptLibraryEntry[],
   promptLibraryMaxEntries: PROMPT_LIBRARY_MAX_ENTRIES.DEFAULT,
   promptLibrarySaveThumbnail: true,
+  customTagCatalogEntries: [] as TagCatalogEntry[],
+  customTagBridgeTriggers: {} as Record<string, string[]>,
+  tagCatalogCandidateLimits: {...TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS},
   randomizeSdStylePerGeneration: false,
   sdStylePoolWhitelist: [] as string[],
   restoreSdStyleAfter: true,
@@ -500,6 +544,8 @@ export const UI_ELEMENT_IDS = {
   CHARACTER_TAG_ADD_NAME: 'auto_illustrator_conso_character_tag_add_name',
   CHARACTER_TAG_ADD_BTN: 'auto_illustrator_conso_character_tag_add_btn',
   CHARACTER_TAG_RESET_ALL: 'auto_illustrator_conso_character_tag_reset_all',
+  CHARACTER_TAG_INJECTION_MODE:
+    'auto_illustrator_conso_character_tag_injection_mode',
   STANDALONE_MODE_AI: 'auto_illustrator_conso_standalone_mode_ai',
   STANDALONE_MODE_MANUAL: 'auto_illustrator_conso_standalone_mode_manual',
   STANDALONE_SCENE_INPUT: 'auto_illustrator_conso_standalone_scene_input',
@@ -540,6 +586,56 @@ export const UI_ELEMENT_IDS = {
   PROMPT_LIBRARY_EDIT_SAVE: 'auto_illustrator_conso_prompt_library_edit_save',
   PROMPT_LIBRARY_EDIT_CANCEL:
     'auto_illustrator_conso_prompt_library_edit_cancel',
+  TAG_CATALOG_SEARCH: 'auto_illustrator_conso_tag_catalog_search',
+  TAG_CATALOG_CATEGORY: 'auto_illustrator_conso_tag_catalog_category',
+  TAG_CATALOG_SOURCE_FILTER: 'auto_illustrator_conso_tag_catalog_source_filter',
+  TAG_CATALOG_LIST: 'auto_illustrator_conso_tag_catalog_list',
+  TAG_CATALOG_TOTAL: 'auto_illustrator_conso_tag_catalog_total',
+  TAG_CATALOG_COUNT: 'auto_illustrator_conso_tag_catalog_count',
+  TAG_CATALOG_SELECTED: 'auto_illustrator_conso_tag_catalog_selected',
+  TAG_CATALOG_COPY_SELECTED: 'auto_illustrator_conso_tag_catalog_copy_selected',
+  TAG_CATALOG_CLEAR_SELECTED:
+    'auto_illustrator_conso_tag_catalog_clear_selected',
+  TAG_CATALOG_ADD_COMMON: 'auto_illustrator_conso_tag_catalog_add_common',
+  TAG_CATALOG_DELETE_CUSTOM_SELECTED:
+    'auto_illustrator_conso_tag_catalog_delete_custom_selected',
+  TAG_CATALOG_PAGE_SIZE: 'auto_illustrator_conso_tag_catalog_page_size',
+  TAG_CATALOG_PAGE_PREV: 'auto_illustrator_conso_tag_catalog_page_prev',
+  TAG_CATALOG_PAGE_NEXT: 'auto_illustrator_conso_tag_catalog_page_next',
+  TAG_CATALOG_PAGE_STATUS: 'auto_illustrator_conso_tag_catalog_page_status',
+  TAG_CATALOG_CANDIDATE_LIMITS:
+    'auto_illustrator_conso_tag_catalog_candidate_limits',
+  TAG_CATALOG_LAST_CANDIDATES:
+    'auto_illustrator_conso_tag_catalog_last_candidates',
+  TAG_CATALOG_REFRESH_LAST_CANDIDATES:
+    'auto_illustrator_conso_tag_catalog_refresh_last_candidates',
+  TAG_CATALOG_RESET_CANDIDATE_LIMITS:
+    'auto_illustrator_conso_tag_catalog_reset_candidate_limits',
+  TAG_CATALOG_CUSTOM_TAG: 'auto_illustrator_conso_tag_catalog_custom_tag',
+  TAG_CATALOG_CUSTOM_LABEL: 'auto_illustrator_conso_tag_catalog_custom_label',
+  TAG_CATALOG_CUSTOM_TRIGGERS:
+    'auto_illustrator_conso_tag_catalog_custom_triggers',
+  TAG_CATALOG_CUSTOM_CATEGORY:
+    'auto_illustrator_conso_tag_catalog_custom_category',
+  TAG_CATALOG_ADD_CUSTOM: 'auto_illustrator_conso_tag_catalog_add_custom',
+  TAG_CATALOG_BRIDGE_SUMMARY:
+    'auto_illustrator_conso_tag_catalog_bridge_summary',
+  TAG_CATALOG_BRIDGE_TAG: 'auto_illustrator_conso_tag_catalog_bridge_tag',
+  TAG_CATALOG_BRIDGE_EXISTING:
+    'auto_illustrator_conso_tag_catalog_bridge_existing',
+  TAG_CATALOG_BRIDGE_TRIGGERS:
+    'auto_illustrator_conso_tag_catalog_bridge_triggers',
+  TAG_CATALOG_SAVE_BRIDGE_TRIGGERS:
+    'auto_illustrator_conso_tag_catalog_save_bridge_triggers',
+  PRESET_IMPORT_JSON: 'auto_illustrator_conso_preset_import_json',
+  PRESET_IMPORT_FILE: 'auto_illustrator_conso_preset_import_file',
+  PRESET_IMPORT_REQUIREMENT: 'auto_illustrator_conso_preset_import_requirement',
+  PRESET_IMPORT_TARGET: 'auto_illustrator_conso_preset_import_target',
+  PRESET_IMPORT_ANALYZE: 'auto_illustrator_conso_preset_import_analyze',
+  PRESET_IMPORT_GENERATE: 'auto_illustrator_conso_preset_import_generate',
+  PRESET_IMPORT_SAVE: 'auto_illustrator_conso_preset_import_save',
+  PRESET_IMPORT_RESULT: 'auto_illustrator_conso_preset_import_result',
+  PRESET_IMPORT_NAME: 'auto_illustrator_conso_preset_import_name',
   RANDOMIZE_SD_STYLE: 'auto_illustrator_conso_randomize_sd_style',
   RESTORE_SD_STYLE_AFTER: 'auto_illustrator_conso_restore_sd_style_after',
   SD_STYLE_POOL_LIST: 'auto_illustrator_conso_sd_style_pool_list',
@@ -592,6 +688,8 @@ export const UI_SECTION_IDS = {
   PROMPT_STYLE: 'auto_illustrator_conso_panel_prompt_style',
   STANDALONE: 'auto_illustrator_conso_panel_standalone',
   CHARACTER_TAGS: 'auto_illustrator_conso_panel_character_tags',
+  TAG_CATALOG: 'auto_illustrator_conso_panel_tag_catalog',
+  PRESET_IMPORT: 'auto_illustrator_conso_panel_preset_import',
   PROMPT_LIBRARY: 'auto_illustrator_conso_panel_prompt_library',
   MAIN_RANDOM_SD_STYLE: 'auto_illustrator_conso_panel_main_random_sd_style',
   MAIN_VIBE_TRANSFER: 'auto_illustrator_conso_panel_main_vibe_transfer',

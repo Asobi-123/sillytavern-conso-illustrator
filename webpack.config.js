@@ -38,6 +38,10 @@ export default {
                 test: /\.md$/,
                 type: 'asset/source',
             },
+            {
+                test: /\.json$/,
+                type: 'json',
+            },
         ],
     },
     plugins: [

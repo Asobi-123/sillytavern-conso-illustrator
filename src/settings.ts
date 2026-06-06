@@ -7,7 +7,10 @@ import {getDefaultMetaPrompt, getPresetById} from './meta_prompt_presets';
 import {getIndependentLlmPresetById} from './independent_llm_presets';
 import {createStandaloneGenerationContent} from './standalone_generation_ui';
 import {createPromptLibraryContent} from './prompt_library_ui';
+import {createTagCatalogContent} from './tag_catalog_ui';
+import {createPresetImportContent} from './preset_import_ui';
 import type {
+  TagCatalogEntry,
   VibeTransferEncodedCache,
   VibeTransferPreset,
   VibeTransferReferenceImage,
@@ -27,6 +30,9 @@ import {
   INDEPENDENT_LLM_MAX_TOKENS,
   STANDALONE_PROMPT_COUNT,
   PROMPT_LIBRARY_MAX_ENTRIES,
+  TAG_CATALOG_CANDIDATE_LIMIT,
+  TAG_CATALOG_CATEGORIES,
+  TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS,
   VIBE_TRANSFER,
   UI_ELEMENT_IDS,
   UI_SECTION_IDS,
@@ -39,6 +45,8 @@ import {createLogger} from './logger';
 const logger = createLogger('Settings');
 
 export {EXTENSION_NAME};
+
+const TAG_CATALOG_CATEGORY_SET = new Set<string>(TAG_CATALOG_CATEGORIES);
 
 function clampSettingValue(
   value: unknown,
@@ -70,6 +78,85 @@ function clampFloatSettingValue(
   return Math.max(min, Math.min(max, numericValue));
 }
 
+function normalizeTagCatalogEntry(entry: unknown): TagCatalogEntry | null {
+  if (!entry || typeof entry !== 'object') return null;
+  const candidate = entry as Partial<TagCatalogEntry>;
+  const tag = typeof candidate.tag === 'string' ? candidate.tag.trim() : '';
+  const label =
+    typeof candidate.label === 'string' ? candidate.label.trim() : tag;
+  const category =
+    typeof candidate.category === 'string' ? candidate.category.trim() : '';
+
+  if (!tag || !TAG_CATALOG_CATEGORY_SET.has(category)) return null;
+
+  const triggers = Array.isArray(candidate.triggers)
+    ? candidate.triggers
+        .filter(
+          (trigger: unknown): trigger is string => typeof trigger === 'string'
+        )
+        .map(trigger => trigger.trim())
+        .filter(Boolean)
+    : [];
+
+  return {
+    tag,
+    label: label || tag,
+    category,
+    postCount:
+      typeof candidate.postCount === 'number' &&
+      Number.isFinite(candidate.postCount)
+        ? candidate.postCount
+        : 0,
+    source: 'user',
+    ...(triggers.length > 0 ? {triggers: [...new Set(triggers)]} : {}),
+  };
+}
+
+function normalizeTagBridgeTriggers(value: unknown): Record<string, string[]> {
+  const source =
+    value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
+  const result: Record<string, string[]> = {};
+
+  for (const [rawTag, rawTriggers] of Object.entries(source)) {
+    const tag = rawTag.trim();
+    if (!tag || !Array.isArray(rawTriggers)) continue;
+    const triggers = rawTriggers
+      .filter(
+        (trigger: unknown): trigger is string => typeof trigger === 'string'
+      )
+      .map(trigger => trigger.trim())
+      .filter(Boolean);
+    if (triggers.length > 0) {
+      result[tag] = [...new Set(triggers)];
+    }
+  }
+
+  return result;
+}
+
+function normalizeTagCatalogCandidateLimits(
+  value: unknown
+): Record<string, number> {
+  const source =
+    value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
+  const limits: Record<string, number> = {};
+
+  for (const category of Object.keys(TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS)) {
+    limits[category] = clampSettingValue(
+      source[category],
+      TAG_CATALOG_CANDIDATE_LIMIT.MIN,
+      TAG_CATALOG_CANDIDATE_LIMIT.MAX,
+      TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS[category]
+    );
+  }
+
+  return limits;
+}
+
 /**
  * Gets the default settings for the extension
  * @returns Default settings
@@ -88,6 +175,11 @@ export function getDefaultSettings(): AutoIllustratorSettings {
     customIndependentLlmPresets: [],
     apiProfiles: [],
     characterFixedTags: {},
+    customTagCatalogEntries: [],
+    customTagBridgeTriggers: {},
+    tagCatalogCandidateLimits: {
+      ...DEFAULT_SETTINGS.tagCatalogCandidateLimits,
+    },
     metaPrompt: getDefaultMetaPrompt(),
   };
 }
@@ -174,6 +266,19 @@ export function loadSettings(
     PROMPT_LIBRARY_MAX_ENTRIES.MAX,
     PROMPT_LIBRARY_MAX_ENTRIES.DEFAULT
   );
+  merged.customTagCatalogEntries = Array.isArray(merged.customTagCatalogEntries)
+    ? merged.customTagCatalogEntries
+        .map((entry: unknown) => normalizeTagCatalogEntry(entry))
+        .filter((entry: TagCatalogEntry | null): entry is TagCatalogEntry =>
+          Boolean(entry)
+        )
+    : [];
+  merged.tagCatalogCandidateLimits = normalizeTagCatalogCandidateLimits(
+    merged.tagCatalogCandidateLimits
+  );
+  merged.customTagBridgeTriggers = normalizeTagBridgeTriggers(
+    merged.customTagBridgeTriggers
+  );
 
   // Safety: ensure random SD style fields land as the right types regardless
   // of what was previously persisted (e.g., older versions, malformed JSON).
@@ -189,6 +294,13 @@ export function loadSettings(
   }
   if (typeof merged.restoreSdStyleAfter !== 'boolean') {
     merged.restoreSdStyleAfter = true;
+  }
+  if (
+    !['legacy', 'structure-aware', 'skip-unmatched-multichar'].includes(
+      merged.characterFixedTagInjectionMode
+    )
+  ) {
+    merged.characterFixedTagInjectionMode = 'legacy';
   }
 
   if (typeof merged.vibeTransferEnabled !== 'boolean') {
@@ -832,6 +944,15 @@ export function createSettingsUI(): string {
 
   const characterFixedTagsContent = `
     <div class="character-tag-desc">${t('settings.characterFixedTags.desc')}</div>
+    <label for="${UI_ELEMENT_IDS.CHARACTER_TAG_INJECTION_MODE}">
+      <span>${t('settings.characterFixedTags.injectionMode')}</span>
+      <small>${t('settings.characterFixedTags.injectionModeDesc')}</small>
+      <select id="${UI_ELEMENT_IDS.CHARACTER_TAG_INJECTION_MODE}" class="text_pole">
+        <option value="legacy">${t('settings.characterFixedTags.injectionModeLegacy')}</option>
+        <option value="structure-aware">${t('settings.characterFixedTags.injectionModeStructureAware')}</option>
+        <option value="skip-unmatched-multichar">${t('settings.characterFixedTags.injectionModeSkipUnmatched')}</option>
+      </select>
+    </label>
     <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
       <input id="${UI_ELEMENT_IDS.CHARACTER_TAG_SEARCH}" class="text_pole" type="text"
              placeholder="${t('settings.characterFixedTags.searchPlaceholder')}" style="flex: 1;" />
@@ -969,6 +1090,14 @@ export function createSettingsUI(): string {
         ${floatingSourceSection(
           UI_SECTION_IDS.PROMPT_STYLE,
           promptDetectionAndStyleContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.TAG_CATALOG,
+          createTagCatalogContent()
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.PRESET_IMPORT,
+          createPresetImportContent()
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.STANDALONE,

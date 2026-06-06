@@ -12,6 +12,12 @@ declare global {
     promptLibraryMaxEntries?: number;
     /** Whether prompt library should store thumbnails */
     promptLibrarySaveThumbnail?: boolean;
+    /** User-added tag catalog entries */
+    customTagCatalogEntries?: import('./types').TagCatalogEntry[];
+    /** User-maintained Chinese trigger words for built-in or custom catalog tags */
+    customTagBridgeTriggers?: Record<string, string[]>;
+    /** Per-category max candidate counts sent to the LLM catalog aid */
+    tagCatalogCandidateLimits?: Record<string, number>;
   }
 }
 

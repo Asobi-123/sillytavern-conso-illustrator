@@ -14,7 +14,7 @@ REASONING: Main character in garden scene
     const results = parseStandalonePromptSuggestions(response);
     expect(results).toHaveLength(1);
     expect(results[0].text).toBe(
-      '1girl, long silver hair, blue eyes, standing in garden'
+      '1girl, long silver hair, blue_eyes, standing in garden'
     );
     expect(results[0].reasoning).toBe('Main character in garden scene');
   });
@@ -31,7 +31,7 @@ REASONING: Second scene
     const results = parseStandalonePromptSuggestions(response);
     expect(results).toHaveLength(2);
     expect(results[0].text).toBe('1girl, forest, moonlight');
-    expect(results[1].text).toBe('no humans, mountain lake, sunset');
+    expect(results[1].text).toBe('no_humans, mountain lake, sunset');
   });
 
   it('should handle missing REASONING gracefully', () => {
@@ -108,5 +108,25 @@ REASONING: Should only extract TEXT and REASONING
     // Should not have insertAfter/insertBefore properties
     expect((results[0] as any).insertAfter).toBeUndefined();
     expect((results[0] as any).insertBefore).toBeUndefined();
+  });
+
+  it('should preserve multiline structured TEXT content', () => {
+    const response = `---PROMPT---
+TEXT:
+Scene Composition: {best quality}, garden,;
+Character 1 Prompt: 1girl, long hair, blue eyes, {on left},;
+Character 1 UC: lowres, bad anatomy, 1.3::black hair::,;
+REASONING: Structured NAI prompt
+---END---`;
+
+    const results = parseStandalonePromptSuggestions(response);
+    expect(results).toHaveLength(1);
+    expect(results[0].text).toContain('Scene Composition');
+    expect(results[0].text).toContain('Character 1 Prompt');
+    expect(results[0].text).toContain('Character 1 UC');
+    expect(results[0].text).toContain('long_hair');
+    expect(results[0].text).toContain('blue_eyes');
+    expect(results[0].text).toContain('1.3::black hair::');
+    expect(results[0].reasoning).toBe('Structured NAI prompt');
   });
 });

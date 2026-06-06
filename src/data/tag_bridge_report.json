@@ -1,0 +1,1893 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-05T19:22:30.448Z",
+    "bridgeVersion": "2026-06-06",
+    "catalogVersion": "2026-06",
+    "catalogHash": "f0c35b80509dab2437115e4539bfa0c703d9a36621d82df1ca45d5cdfccd67a7",
+    "sourceHash": "0a7af7ce5029835d5ee36d331928a92b15bb307b3d388edd6f16a7219dc30617"
+  },
+  "summary": {
+    "catalogTags": 7928,
+    "candidateTags": 7902,
+    "bridgedTags": 3078,
+    "unbridgedTags": 4824,
+    "bridgedRatio": 0.3895,
+    "categories": {
+      "camera": {
+        "total": 45,
+        "bridged": 32,
+        "unbridged": 13,
+        "ratio": 0.7111
+      },
+      "clothing": {
+        "total": 911,
+        "bridged": 616,
+        "unbridged": 295,
+        "ratio": 0.6762
+      },
+      "expression": {
+        "total": 98,
+        "bridged": 50,
+        "unbridged": 48,
+        "ratio": 0.5102
+      },
+      "eyes": {
+        "total": 103,
+        "bridged": 54,
+        "unbridged": 49,
+        "ratio": 0.5243
+      },
+      "general": {
+        "total": 5283,
+        "bridged": 1534,
+        "unbridged": 3749,
+        "ratio": 0.2904
+      },
+      "hair": {
+        "total": 327,
+        "bridged": 237,
+        "unbridged": 90,
+        "ratio": 0.7248
+      },
+      "lighting_style": {
+        "total": 105,
+        "bridged": 50,
+        "unbridged": 55,
+        "ratio": 0.4762
+      },
+      "pose_action": {
+        "total": 637,
+        "bridged": 337,
+        "unbridged": 300,
+        "ratio": 0.529
+      },
+      "scene": {
+        "total": 201,
+        "bridged": 98,
+        "unbridged": 103,
+        "ratio": 0.4876
+      },
+      "subject": {
+        "total": 192,
+        "bridged": 70,
+        "unbridged": 122,
+        "ratio": 0.3646
+      }
+    },
+    "catalogCategories": {
+      "subject": 192,
+      "hair": 327,
+      "general": 5283,
+      "pose_action": 637,
+      "expression": 98,
+      "clothing": 911,
+      "scene": 201,
+      "eyes": 103,
+      "camera": 45,
+      "lighting_style": 105,
+      "undesired_content": 26
+    }
+  },
+  "unbridgedHighFrequency": [
+    {
+      "tag": "barefoot",
+      "label": "barefoot",
+      "category": "general",
+      "postCount": 479197
+    },
+    {
+      "tag": "scarf",
+      "label": "scarf",
+      "category": "general",
+      "postCount": 272353
+    },
+    {
+      "tag": "wrist_cuffs",
+      "label": "wrist cuffs",
+      "category": "general",
+      "postCount": 202843
+    },
+    {
+      "tag": "loli",
+      "label": "loli",
+      "category": "general",
+      "postCount": 200936
+    },
+    {
+      "tag": "half-closed_eyes",
+      "label": "half-closed eyes",
+      "category": "eyes",
+      "postCount": 135218
+    },
+    {
+      "tag": "bob_cut",
+      "label": "bob cut",
+      "category": "general",
+      "postCount": 132395
+    },
+    {
+      "tag": "bed_sheet",
+      "label": "bed sheet",
+      "category": "scene",
+      "postCount": 118750
+    },
+    {
+      "tag": "headgear",
+      "label": "headgear",
+      "category": "general",
+      "postCount": 98722
+    },
+    {
+      "tag": ";d",
+      "label": ";d",
+      "category": "general",
+      "postCount": 90135
+    },
+    {
+      "tag": "bara",
+      "label": "bara",
+      "category": "general",
+      "postCount": 89667
+    },
+    {
+      "tag": ">_<",
+      "label": "> <",
+      "category": "general",
+      "postCount": 89490
+    },
+    {
+      "tag": "outstretched_arm",
+      "label": "outstretched arm",
+      "category": "pose_action",
+      "postCount": 89298
+    },
+    {
+      "tag": "dot_nose",
+      "label": "dot nose",
+      "category": "general",
+      "postCount": 89106
+    },
+    {
+      "tag": "outstretched_arms",
+      "label": "outstretched arms",
+      "category": "pose_action",
+      "postCount": 88722
+    },
+    {
+      "tag": "brooch",
+      "label": "brooch",
+      "category": "general",
+      "postCount": 88251
+    },
+    {
+      "tag": "curtains",
+      "label": "curtains",
+      "category": "general",
+      "postCount": 88238
+    },
+    {
+      "tag": "slit_pupils",
+      "label": "slit pupils",
+      "category": "eyes",
+      "postCount": 88131
+    },
+    {
+      "tag": "fishnets",
+      "label": "fishnets",
+      "category": "general",
+      "postCount": 87710
+    },
+    {
+      "tag": "cover",
+      "label": "cover",
+      "category": "general",
+      "postCount": 87541
+    },
+    {
+      "tag": "double-parted_bangs",
+      "label": "double-parted bangs",
+      "category": "hair",
+      "postCount": 87520
+    },
+    {
+      "tag": "on_stomach",
+      "label": "on stomach",
+      "category": "general",
+      "postCount": 87130
+    },
+    {
+      "tag": "extra_ears",
+      "label": "extra ears",
+      "category": "general",
+      "postCount": 86453
+    },
+    {
+      "tag": "topless_female",
+      "label": "topless female",
+      "category": "subject",
+      "postCount": 85822
+    },
+    {
+      "tag": "aged_down",
+      "label": "aged down",
+      "category": "general",
+      "postCount": 84721
+    },
+    {
+      "tag": "tiara",
+      "label": "tiara",
+      "category": "general",
+      "postCount": 83830
+    },
+    {
+      "tag": "bdsm",
+      "label": "bdsm",
+      "category": "general",
+      "postCount": 83382
+    },
+    {
+      "tag": "meme",
+      "label": "meme",
+      "category": "general",
+      "postCount": 83327
+    },
+    {
+      "tag": "outline",
+      "label": "outline",
+      "category": "general",
+      "postCount": 82693
+    },
+    {
+      "tag": "goggles",
+      "label": "goggles",
+      "category": "general",
+      "postCount": 82556
+    },
+    {
+      "tag": "crossover",
+      "label": "crossover",
+      "category": "general",
+      "postCount": 82222
+    },
+    {
+      "tag": "wing_collar",
+      "label": "wing collar",
+      "category": "clothing",
+      "postCount": 82170
+    },
+    {
+      "tag": "star_(sky)",
+      "label": "star (sky)",
+      "category": "scene",
+      "postCount": 81570
+    },
+    {
+      "tag": "knee_boots",
+      "label": "knee boots",
+      "category": "general",
+      "postCount": 81189
+    },
+    {
+      "tag": "building",
+      "label": "building",
+      "category": "general",
+      "postCount": 80771
+    },
+    {
+      "tag": "katana",
+      "label": "katana",
+      "category": "general",
+      "postCount": 80486
+    },
+    {
+      "tag": "bent_over",
+      "label": "bent over",
+      "category": "general",
+      "postCount": 80455
+    },
+    {
+      "tag": "loafers",
+      "label": "loafers",
+      "category": "general",
+      "postCount": 79926
+    },
+    {
+      "tag": "polka_dot",
+      "label": "polka dot",
+      "category": "general",
+      "postCount": 79714
+    },
+    {
+      "tag": "single_thighhigh",
+      "label": "single thighhigh",
+      "category": "general",
+      "postCount": 78898
+    },
+    {
+      "tag": "group_sex",
+      "label": "group sex",
+      "category": "subject",
+      "postCount": 78181
+    },
+    {
+      "tag": "armband",
+      "label": "armband",
+      "category": "pose_action",
+      "postCount": 78005
+    },
+    {
+      "tag": "underwear_only",
+      "label": "underwear only",
+      "category": "general",
+      "postCount": 77847
+    },
+    {
+      "tag": "light_particles",
+      "label": "light particles",
+      "category": "lighting_style",
+      "postCount": 77720
+    },
+    {
+      "tag": "formal_clothes",
+      "label": "formal clothes",
+      "category": "general",
+      "postCount": 77646
+    },
+    {
+      "tag": "low_ponytail",
+      "label": "low ponytail",
+      "category": "hair",
+      "postCount": 77387
+    },
+    {
+      "tag": "knees_up",
+      "label": "knees up",
+      "category": "general",
+      "postCount": 77354
+    },
+    {
+      "tag": "shaded_face",
+      "label": "shaded face",
+      "category": "general",
+      "postCount": 77349
+    },
+    {
+      "tag": "pantyshot",
+      "label": "pantyshot",
+      "category": "general",
+      "postCount": 76864
+    },
+    {
+      "tag": "all_fours",
+      "label": "all fours",
+      "category": "general",
+      "postCount": 76819
+    },
+    {
+      "tag": "claws",
+      "label": "claws",
+      "category": "general",
+      "postCount": 76320
+    },
+    {
+      "tag": "tan",
+      "label": "tan",
+      "category": "general",
+      "postCount": 75997
+    },
+    {
+      "tag": "anger_vein",
+      "label": "anger vein",
+      "category": "general",
+      "postCount": 75971
+    },
+    {
+      "tag": "drooling",
+      "label": "drooling",
+      "category": "general",
+      "postCount": 75854
+    },
+    {
+      "tag": "china_dress",
+      "label": "china dress",
+      "category": "clothing",
+      "postCount": 74864
+    },
+    {
+      "tag": "cloak",
+      "label": "cloak",
+      "category": "general",
+      "postCount": 74160
+    },
+    {
+      "tag": "...",
+      "label": "...",
+      "category": "general",
+      "postCount": 74114
+    },
+    {
+      "tag": "tachi-e",
+      "label": "tachi-e",
+      "category": "general",
+      "postCount": 73810
+    },
+    {
+      "tag": "trap",
+      "label": "trap",
+      "category": "general",
+      "postCount": 73662
+    },
+    {
+      "tag": "spoken_heart",
+      "label": "spoken heart",
+      "category": "general",
+      "postCount": 73640
+    },
+    {
+      "tag": "towel",
+      "label": "towel",
+      "category": "general",
+      "postCount": 72678
+    },
+    {
+      "tag": "couch",
+      "label": "couch",
+      "category": "general",
+      "postCount": 72662
+    },
+    {
+      "tag": "musical_note",
+      "label": "musical note",
+      "category": "general",
+      "postCount": 72427
+    },
+    {
+      "tag": "bat_wings",
+      "label": "bat wings",
+      "category": "general",
+      "postCount": 72179
+    },
+    {
+      "tag": "5girls",
+      "label": "5girls",
+      "category": "subject",
+      "postCount": 72090
+    },
+    {
+      "tag": "scenery",
+      "label": "scenery",
+      "category": "general",
+      "postCount": 71698
+    },
+    {
+      "tag": "polearm",
+      "label": "polearm",
+      "category": "pose_action",
+      "postCount": 71622
+    },
+    {
+      "tag": "areola_slip",
+      "label": "areola slip",
+      "category": "general",
+      "postCount": 71513
+    },
+    {
+      "tag": "round_eyewear",
+      "label": "round eyewear",
+      "category": "general",
+      "postCount": 71361
+    },
+    {
+      "tag": "pelvic_curtain",
+      "label": "pelvic curtain",
+      "category": "general",
+      "postCount": 71161
+    },
+    {
+      "tag": "steam",
+      "label": "steam",
+      "category": "general",
+      "postCount": 71096
+    },
+    {
+      "tag": "colored_sclera",
+      "label": "colored sclera",
+      "category": "lighting_style",
+      "postCount": 70741
+    },
+    {
+      "tag": "lipstick",
+      "label": "lipstick",
+      "category": "general",
+      "postCount": 70731
+    },
+    {
+      "tag": "cherry_blossoms",
+      "label": "cherry blossoms",
+      "category": "general",
+      "postCount": 70683
+    },
+    {
+      "tag": "o-ring",
+      "label": "o-ring",
+      "category": "general",
+      "postCount": 70588
+    },
+    {
+      "tag": "curvy",
+      "label": "curvy",
+      "category": "general",
+      "postCount": 70568
+    },
+    {
+      "tag": "chibi_only",
+      "label": "chibi only",
+      "category": "general",
+      "postCount": 70344
+    },
+    {
+      "tag": "crescent",
+      "label": "crescent",
+      "category": "general",
+      "postCount": 70334
+    },
+    {
+      "tag": "bondage",
+      "label": "bondage",
+      "category": "general",
+      "postCount": 70266
+    },
+    {
+      "tag": "toenails",
+      "label": "toenails",
+      "category": "general",
+      "postCount": 70082
+    },
+    {
+      "tag": "eyeshadow",
+      "label": "eyeshadow",
+      "category": "lighting_style",
+      "postCount": 69898
+    },
+    {
+      "tag": "cropped_torso",
+      "label": "cropped torso",
+      "category": "general",
+      "postCount": 69547
+    },
+    {
+      "tag": "buckle",
+      "label": "buckle",
+      "category": "general",
+      "postCount": 69142
+    },
+    {
+      "tag": "bridal_gauntlets",
+      "label": "bridal gauntlets",
+      "category": "general",
+      "postCount": 68854
+    },
+    {
+      "tag": "waist_apron",
+      "label": "waist apron",
+      "category": "general",
+      "postCount": 68474
+    },
+    {
+      "tag": "ejaculation",
+      "label": "ejaculation",
+      "category": "general",
+      "postCount": 68433
+    },
+    {
+      "tag": "revealing_clothes",
+      "label": "revealing clothes",
+      "category": "general",
+      "postCount": 68362
+    },
+    {
+      "tag": "microphone",
+      "label": "microphone",
+      "category": "general",
+      "postCount": 68345
+    },
+    {
+      "tag": "pom_pom_(clothes)",
+      "label": "pom pom (clothes)",
+      "category": "general",
+      "postCount": 68318
+    },
+    {
+      "tag": "tearing_up",
+      "label": "tearing up",
+      "category": "expression",
+      "postCount": 68052
+    },
+    {
+      "tag": "baseball_cap",
+      "label": "baseball cap",
+      "category": "general",
+      "postCount": 67843
+    },
+    {
+      "tag": "twin_drills",
+      "label": "twin drills",
+      "category": "general",
+      "postCount": 67492
+    },
+    {
+      "tag": "letterboxed",
+      "label": "letterboxed",
+      "category": "general",
+      "postCount": 67192
+    },
+    {
+      "tag": "single_earring",
+      "label": "single earring",
+      "category": "general",
+      "postCount": 67156
+    },
+    {
+      "tag": "rope",
+      "label": "rope",
+      "category": "general",
+      "postCount": 67014
+    },
+    {
+      "tag": "wristband",
+      "label": "wristband",
+      "category": "general",
+      "postCount": 66998
+    },
+    {
+      "tag": "web_address",
+      "label": "web address",
+      "category": "clothing",
+      "postCount": 66967
+    },
+    {
+      "tag": "cover_page",
+      "label": "cover page",
+      "category": "general",
+      "postCount": 66259
+    },
+    {
+      "tag": "foreshortening",
+      "label": "foreshortening",
+      "category": "general",
+      "postCount": 66079
+    },
+    {
+      "tag": "restrained",
+      "label": "restrained",
+      "category": "general",
+      "postCount": 66019
+    },
+    {
+      "tag": "hair_bobbles",
+      "label": "hair bobbles",
+      "category": "hair",
+      "postCount": 65909
+    },
+    {
+      "tag": "sheath",
+      "label": "sheath",
+      "category": "general",
+      "postCount": 65905
+    },
+    {
+      "tag": "wind",
+      "label": "wind",
+      "category": "general",
+      "postCount": 65826
+    },
+    {
+      "tag": "lingerie",
+      "label": "lingerie",
+      "category": "general",
+      "postCount": 65553
+    },
+    {
+      "tag": "furrowed_brow",
+      "label": "furrowed brow",
+      "category": "general",
+      "postCount": 65240
+    },
+    {
+      "tag": "faceless",
+      "label": "faceless",
+      "category": "general",
+      "postCount": 65228
+    },
+    {
+      "tag": "gauntlets",
+      "label": "gauntlets",
+      "category": "general",
+      "postCount": 65181
+    },
+    {
+      "tag": "breast_press",
+      "label": "breast press",
+      "category": "general",
+      "postCount": 65161
+    },
+    {
+      "tag": "multiple_tails",
+      "label": "multiple tails",
+      "category": "subject",
+      "postCount": 64970
+    },
+    {
+      "tag": "hakama",
+      "label": "hakama",
+      "category": "general",
+      "postCount": 64944
+    },
+    {
+      "tag": "eye_contact",
+      "label": "eye contact",
+      "category": "general",
+      "postCount": 64883
+    },
+    {
+      "tag": "interlocked_fingers",
+      "label": "interlocked fingers",
+      "category": "general",
+      "postCount": 64640
+    },
+    {
+      "tag": "adapted_costume",
+      "label": "adapted costume",
+      "category": "general",
+      "postCount": 64615
+    },
+    {
+      "tag": "beard",
+      "label": "beard",
+      "category": "general",
+      "postCount": 64572
+    },
+    {
+      "tag": "hair_rings",
+      "label": "hair rings",
+      "category": "hair",
+      "postCount": 64497
+    },
+    {
+      "tag": "^^^",
+      "label": "^^^",
+      "category": "general",
+      "postCount": 64404
+    },
+    {
+      "tag": "string_bikini",
+      "label": "string bikini",
+      "category": "general",
+      "postCount": 64025
+    },
+    {
+      "tag": "nature",
+      "label": "nature",
+      "category": "general",
+      "postCount": 63904
+    },
+    {
+      "tag": "plate",
+      "label": "plate",
+      "category": "general",
+      "postCount": 63721
+    },
+    {
+      "tag": "corset",
+      "label": "corset",
+      "category": "general",
+      "postCount": 63301
+    },
+    {
+      "tag": "camisole",
+      "label": "camisole",
+      "category": "general",
+      "postCount": 63260
+    },
+    {
+      "tag": "casual",
+      "label": "casual",
+      "category": "general",
+      "postCount": 63125
+    },
+    {
+      "tag": "spikes",
+      "label": "spikes",
+      "category": "general",
+      "postCount": 62922
+    },
+    {
+      "tag": "breath",
+      "label": "breath",
+      "category": "general",
+      "postCount": 62840
+    },
+    {
+      "tag": "between_breasts",
+      "label": "between breasts",
+      "category": "general",
+      "postCount": 62516
+    },
+    {
+      "tag": "bike_shorts",
+      "label": "bike shorts",
+      "category": "clothing",
+      "postCount": 62317
+    },
+    {
+      "tag": "happy_birthday",
+      "label": "happy birthday",
+      "category": "general",
+      "postCount": 62163
+    },
+    {
+      "tag": "carrying",
+      "label": "carrying",
+      "category": "general",
+      "postCount": 62059
+    },
+    {
+      "tag": "skirt_set",
+      "label": "skirt set",
+      "category": "clothing",
+      "postCount": 61991
+    },
+    {
+      "tag": "clothing_aside",
+      "label": "clothing aside",
+      "category": "general",
+      "postCount": 61887
+    },
+    {
+      "tag": "tsurime",
+      "label": "tsurime",
+      "category": "general",
+      "postCount": 61582
+    },
+    {
+      "tag": "semi-rimless_eyewear",
+      "label": "semi-rimless eyewear",
+      "category": "general",
+      "postCount": 61541
+    },
+    {
+      "tag": "vertical-striped_clothes",
+      "label": "vertical-striped clothes",
+      "category": "general",
+      "postCount": 61190
+    },
+    {
+      "tag": "armlet",
+      "label": "armlet",
+      "category": "pose_action",
+      "postCount": 60909
+    },
+    {
+      "tag": "two-tone_background",
+      "label": "two-tone background",
+      "category": "scene",
+      "postCount": 60866
+    },
+    {
+      "tag": ":p",
+      "label": ":p",
+      "category": "general",
+      "postCount": 60641
+    },
+    {
+      "tag": "genderswap",
+      "label": "genderswap",
+      "category": "general",
+      "postCount": 60331
+    },
+    {
+      "tag": "veins",
+      "label": "veins",
+      "category": "general",
+      "postCount": 59972
+    },
+    {
+      "tag": "freckles",
+      "label": "freckles",
+      "category": "general",
+      "postCount": 59297
+    },
+    {
+      "tag": "motor_vehicle",
+      "label": "motor vehicle",
+      "category": "general",
+      "postCount": 59217
+    },
+    {
+      "tag": "androgynous",
+      "label": "androgynous",
+      "category": "general",
+      "postCount": 59154
+    },
+    {
+      "tag": "spot_color",
+      "label": "spot color",
+      "category": "lighting_style",
+      "postCount": 59133
+    },
+    {
+      "tag": "breasts_apart",
+      "label": "breasts apart",
+      "category": "general",
+      "postCount": 59132
+    },
+    {
+      "tag": "peaked_cap",
+      "label": "peaked cap",
+      "category": "general",
+      "postCount": 59008
+    },
+    {
+      "tag": "dual_persona",
+      "label": "dual persona",
+      "category": "general",
+      "postCount": 58528
+    },
+    {
+      "tag": "pocket",
+      "label": "pocket",
+      "category": "general",
+      "postCount": 58267
+    },
+    {
+      "tag": "winter_uniform",
+      "label": "winter uniform",
+      "category": "clothing",
+      "postCount": 57917
+    },
+    {
+      "tag": "panty_pull",
+      "label": "panty pull",
+      "category": "general",
+      "postCount": 57364
+    },
+    {
+      "tag": "tentacles",
+      "label": "tentacles",
+      "category": "general",
+      "postCount": 57257
+    },
+    {
+      "tag": "clothes_writing",
+      "label": "clothes writing",
+      "category": "general",
+      "postCount": 57105
+    },
+    {
+      "tag": "micro_bikini",
+      "label": "micro bikini",
+      "category": "general",
+      "postCount": 57104
+    },
+    {
+      "tag": "toned",
+      "label": "toned",
+      "category": "general",
+      "postCount": 56972
+    },
+    {
+      "tag": "side_slit",
+      "label": "side slit",
+      "category": "general",
+      "postCount": 56773
+    },
+    {
+      "tag": "beads",
+      "label": "beads",
+      "category": "general",
+      "postCount": 56565
+    },
+    {
+      "tag": "jingle_bell",
+      "label": "jingle bell",
+      "category": "general",
+      "postCount": 56487
+    },
+    {
+      "tag": "covering_privates",
+      "label": "covering privates",
+      "category": "general",
+      "postCount": 56478
+    },
+    {
+      "tag": "science_fiction",
+      "label": "science fiction",
+      "category": "general",
+      "postCount": 56336
+    },
+    {
+      "tag": "half_updo",
+      "label": "half updo",
+      "category": "general",
+      "postCount": 56095
+    },
+    {
+      "tag": "single_glove",
+      "label": "single glove",
+      "category": "clothing",
+      "postCount": 55794
+    },
+    {
+      "tag": "smoke",
+      "label": "smoke",
+      "category": "general",
+      "postCount": 55736
+    },
+    {
+      "tag": "tareme",
+      "label": "tareme",
+      "category": "general",
+      "postCount": 55723
+    },
+    {
+      "tag": "knee_up",
+      "label": "knee up",
+      "category": "general",
+      "postCount": 55680
+    },
+    {
+      "tag": "topless_male",
+      "label": "topless male",
+      "category": "subject",
+      "postCount": 55119
+    },
+    {
+      "tag": "doll",
+      "label": "doll",
+      "category": "general",
+      "postCount": 54958
+    },
+    {
+      "tag": "drinking_glass",
+      "label": "drinking glass",
+      "category": "general",
+      "postCount": 54925
+    },
+    {
+      "tag": "angel_wings",
+      "label": "angel wings",
+      "category": "general",
+      "postCount": 54817
+    },
+    {
+      "tag": "hair_flaps",
+      "label": "hair flaps",
+      "category": "hair",
+      "postCount": 54498
+    },
+    {
+      "tag": "white_outline",
+      "label": "white outline",
+      "category": "general",
+      "postCount": 54439
+    },
+    {
+      "tag": "wide_hips",
+      "label": "wide hips",
+      "category": "general",
+      "postCount": 54298
+    },
+    {
+      "tag": "desk",
+      "label": "desk",
+      "category": "general",
+      "postCount": 54109
+    },
+    {
+      "tag": "mary_janes",
+      "label": "mary janes",
+      "category": "general",
+      "postCount": 53918
+    },
+    {
+      "tag": "looking_ahead",
+      "label": "looking ahead",
+      "category": "pose_action",
+      "postCount": 53813
+    },
+    {
+      "tag": "reflection",
+      "label": "reflection",
+      "category": "general",
+      "postCount": 53755
+    },
+    {
+      "tag": "!",
+      "label": "!",
+      "category": "general",
+      "postCount": 53667
+    },
+    {
+      "tag": "gift",
+      "label": "gift",
+      "category": "general",
+      "postCount": 53636
+    },
+    {
+      "tag": "black-framed_eyewear",
+      "label": "black-framed eyewear",
+      "category": "general",
+      "postCount": 53612
+    },
+    {
+      "tag": "shirt_tucked_in",
+      "label": "shirt tucked in",
+      "category": "clothing",
+      "postCount": 53503
+    },
+    {
+      "tag": "mecha",
+      "label": "mecha",
+      "category": "general",
+      "postCount": 53422
+    },
+    {
+      "tag": "track_jacket",
+      "label": "track jacket",
+      "category": "clothing",
+      "postCount": 53356
+    },
+    {
+      "tag": "thought_bubble",
+      "label": "thought bubble",
+      "category": "general",
+      "postCount": 53328
+    },
+    {
+      "tag": "asymmetrical_legwear",
+      "label": "asymmetrical legwear",
+      "category": "pose_action",
+      "postCount": 52918
+    },
+    {
+      "tag": "thong",
+      "label": "thong",
+      "category": "general",
+      "postCount": 52912
+    },
+    {
+      "tag": "wading",
+      "label": "wading",
+      "category": "general",
+      "postCount": 52620
+    },
+    {
+      "tag": "high-waist_skirt",
+      "label": "high-waist skirt",
+      "category": "clothing",
+      "postCount": 52580
+    },
+    {
+      "tag": "pencil_skirt",
+      "label": "pencil skirt",
+      "category": "clothing",
+      "postCount": 52544
+    },
+    {
+      "tag": "hair_scrunchie",
+      "label": "hair scrunchie",
+      "category": "hair",
+      "postCount": 52469
+    },
+    {
+      "tag": "@_@",
+      "label": "@ @",
+      "category": "general",
+      "postCount": 52310
+    },
+    {
+      "tag": ":<",
+      "label": ":<",
+      "category": "general",
+      "postCount": 52177
+    },
+    {
+      "tag": "ball",
+      "label": "ball",
+      "category": "general",
+      "postCount": 52128
+    },
+    {
+      "tag": "spoken_ellipsis",
+      "label": "spoken ellipsis",
+      "category": "general",
+      "postCount": 51396
+    },
+    {
+      "tag": "handgun",
+      "label": "handgun",
+      "category": "pose_action",
+      "postCount": 51263
+    },
+    {
+      "tag": "front-tie_top",
+      "label": "front-tie top",
+      "category": "general",
+      "postCount": 50963
+    },
+    {
+      "tag": "straight-on",
+      "label": "straight-on",
+      "category": "general",
+      "postCount": 50931
+    },
+    {
+      "tag": "clothed_sex",
+      "label": "clothed sex",
+      "category": "general",
+      "postCount": 50834
+    },
+    {
+      "tag": "starry_sky",
+      "label": "starry sky",
+      "category": "scene",
+      "postCount": 50729
+    },
+    {
+      "tag": "kemonomimi_mode",
+      "label": "kemonomimi mode",
+      "category": "general",
+      "postCount": 50681
+    },
+    {
+      "tag": "skin_tight",
+      "label": "skin tight",
+      "category": "general",
+      "postCount": 50629
+    },
+    {
+      "tag": "belt_buckle",
+      "label": "belt buckle",
+      "category": "general",
+      "postCount": 50326
+    },
+    {
+      "tag": "fake_tail",
+      "label": "fake tail",
+      "category": "general",
+      "postCount": 50185
+    },
+    {
+      "tag": "anime_coloring",
+      "label": "anime coloring",
+      "category": "lighting_style",
+      "postCount": 50153
+    },
+    {
+      "tag": "strap_slip",
+      "label": "strap slip",
+      "category": "general",
+      "postCount": 50074
+    },
+    {
+      "tag": "blouse",
+      "label": "blouse",
+      "category": "general",
+      "postCount": 49776
+    },
+    {
+      "tag": "wide-eyed",
+      "label": "wide-eyed",
+      "category": "general",
+      "postCount": 49721
+    },
+    {
+      "tag": "hand_in_pocket",
+      "label": "hand in pocket",
+      "category": "pose_action",
+      "postCount": 49714
+    },
+    {
+      "tag": "handjob",
+      "label": "handjob",
+      "category": "pose_action",
+      "postCount": 49709
+    },
+    {
+      "tag": "pauldrons",
+      "label": "pauldrons",
+      "category": "general",
+      "postCount": 49474
+    },
+    {
+      "tag": "notice_lines",
+      "label": "notice lines",
+      "category": "general",
+      "postCount": 49302
+    },
+    {
+      "tag": "single_horn",
+      "label": "single horn",
+      "category": "general",
+      "postCount": 49123
+    },
+    {
+      "tag": "tray",
+      "label": "tray",
+      "category": "general",
+      "postCount": 49041
+    },
+    {
+      "tag": "heavy_breathing",
+      "label": "heavy breathing",
+      "category": "general",
+      "postCount": 49000
+    },
+    {
+      "tag": "convenient_censoring",
+      "label": "convenient censoring",
+      "category": "general",
+      "postCount": 48962
+    },
+    {
+      "tag": "pouch",
+      "label": "pouch",
+      "category": "general",
+      "postCount": 48936
+    },
+    {
+      "tag": "headset",
+      "label": "headset",
+      "category": "general",
+      "postCount": 48892
+    },
+    {
+      "tag": "between_legs",
+      "label": "between legs",
+      "category": "pose_action",
+      "postCount": 48724
+    },
+    {
+      "tag": "lens_flare",
+      "label": "lens flare",
+      "category": "general",
+      "postCount": 48587
+    },
+    {
+      "tag": "blunt_ends",
+      "label": "blunt ends",
+      "category": "general",
+      "postCount": 48450
+    },
+    {
+      "tag": "age_difference",
+      "label": "age difference",
+      "category": "general",
+      "postCount": 48370
+    },
+    {
+      "tag": "faceless_male",
+      "label": "faceless male",
+      "category": "subject",
+      "postCount": 48274
+    },
+    {
+      "tag": "seiza",
+      "label": "seiza",
+      "category": "general",
+      "postCount": 48162
+    },
+    {
+      "tag": "goggles_on_head",
+      "label": "goggles on head",
+      "category": "general",
+      "postCount": 48139
+    },
+    {
+      "tag": "masturbation",
+      "label": "masturbation",
+      "category": "general",
+      "postCount": 48011
+    },
+    {
+      "tag": "sports_bra",
+      "label": "sports bra",
+      "category": "general",
+      "postCount": 47987
+    },
+    {
+      "tag": "santa_hat",
+      "label": "santa hat",
+      "category": "clothing",
+      "postCount": 47814
+    },
+    {
+      "tag": "futanari",
+      "label": "futanari",
+      "category": "general",
+      "postCount": 47678
+    },
+    {
+      "tag": ":q",
+      "label": ":q",
+      "category": "general",
+      "postCount": 47477
+    },
+    {
+      "tag": "side-tie_panties",
+      "label": "side-tie panties",
+      "category": "general",
+      "postCount": 47401
+    },
+    {
+      "tag": "empty_eyes",
+      "label": "empty eyes",
+      "category": "eyes",
+      "postCount": 47266
+    },
+    {
+      "tag": "mature_female",
+      "label": "mature female",
+      "category": "subject",
+      "postCount": 47205
+    },
+    {
+      "tag": "missing_headwear",
+      "label": "missing headwear",
+      "category": "general",
+      "postCount": 47140
+    },
+    {
+      "tag": "jitome",
+      "label": "jitome",
+      "category": "general",
+      "postCount": 47078
+    },
+    {
+      "tag": "alcohol",
+      "label": "alcohol",
+      "category": "general",
+      "postCount": 46942
+    },
+    {
+      "tag": "fins",
+      "label": "fins",
+      "category": "general",
+      "postCount": 46909
+    },
+    {
+      "tag": "braided_ponytail",
+      "label": "braided ponytail",
+      "category": "hair",
+      "postCount": 46905
+    },
+    {
+      "tag": "cigarette",
+      "label": "cigarette",
+      "category": "general",
+      "postCount": 46838
+    },
+    {
+      "tag": "sound_effects",
+      "label": "sound effects",
+      "category": "general",
+      "postCount": 46745
+    },
+    {
+      "tag": "oni",
+      "label": "oni",
+      "category": "general",
+      "postCount": 46729
+    },
+    {
+      "tag": "red_scarf",
+      "label": "red scarf",
+      "category": "general",
+      "postCount": 46469
+    },
+    {
+      "tag": "ribbed_sweater",
+      "label": "ribbed sweater",
+      "category": "scene",
+      "postCount": 46415
+    },
+    {
+      "tag": "cleft_of_venus",
+      "label": "cleft of venus",
+      "category": "general",
+      "postCount": 46395
+    },
+    {
+      "tag": "swim_ring",
+      "label": "swim ring",
+      "category": "general",
+      "postCount": 46240
+    },
+    {
+      "tag": "disembodied_linked_eye",
+      "label": "disembodied linked eye",
+      "category": "eyes",
+      "postCount": 46200
+    },
+    {
+      "tag": "ribbon-trimmed_sleeves",
+      "label": "ribbon-trimmed sleeves",
+      "category": "clothing",
+      "postCount": 46177
+    },
+    {
+      "tag": "hakama_skirt",
+      "label": "hakama skirt",
+      "category": "clothing",
+      "postCount": 45959
+    },
+    {
+      "tag": "missionary",
+      "label": "missionary",
+      "category": "general",
+      "postCount": 45796
+    },
+    {
+      "tag": "genderswap_(mtf)",
+      "label": "genderswap (mtf)",
+      "category": "general",
+      "postCount": 45793
+    },
+    {
+      "tag": "2koma",
+      "label": "2koma",
+      "category": "subject",
+      "postCount": 45767
+    },
+    {
+      "tag": "pendant",
+      "label": "pendant",
+      "category": "general",
+      "postCount": 45739
+    },
+    {
+      "tag": "sideways_glance",
+      "label": "sideways glance",
+      "category": "general",
+      "postCount": 45562
+    },
+    {
+      "tag": "tokin_hat",
+      "label": "tokin hat",
+      "category": "clothing",
+      "postCount": 45555
+    },
+    {
+      "tag": "legs_apart",
+      "label": "legs apart",
+      "category": "pose_action",
+      "postCount": 45158
+    },
+    {
+      "tag": "rape",
+      "label": "rape",
+      "category": "general",
+      "postCount": 45103
+    },
+    {
+      "tag": "emphasis_lines",
+      "label": "emphasis lines",
+      "category": "general",
+      "postCount": 44947
+    },
+    {
+      "tag": "bulge",
+      "label": "bulge",
+      "category": "general",
+      "postCount": 44789
+    },
+    {
+      "tag": "4boys",
+      "label": "4boys",
+      "category": "subject",
+      "postCount": 44705
+    },
+    {
+      "tag": "santa_costume",
+      "label": "santa costume",
+      "category": "general",
+      "postCount": 44617
+    },
+    {
+      "tag": "layered_sleeves",
+      "label": "layered sleeves",
+      "category": "clothing",
+      "postCount": 44431
+    },
+    {
+      "tag": "fingering",
+      "label": "fingering",
+      "category": "general",
+      "postCount": 44214
+    },
+    {
+      "tag": "personification",
+      "label": "personification",
+      "category": "general",
+      "postCount": 44056
+    },
+    {
+      "tag": "ear_covers",
+      "label": "ear covers",
+      "category": "general",
+      "postCount": 44007
+    },
+    {
+      "tag": "height_difference",
+      "label": "height difference",
+      "category": "general",
+      "postCount": 43867
+    },
+    {
+      "tag": "mature_male",
+      "label": "mature male",
+      "category": "subject",
+      "postCount": 43771
+    },
+    {
+      "tag": "twins",
+      "label": "twins",
+      "category": "general",
+      "postCount": 43724
+    },
+    {
+      "tag": "halloween",
+      "label": "halloween",
+      "category": "general",
+      "postCount": 43598
+    },
+    {
+      "tag": "bandaged_arm",
+      "label": "bandaged arm",
+      "category": "pose_action",
+      "postCount": 43444
+    },
+    {
+      "tag": "asymmetrical_bangs",
+      "label": "asymmetrical bangs",
+      "category": "hair",
+      "postCount": 43407
+    },
+    {
+      "tag": "crossdressing_(mtf)",
+      "label": "crossdressing (mtf)",
+      "category": "clothing",
+      "postCount": 43030
+    },
+    {
+      "tag": "head_rest",
+      "label": "head rest",
+      "category": "general",
+      "postCount": 42835
+    },
+    {
+      "tag": "curtained_hair",
+      "label": "curtained hair",
+      "category": "hair",
+      "postCount": 42669
+    },
+    {
+      "tag": "cuffs",
+      "label": "cuffs",
+      "category": "general",
+      "postCount": 42571
+    },
+    {
+      "tag": "jeans",
+      "label": "jeans",
+      "category": "general",
+      "postCount": 42447
+    },
+    {
+      "tag": "epaulettes",
+      "label": "epaulettes",
+      "category": "general",
+      "postCount": 42320
+    },
+    {
+      "tag": "shrug_(clothing)",
+      "label": "shrug (clothing)",
+      "category": "general",
+      "postCount": 42271
+    },
+    {
+      "tag": "low_wings",
+      "label": "low wings",
+      "category": "general",
+      "postCount": 42187
+    },
+    {
+      "tag": "red-framed_eyewear",
+      "label": "red-framed eyewear",
+      "category": "general",
+      "postCount": 42126
+    },
+    {
+      "tag": "hoop_earrings",
+      "label": "hoop earrings",
+      "category": "general",
+      "postCount": 42102
+    },
+    {
+      "tag": "teacup",
+      "label": "teacup",
+      "category": "general",
+      "postCount": 42059
+    },
+    {
+      "tag": "eyeliner",
+      "label": "eyeliner",
+      "category": "general",
+      "postCount": 41800
+    },
+    {
+      "tag": "bowl",
+      "label": "bowl",
+      "category": "general",
+      "postCount": 41696
+    },
+    {
+      "tag": "plump",
+      "label": "plump",
+      "category": "general",
+      "postCount": 41668
+    },
+    {
+      "tag": "summer_uniform",
+      "label": "summer uniform",
+      "category": "clothing",
+      "postCount": 41621
+    },
+    {
+      "tag": "parent_and_child",
+      "label": "parent and child",
+      "category": "subject",
+      "postCount": 41534
+    },
+    {
+      "tag": "tinted_eyewear",
+      "label": "tinted eyewear",
+      "category": "general",
+      "postCount": 41507
+    },
+    {
+      "tag": "off-shoulder_dress",
+      "label": "off-shoulder dress",
+      "category": "clothing",
+      "postCount": 41442
+    },
+    {
+      "tag": "threesome",
+      "label": "threesome",
+      "category": "general",
+      "postCount": 41326
+    },
+    {
+      "tag": "cumdrip",
+      "label": "cumdrip",
+      "category": "general",
+      "postCount": 41170
+    },
+    {
+      "tag": "bags_under_eyes",
+      "label": "bags under eyes",
+      "category": "eyes",
+      "postCount": 41062
+    },
+    {
+      "tag": "drinking_straw",
+      "label": "drinking straw",
+      "category": "general",
+      "postCount": 41022
+    },
+    {
+      "tag": "lapels",
+      "label": "lapels",
+      "category": "general",
+      "postCount": 41018
+    },
+    {
+      "tag": "6+boys",
+      "label": "6+boys",
+      "category": "subject",
+      "postCount": 40741
+    },
+    {
+      "tag": "stud_earrings",
+      "label": "stud earrings",
+      "category": "general",
+      "postCount": 40677
+    },
+    {
+      "tag": "gym_uniform",
+      "label": "gym uniform",
+      "category": "clothing",
+      "postCount": 40617
+    },
+    {
+      "tag": "watch",
+      "label": "watch",
+      "category": "general",
+      "postCount": 40603
+    },
+    {
+      "tag": "double_v",
+      "label": "double v",
+      "category": "general",
+      "postCount": 40351
+    },
+    {
+      "tag": "doggystyle",
+      "label": "doggystyle",
+      "category": "general",
+      "postCount": 40268
+    },
+    {
+      "tag": "knees_together_feet_apart",
+      "label": "knees together feet apart",
+      "category": "general",
+      "postCount": 40243
+    },
+    {
+      "tag": "mini_person",
+      "label": "mini person",
+      "category": "subject",
+      "postCount": 40135
+    },
+    {
+      "tag": "bouquet",
+      "label": "bouquet",
+      "category": "general",
+      "postCount": 40079
+    },
+    {
+      "tag": "tentacle_hair",
+      "label": "tentacle hair",
+      "category": "hair",
+      "postCount": 40074
+    },
+    {
+      "tag": "broom",
+      "label": "broom",
+      "category": "scene",
+      "postCount": 40010
+    },
+    {
+      "tag": "flipped_hair",
+      "label": "flipped hair",
+      "category": "hair",
+      "postCount": 39859
+    },
+    {
+      "tag": "tanlines",
+      "label": "tanlines",
+      "category": "general",
+      "postCount": 39578
+    }
+  ]
+}

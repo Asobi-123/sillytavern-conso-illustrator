@@ -7,6 +7,7 @@ import {ImageGenerationQueue} from './streaming_image_queue';
 import {generateImage} from './image_generator';
 import {createPlaceholderUrl} from './placeholder';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {normalizePromptTagsWithCatalog} from './services/tag_catalog_prompt';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
   buildVibeTransferConfigFromSettings,
@@ -169,10 +170,15 @@ export class QueueProcessor {
       // Inject character fixed tags based on message text
       const message = context.chat?.[this.messageId];
       const messageText = message?.mes || '';
-      const injectedPrompt = applyCharacterFixedTags(
+      const normalizedPrompt = normalizePromptTagsWithCatalog(
         prompt.prompt,
+        this.settings
+      );
+      const injectedPrompt = applyCharacterFixedTags(
+        normalizedPrompt,
         messageText,
-        this.settings.characterFixedTags
+        this.settings.characterFixedTags,
+        this.settings.characterFixedTagInjectionMode
       );
 
       const imageUrl = await generateImage(

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Prompt personalization suite** - Added a bundled Tag Catalog, an external preset adapter, and optional structure-aware Character Fixed Tags injection as one testable feature set.
+- **Bundled Tag Catalog** - Added a generated `tag_catalog.json` from public general tag data. The catalog is searchable, categorized, copyable, and available offline at runtime.
+- **Preset adapter** - Added a review-first importer that reads local JSON/text-like preset files or free-form requirements, then asks the configured LLM to draft Conso-native custom presets without using external preset formats directly.
+- **Character Fixed Tags injection modes** - Added optional structure-aware insertion for pipe-separated or `Character N Prompt:` prompts, plus a conservative multi-character mode that skips injection when a flat multi-character prompt cannot be matched safely. The legacy prepend behavior remains the default.
+
 ## [1.10.0] - 2026-06-04
 
 ### Added

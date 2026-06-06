@@ -65,7 +65,7 @@ export declare function generatePromptsForMessage(messageText: string, context: 
  * @param response - Raw LLM response text
  * @returns Array of parsed standalone prompt results
  */
-export declare function parseStandalonePromptSuggestions(response: string): StandalonePromptResult[];
+export declare function parseStandalonePromptSuggestions(response: string, settings?: AutoIllustratorSettings): StandalonePromptResult[];
 /**
  * Generates standalone image prompts from a scene description using LLM.
  *

@@ -222,6 +222,8 @@ declare global {
       string,
       import('./src/types').CharacterFixedTagEntry
     >;
+    /** How character fixed tags are inserted into generated prompts */
+    characterFixedTagInjectionMode: import('./src/types').CharacterFixedTagInjectionMode;
     /** Default prompt count for standalone generation */
     standalonePromptCount?: number;
     /** Whether to randomly pick one SD style from extension_settings.sd.styles[] before each /sd call */
@@ -242,6 +244,12 @@ declare global {
     vibeTransferReferenceStrength: number;
     /** Information Extracted sent to NovelAI Vibe Transfer (0-1) */
     vibeTransferInformationExtracted: number;
+    /** User-added tag catalog entries, merged with built-in catalog at runtime */
+    customTagCatalogEntries: import('./src/types').TagCatalogEntry[];
+    /** User-maintained Chinese trigger words for built-in or custom catalog tags */
+    customTagBridgeTriggers: Record<string, string[]>;
+    /** Per-category max candidate counts sent to the LLM catalog aid */
+    tagCatalogCandidateLimits: Record<string, number>;
   }
 
   interface ImagePromptMatch {

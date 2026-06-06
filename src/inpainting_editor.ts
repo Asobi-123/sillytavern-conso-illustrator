@@ -715,7 +715,8 @@ function enhancePromptForInpaint(
   const characterPrompt = applyCharacterFixedTags(
     promptText,
     messageText,
-    settings.characterFixedTags
+    settings.characterFixedTags,
+    settings.characterFixedTagInjectionMode
   );
   return applyCommonTags(
     characterPrompt,

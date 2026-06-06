@@ -106,6 +106,108 @@ describe('floating_panel_ui', () => {
     ).not.toBeNull();
   });
 
+  it('should make the fullscreen text editor fill the viewport with horizontal action buttons', () => {
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+
+    const styleText = document.getElementById(
+      'auto_illustrator_conso_floating_panel_style'
+    )?.textContent;
+    expect(styleText).toContain('#ai-floating-panel-overlay-text');
+    expect(styleText).toContain('position: fixed');
+    expect(styleText).toContain('width: 100vw');
+    expect(styleText).toContain('height: 100dvh');
+    expect(styleText).toContain('.ai-floating-panel-text-overlay textarea');
+    expect(styleText).toContain('height: 100%');
+    expect(styleText).toContain('resize: none');
+    expect(styleText).toContain('.ai-floating-panel-text-overlay-actions');
+    expect(styleText).toContain('flex-direction: row');
+    expect(styleText).toContain('writing-mode: horizontal-tb !important');
+    expect(styleText).toContain('white-space: nowrap');
+  });
+
+  it('should bridge plugin UI colors to floating panel theme variables', () => {
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+
+    const styleText = document.getElementById(
+      'auto_illustrator_conso_floating_panel_style'
+    )?.textContent;
+    expect(styleText).toContain('--ai-panel-bg: var(--panel);');
+    expect(styleText).toContain('--ai-panel-overlay: var(--overlay-bg);');
+    expect(styleText).toContain('--ai-panel-text: var(--text);');
+    expect(styleText).toContain('--ai-panel-warning: var(--warning);');
+    expect(styleText).toContain('--ai-panel-danger: var(--danger);');
+    expect(styleText).toContain('--ai-control-bg: var(--field-bg);');
+    expect(styleText).not.toContain(['Smart', 'Theme'].join(''));
+  });
+
+  it('should open and apply the fullscreen editor without vertical action buttons', () => {
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+
+    const original = document.getElementById(
+      UI_ELEMENT_IDS.PROMPT_PATTERNS
+    ) as HTMLTextAreaElement;
+    original.value = 'before';
+
+    const expandButton = document.querySelector(
+      `#${UI_ELEMENT_IDS.PROMPT_PATTERNS} + .ai-floating-panel-text-actions button`
+    ) as HTMLButtonElement;
+    expandButton.click();
+
+    const root = document.getElementById(
+      'auto_illustrator_conso_floating_panel_root'
+    ) as HTMLElement;
+    const overlay = document.getElementById(
+      'ai-floating-panel-overlay-text'
+    ) as HTMLElement;
+    const editor = document.getElementById(
+      'ai-floating-panel-text-overlay-textarea'
+    ) as HTMLTextAreaElement;
+    const actionRow = document.querySelector(
+      '.ai-floating-panel-text-overlay-actions'
+    ) as HTMLElement;
+    const actionButtons = actionRow.querySelectorAll('button');
+
+    expect(root.classList.contains('text-overlay-open')).toBe(true);
+    expect(overlay.classList.contains('open')).toBe(true);
+    expect(editor.value).toBe('before');
+    expect(actionButtons).toHaveLength(2);
+
+    editor.value = 'after';
+    document.getElementById('ai-floating-panel-text-overlay-apply')?.click();
+
+    expect(original.value).toBe('after');
+    expect(root.classList.contains('text-overlay-open')).toBe(false);
+    expect(overlay.classList.contains('open')).toBe(false);
+  });
+
+  it('should decorate dynamically rendered preset import draft textareas', async () => {
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+
+    const result = document.getElementById(
+      UI_ELEMENT_IDS.PRESET_IMPORT_RESULT
+    ) as HTMLElement;
+    result.innerHTML = `
+      <textarea class="text_pole textarea_compact" data-draft-field="sharedMetaPrompt">shared</textarea>
+      <textarea class="text_pole textarea_compact" data-draft-field="promptWritingGuidelines">independent</textarea>
+    `;
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const draftFields = result.querySelectorAll('[data-draft-field]');
+    expect(draftFields).toHaveLength(2);
+    expect(
+      result.querySelectorAll('.ai-floating-panel-text-actions button')
+    ).toHaveLength(2);
+  });
+
   it('should sync prompt mode visibility with the shared/independent radio buttons', () => {
     document.body.insertAdjacentHTML('beforeend', createSettingsUI());
 

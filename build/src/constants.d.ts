@@ -6,8 +6,9 @@
  * constants to avoid magic numbers scattered throughout the codebase.
  */
 import type { CharacterFixedTagEntry } from './types';
+import type { CharacterFixedTagInjectionMode } from './types';
 import type { StyleTagPosition } from './types';
-import type { PromptLibraryEntry, VibeTransferPreset, VibeTransferReferenceImage } from './types';
+import type { PromptLibraryEntry, TagCatalogEntry, VibeTransferPreset, VibeTransferReferenceImage } from './types';
 /**
  * Extension identifier used for settings storage
  */
@@ -222,6 +223,17 @@ export declare const PROMPT_LIBRARY_THUMBNAIL: {
     readonly MAX_SIZE: 200;
     readonly QUALITY: 0.6;
 };
+export declare const TAG_CATALOG_CATEGORIES: readonly ["subject", "hair", "eyes", "expression", "pose_action", "clothing", "scene", "camera", "lighting_style", "undesired_content", "general"];
+export declare const TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS: Record<string, number>;
+export declare const TAG_CATALOG_CANDIDATE_LIMIT: {
+    readonly MIN: 0;
+    readonly MAX: 50;
+};
+export declare const TAG_CATALOG_PAGE_SIZE: {
+    readonly DEFAULT: 500;
+    readonly ALL: 0;
+    readonly OPTIONS: readonly [200, 500, 1000, 2000, 0];
+};
 /**
  * Companion server plugin fingerprint.
  * Bump VERSION whenever server-plugin/auto-illustrator-nai-advanced changes.
@@ -324,10 +336,16 @@ export declare const DEFAULT_SETTINGS: {
     apiProfiles: ApiProfile[];
     currentApiProfileId: string;
     characterFixedTags: Record<string, CharacterFixedTagEntry>;
+    characterFixedTagInjectionMode: CharacterFixedTagInjectionMode;
     standalonePromptCount: 3;
     promptLibraryEntries: PromptLibraryEntry[];
     promptLibraryMaxEntries: 500;
     promptLibrarySaveThumbnail: boolean;
+    customTagCatalogEntries: TagCatalogEntry[];
+    customTagBridgeTriggers: Record<string, string[]>;
+    tagCatalogCandidateLimits: {
+        [x: string]: number;
+    };
     randomizeSdStylePerGeneration: boolean;
     sdStylePoolWhitelist: string[];
     restoreSdStyleAfter: boolean;
@@ -429,6 +447,7 @@ export declare const UI_ELEMENT_IDS: {
     readonly CHARACTER_TAG_ADD_NAME: "auto_illustrator_conso_character_tag_add_name";
     readonly CHARACTER_TAG_ADD_BTN: "auto_illustrator_conso_character_tag_add_btn";
     readonly CHARACTER_TAG_RESET_ALL: "auto_illustrator_conso_character_tag_reset_all";
+    readonly CHARACTER_TAG_INJECTION_MODE: "auto_illustrator_conso_character_tag_injection_mode";
     readonly STANDALONE_MODE_AI: "auto_illustrator_conso_standalone_mode_ai";
     readonly STANDALONE_MODE_MANUAL: "auto_illustrator_conso_standalone_mode_manual";
     readonly STANDALONE_SCENE_INPUT: "auto_illustrator_conso_standalone_scene_input";
@@ -457,6 +476,44 @@ export declare const UI_ELEMENT_IDS: {
     readonly PROMPT_LIBRARY_EDIT_CHARACTER: "auto_illustrator_conso_prompt_library_edit_character";
     readonly PROMPT_LIBRARY_EDIT_SAVE: "auto_illustrator_conso_prompt_library_edit_save";
     readonly PROMPT_LIBRARY_EDIT_CANCEL: "auto_illustrator_conso_prompt_library_edit_cancel";
+    readonly TAG_CATALOG_SEARCH: "auto_illustrator_conso_tag_catalog_search";
+    readonly TAG_CATALOG_CATEGORY: "auto_illustrator_conso_tag_catalog_category";
+    readonly TAG_CATALOG_SOURCE_FILTER: "auto_illustrator_conso_tag_catalog_source_filter";
+    readonly TAG_CATALOG_LIST: "auto_illustrator_conso_tag_catalog_list";
+    readonly TAG_CATALOG_TOTAL: "auto_illustrator_conso_tag_catalog_total";
+    readonly TAG_CATALOG_COUNT: "auto_illustrator_conso_tag_catalog_count";
+    readonly TAG_CATALOG_SELECTED: "auto_illustrator_conso_tag_catalog_selected";
+    readonly TAG_CATALOG_COPY_SELECTED: "auto_illustrator_conso_tag_catalog_copy_selected";
+    readonly TAG_CATALOG_CLEAR_SELECTED: "auto_illustrator_conso_tag_catalog_clear_selected";
+    readonly TAG_CATALOG_ADD_COMMON: "auto_illustrator_conso_tag_catalog_add_common";
+    readonly TAG_CATALOG_DELETE_CUSTOM_SELECTED: "auto_illustrator_conso_tag_catalog_delete_custom_selected";
+    readonly TAG_CATALOG_PAGE_SIZE: "auto_illustrator_conso_tag_catalog_page_size";
+    readonly TAG_CATALOG_PAGE_PREV: "auto_illustrator_conso_tag_catalog_page_prev";
+    readonly TAG_CATALOG_PAGE_NEXT: "auto_illustrator_conso_tag_catalog_page_next";
+    readonly TAG_CATALOG_PAGE_STATUS: "auto_illustrator_conso_tag_catalog_page_status";
+    readonly TAG_CATALOG_CANDIDATE_LIMITS: "auto_illustrator_conso_tag_catalog_candidate_limits";
+    readonly TAG_CATALOG_LAST_CANDIDATES: "auto_illustrator_conso_tag_catalog_last_candidates";
+    readonly TAG_CATALOG_REFRESH_LAST_CANDIDATES: "auto_illustrator_conso_tag_catalog_refresh_last_candidates";
+    readonly TAG_CATALOG_RESET_CANDIDATE_LIMITS: "auto_illustrator_conso_tag_catalog_reset_candidate_limits";
+    readonly TAG_CATALOG_CUSTOM_TAG: "auto_illustrator_conso_tag_catalog_custom_tag";
+    readonly TAG_CATALOG_CUSTOM_LABEL: "auto_illustrator_conso_tag_catalog_custom_label";
+    readonly TAG_CATALOG_CUSTOM_TRIGGERS: "auto_illustrator_conso_tag_catalog_custom_triggers";
+    readonly TAG_CATALOG_CUSTOM_CATEGORY: "auto_illustrator_conso_tag_catalog_custom_category";
+    readonly TAG_CATALOG_ADD_CUSTOM: "auto_illustrator_conso_tag_catalog_add_custom";
+    readonly TAG_CATALOG_BRIDGE_SUMMARY: "auto_illustrator_conso_tag_catalog_bridge_summary";
+    readonly TAG_CATALOG_BRIDGE_TAG: "auto_illustrator_conso_tag_catalog_bridge_tag";
+    readonly TAG_CATALOG_BRIDGE_EXISTING: "auto_illustrator_conso_tag_catalog_bridge_existing";
+    readonly TAG_CATALOG_BRIDGE_TRIGGERS: "auto_illustrator_conso_tag_catalog_bridge_triggers";
+    readonly TAG_CATALOG_SAVE_BRIDGE_TRIGGERS: "auto_illustrator_conso_tag_catalog_save_bridge_triggers";
+    readonly PRESET_IMPORT_JSON: "auto_illustrator_conso_preset_import_json";
+    readonly PRESET_IMPORT_FILE: "auto_illustrator_conso_preset_import_file";
+    readonly PRESET_IMPORT_REQUIREMENT: "auto_illustrator_conso_preset_import_requirement";
+    readonly PRESET_IMPORT_TARGET: "auto_illustrator_conso_preset_import_target";
+    readonly PRESET_IMPORT_ANALYZE: "auto_illustrator_conso_preset_import_analyze";
+    readonly PRESET_IMPORT_GENERATE: "auto_illustrator_conso_preset_import_generate";
+    readonly PRESET_IMPORT_SAVE: "auto_illustrator_conso_preset_import_save";
+    readonly PRESET_IMPORT_RESULT: "auto_illustrator_conso_preset_import_result";
+    readonly PRESET_IMPORT_NAME: "auto_illustrator_conso_preset_import_name";
     readonly RANDOMIZE_SD_STYLE: "auto_illustrator_conso_randomize_sd_style";
     readonly RESTORE_SD_STYLE_AFTER: "auto_illustrator_conso_restore_sd_style_after";
     readonly SD_STYLE_POOL_LIST: "auto_illustrator_conso_sd_style_pool_list";
@@ -498,6 +555,8 @@ export declare const UI_SECTION_IDS: {
     readonly PROMPT_STYLE: "auto_illustrator_conso_panel_prompt_style";
     readonly STANDALONE: "auto_illustrator_conso_panel_standalone";
     readonly CHARACTER_TAGS: "auto_illustrator_conso_panel_character_tags";
+    readonly TAG_CATALOG: "auto_illustrator_conso_panel_tag_catalog";
+    readonly PRESET_IMPORT: "auto_illustrator_conso_panel_preset_import";
     readonly PROMPT_LIBRARY: "auto_illustrator_conso_panel_prompt_library";
     readonly MAIN_RANDOM_SD_STYLE: "auto_illustrator_conso_panel_main_random_sd_style";
     readonly MAIN_VIBE_TRANSFER: "auto_illustrator_conso_panel_main_vibe_transfer";

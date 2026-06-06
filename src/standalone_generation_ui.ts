@@ -9,6 +9,7 @@ import {createLogger} from './logger';
 import {generateStandalonePrompts} from './services/prompt_generation_service';
 import {generateImage, setImageSubfolderLabel} from './image_generator';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {normalizePromptTagsWithCatalog} from './services/tag_catalog_prompt';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
   buildVibeTransferConfigFromSettings,
@@ -367,10 +368,12 @@ async function generateForCard(
   if (!rawPrompt) return;
 
   // Apply character fixed tags using scene description as context
+  const normalizedPrompt = normalizePromptTagsWithCatalog(rawPrompt, settings);
   const prompt = applyCharacterFixedTags(
-    rawPrompt,
+    normalizedPrompt,
     sceneDescription,
-    settings.characterFixedTags
+    settings.characterFixedTags,
+    settings.characterFixedTagInjectionMode
   );
 
   // Show loading state
@@ -693,10 +696,15 @@ export function initializeStandaloneGeneration(
     if (!imageContainer) return;
 
     // In manual mode, use the prompt itself as messageText for character tag matching
+    const normalizedPrompt = normalizePromptTagsWithCatalog(
+      rawPrompt,
+      settings
+    );
     const prompt = applyCharacterFixedTags(
+      normalizedPrompt,
       rawPrompt,
-      rawPrompt,
-      settings.characterFixedTags
+      settings.characterFixedTags,
+      settings.characterFixedTagInjectionMode
     );
 
     (manualGenBtn as HTMLButtonElement).disabled = true;

@@ -9,6 +9,10 @@ import standalonePromptTemplate from '../presets/standalone_prompt_generation.md
 import type {PromptSuggestion} from '../prompt_insertion';
 import {callIndependentLlmApi} from './independent_llm';
 import {fetchWorldBookEntries} from './worldinfo_service';
+import {
+  buildTagCatalogPromptGuidance,
+  normalizePromptTagsWithCatalog,
+} from './tag_catalog_prompt';
 import {isIndependentApiMode} from '../mode_utils';
 import {
   AutoIllustratorError,
@@ -306,7 +310,10 @@ ${currentMessageText}`;
  * @param llmResponse - Raw LLM response text
  * @returns Array of parsed prompt suggestions, or empty array if parsing fails
  */
-function parsePromptSuggestions(llmResponse: string): PromptSuggestion[] {
+function parsePromptSuggestions(
+  llmResponse: string,
+  settings?: AutoIllustratorSettings
+): PromptSuggestion[] {
   try {
     const cleanedResponse = normalizeDelimitedLlmResponse(llmResponse);
 
@@ -347,7 +354,10 @@ function parsePromptSuggestions(llmResponse: string): PromptSuggestion[] {
         continue;
       }
 
-      const text = textMatch[1].trim();
+      const text = normalizePromptTagsWithCatalog(
+        textMatch[1].trim(),
+        settings
+      );
       const insertAfter = insertAfterMatch[1].trim();
       const insertBefore = insertBeforeMatch[1].trim();
       const reasoning = reasoningMatch ? reasoningMatch[1].trim() : undefined;
@@ -446,7 +456,16 @@ export async function generatePromptsForMessage(
   );
 
   // Replace PROMPT_WRITING_GUIDELINES with user's custom or default
-  const promptWritingGuidelines = settings.llmPromptWritingGuidelines || '';
+  const catalogGuidance = buildTagCatalogPromptGuidance(
+    cleanedMessageText,
+    settings
+  );
+  const promptWritingGuidelines = [
+    settings.llmPromptWritingGuidelines || '',
+    catalogGuidance,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
   systemPrompt = systemPrompt.replace(
     '{{PROMPT_WRITING_GUIDELINES}}',
     promptWritingGuidelines
@@ -509,7 +528,7 @@ export async function generatePromptsForMessage(
   }
 
   // Parse response
-  const suggestions = parsePromptSuggestions(llmResponse);
+  const suggestions = parsePromptSuggestions(llmResponse, settings);
 
   if (suggestions.length === 0) {
     if (isExplicitNoPromptResponse(llmResponse)) {
@@ -558,7 +577,8 @@ export async function generatePromptsForMessage(
  * @returns Array of parsed standalone prompt results
  */
 export function parseStandalonePromptSuggestions(
-  response: string
+  response: string,
+  settings?: AutoIllustratorSettings
 ): StandalonePromptResult[] {
   try {
     const cleanedResponse = normalizeDelimitedLlmResponse(response);
@@ -572,7 +592,10 @@ export function parseStandalonePromptSuggestions(
       }
 
       const blockContent = block.split('---END---')[0];
-      const textMatch = blockContent.match(/^TEXT:[^\S\n]*(.+?)$/m);
+      const textMatch =
+        blockContent.match(
+          /(?:^|\n)TEXT:[^\S\n]*([\s\S]*?)(?=\n\s*(?:REASONING|INSERT_AFTER|INSERT_BEFORE):|\n\s*---PROMPT---|\n\s*---END---|\s*$)/
+        ) || blockContent.match(/(?:^|\n)TEXT:[^\S\n]*(.+?)(?:\n|$)/);
       const reasoningMatch = blockContent.match(/^REASONING:[^\S\n]*(.+?)$/m);
 
       if (!textMatch) {
@@ -580,7 +603,10 @@ export function parseStandalonePromptSuggestions(
         continue;
       }
 
-      const text = textMatch[1].trim();
+      const text = normalizePromptTagsWithCatalog(
+        textMatch[1].trim(),
+        settings
+      );
       if (!text) {
         logger.warn('Skipping standalone prompt block with empty TEXT');
         continue;
@@ -639,7 +665,12 @@ export async function generateStandalonePrompts(
   );
   systemPrompt = systemPrompt.replace(
     '{{PROMPT_WRITING_GUIDELINES}}',
-    settings.llmPromptWritingGuidelines || ''
+    [
+      settings.llmPromptWritingGuidelines || '',
+      buildTagCatalogPromptGuidance(sceneDescription, settings),
+    ]
+      .filter(Boolean)
+      .join('\n\n')
   );
 
   // Build user prompt
@@ -726,7 +757,7 @@ export async function generateStandalonePrompts(
 
   // Parse — always use standalone parser (extracts TEXT + REASONING,
   // ignores INSERT_AFTER/INSERT_BEFORE that shared mode might produce)
-  const results = parseStandalonePromptSuggestions(llmResponse);
+  const results = parseStandalonePromptSuggestions(llmResponse, settings);
 
   if (results.length === 0) {
     logger.warn('Standalone LLM returned no valid prompts');

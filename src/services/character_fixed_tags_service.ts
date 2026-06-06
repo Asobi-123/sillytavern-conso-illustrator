@@ -10,7 +10,10 @@
  */
 
 import {parseCommonTags} from './prompt_tags';
-import type {CharacterFixedTagEntry} from '../types';
+import type {
+  CharacterFixedTagEntry,
+  CharacterFixedTagInjectionMode,
+} from '../types';
 
 /**
  * Person-indicator tags that signal a prompt depicts a character.
@@ -23,6 +26,7 @@ const PERSON_INDICATORS = [
   '4girls',
   '5girls',
   '6+girls',
+  'multiple_girls',
   'multiple girls',
   '1boy',
   '2boys',
@@ -30,6 +34,7 @@ const PERSON_INDICATORS = [
   '4boys',
   '5boys',
   '6+boys',
+  'multiple_boys',
   'multiple boys',
   'girl',
   'boy',
@@ -46,7 +51,14 @@ const PERSON_INDICATORS = [
 /**
  * Tags that explicitly indicate NO people in the scene.
  */
-const NO_PERSON_INDICATORS = ['no humans', 'nobody', 'no people', 'scenery'];
+const NO_PERSON_INDICATORS = [
+  'no humans',
+  'no_humans',
+  'nobody',
+  'no people',
+  'no_people',
+  'scenery',
+];
 
 /**
  * Checks if any of the character's names appear in the text (case-insensitive).
@@ -76,6 +88,153 @@ function promptHasPerson(promptTags: string[]): boolean {
   );
 }
 
+function groupForEntry(entry: CharacterFixedTagEntry): string | null {
+  const tags = parseCommonTags(entry.tags);
+  return tags.length > 0 ? `{${tags.join(', ')}}` : null;
+}
+
+function groupAlreadyPresent(prompt: string, group: string): boolean {
+  return prompt.toLowerCase().includes(group.toLowerCase());
+}
+
+function promptLooksMultiCharacter(promptTags: string[]): boolean {
+  const lowerTags = promptTags.map(tag => tag.toLowerCase().trim());
+  const hasGirl = lowerTags.some(tag => tag.includes('1girl'));
+  const hasBoy = lowerTags.some(tag => tag.includes('1boy'));
+  return (
+    (hasGirl && hasBoy) ||
+    lowerTags.some(tag =>
+      [
+        '2girls',
+        '3girls',
+        '4girls',
+        '5girls',
+        '6+girls',
+        'multiple_girls',
+        'multiple girls',
+        '2boys',
+        '3boys',
+        '4boys',
+        '5boys',
+        '6+boys',
+        'multiple_boys',
+        'multiple boys',
+        'couple',
+      ].some(indicator => tag.includes(indicator))
+    )
+  );
+}
+
+function applyLegacyCharacterFixedTags(
+  prompt: string,
+  messageText: string,
+  characterFixedTags: Record<string, CharacterFixedTagEntry>
+): string {
+  const promptTags = parseCommonTags(prompt);
+
+  if (!promptHasPerson(promptTags)) {
+    return prompt;
+  }
+
+  const characterGroups: string[] = [];
+
+  for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
+    if (!entry.enabled) continue;
+    if (!entry.tags || entry.tags.trim() === '') continue;
+
+    const allNames = entry.names.length > 0 ? entry.names : [primaryName];
+
+    if (!isCharacterInText(allNames, messageText)) continue;
+
+    const group = groupForEntry(entry);
+    if (!group || groupAlreadyPresent(prompt, group)) continue;
+
+    characterGroups.push(group);
+  }
+
+  if (characterGroups.length === 0) {
+    return prompt;
+  }
+
+  return `${characterGroups.join(', ')}, ${prompt}`;
+}
+
+function applyPipeAwareCharacterFixedTags(
+  prompt: string,
+  messageText: string,
+  characterFixedTags: Record<string, CharacterFixedTagEntry>,
+  mode: CharacterFixedTagInjectionMode
+): string | null {
+  if (!prompt.includes('|')) return null;
+
+  const segments = prompt.split('|').map(segment => segment.trim());
+  if (segments.length < 2) return null;
+
+  let changed = false;
+  const nextSegments = segments.map(segment => {
+    let nextSegment = segment;
+    for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
+      if (!entry.enabled || !entry.tags?.trim()) continue;
+      const allNames = entry.names.length > 0 ? entry.names : [primaryName];
+      if (!isCharacterInText(allNames, messageText)) continue;
+      if (!isCharacterInText(allNames, segment)) continue;
+
+      const group = groupForEntry(entry);
+      if (!group || groupAlreadyPresent(nextSegment, group)) continue;
+      nextSegment = `${group}, ${nextSegment}`;
+      changed = true;
+    }
+    return nextSegment;
+  });
+
+  if (changed) {
+    return nextSegments.join(' | ');
+  }
+
+  return mode === 'structure-aware'
+    ? applyLegacyCharacterFixedTags(prompt, messageText, characterFixedTags)
+    : prompt;
+}
+
+function applySectionAwareCharacterFixedTags(
+  prompt: string,
+  messageText: string,
+  characterFixedTags: Record<string, CharacterFixedTagEntry>,
+  mode: CharacterFixedTagInjectionMode
+): string | null {
+  if (!/Character\s+\d+\s+Prompt:/i.test(prompt)) return null;
+
+  const lines = prompt.split('\n');
+  let changed = false;
+
+  const nextLines = lines.map(line => {
+    if (!/Character\s+\d+\s+Prompt:/i.test(line)) return line;
+    let nextLine = line;
+
+    for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
+      if (!entry.enabled || !entry.tags?.trim()) continue;
+      const allNames = entry.names.length > 0 ? entry.names : [primaryName];
+      if (!isCharacterInText(allNames, messageText)) continue;
+      if (!isCharacterInText(allNames, line)) continue;
+
+      const group = groupForEntry(entry);
+      if (!group || groupAlreadyPresent(nextLine, group)) continue;
+      nextLine = nextLine.replace(/Prompt:\s*/i, match => `${match}${group}, `);
+      changed = true;
+    }
+
+    return nextLine;
+  });
+
+  if (changed) {
+    return nextLines.join('\n');
+  }
+
+  return mode === 'structure-aware'
+    ? applyLegacyCharacterFixedTags(prompt, messageText, characterFixedTags)
+    : prompt;
+}
+
 /**
  * Applies character fixed tags to a prompt based on which characters appear in the message.
  *
@@ -95,7 +254,8 @@ function promptHasPerson(promptTags: string[]): boolean {
 export function applyCharacterFixedTags(
   prompt: string,
   messageText: string,
-  characterFixedTags: Record<string, CharacterFixedTagEntry>
+  characterFixedTags: Record<string, CharacterFixedTagEntry>,
+  mode: CharacterFixedTagInjectionMode = 'legacy'
 ): string {
   if (!messageText || Object.keys(characterFixedTags).length === 0) {
     return prompt;
@@ -103,36 +263,36 @@ export function applyCharacterFixedTags(
 
   const promptTags = parseCommonTags(prompt);
 
-  // Skip injection entirely if prompt has no person indicators
   if (!promptHasPerson(promptTags)) {
     return prompt;
   }
 
-  // Build per-character tag groups wrapped in {} to prevent multi-character confusion
-  // Format: {name, gender, tag1, tag2}, {name2, gender2, tag3, tag4}, prompt tags...
-  const characterGroups: string[] = [];
+  if (mode !== 'legacy') {
+    const sectionAware = applySectionAwareCharacterFixedTags(
+      prompt,
+      messageText,
+      characterFixedTags,
+      mode
+    );
+    if (sectionAware !== null) return sectionAware;
 
-  for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
-    if (!entry.enabled) continue;
-    if (!entry.tags || entry.tags.trim() === '') continue;
+    const pipeAware = applyPipeAwareCharacterFixedTags(
+      prompt,
+      messageText,
+      characterFixedTags,
+      mode
+    );
+    if (pipeAware !== null) return pipeAware;
 
-    const allNames = entry.names.length > 0 ? entry.names : [primaryName];
-
-    if (!isCharacterInText(allNames, messageText)) continue;
-
-    const tags = parseCommonTags(entry.tags);
-    if (tags.length === 0) continue;
-
-    // Wrap each character's tags in {} to isolate them
-    characterGroups.push(`{${tags.join(', ')}}`);
+    if (
+      mode === 'skip-unmatched-multichar' &&
+      promptLooksMultiCharacter(promptTags)
+    ) {
+      return prompt;
+    }
   }
 
-  if (characterGroups.length === 0) {
-    return prompt;
-  }
-
-  // Character groups first, then original prompt (keep prompt tags as-is)
-  return `${characterGroups.join(', ')}, ${prompt}`;
+  return applyLegacyCharacterFixedTags(prompt, messageText, characterFixedTags);
 }
 
 /**

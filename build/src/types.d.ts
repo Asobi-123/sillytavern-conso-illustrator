@@ -172,6 +172,89 @@ export interface CharacterFixedTagEntry {
     /** Whether this entry is enabled */
     enabled: boolean;
 }
+export type CharacterFixedTagInjectionMode = 'legacy' | 'structure-aware' | 'skip-unmatched-multichar';
+export interface TagCatalogEntry {
+    tag: string;
+    label: string;
+    category: string;
+    postCount: number;
+    source?: 'built-in' | 'user';
+    triggers?: string[];
+}
+export interface TagCatalog {
+    metadata: {
+        version: string;
+        source: string;
+        generatedAt: string;
+        sourceUrl: string;
+        sourceCategory: string;
+        sourcePages: number;
+        minPostCount: number;
+        totalFetched: number;
+        includedTags: number;
+    };
+    categories: string[];
+    entries: TagCatalogEntry[];
+}
+export interface ZhTagBridgeEntry {
+    tag: string;
+    category: string;
+    triggers: string[];
+    englishAliases: string[];
+    coverage: 'bridged' | 'unbridged';
+    tokenCoverage: number;
+}
+export interface ZhTagBridge {
+    metadata: {
+        version: string;
+        generatedAt: string;
+        catalogVersion: string;
+        catalogHash: string;
+        sourceHash: string;
+        totalTags: number;
+        bridgedTags: number;
+        unbridgedTags: number;
+    };
+    entries: ZhTagBridgeEntry[];
+}
+export interface TagBridgeReport {
+    metadata: {
+        generatedAt: string;
+        bridgeVersion: string;
+        catalogVersion: string;
+        catalogHash: string;
+        sourceHash: string;
+    };
+    summary: {
+        catalogTags: number;
+        candidateTags: number;
+        bridgedTags: number;
+        unbridgedTags: number;
+        bridgedRatio: number;
+        categories: Record<string, {
+            total: number;
+            bridged: number;
+            unbridged: number;
+            ratio: number;
+        }>;
+        catalogCategories: Record<string, number>;
+    };
+    unbridgedHighFrequency: Array<{
+        tag: string;
+        label: string;
+        category: string;
+        postCount: number;
+    }>;
+}
+export interface TagCatalogCandidateSnapshot {
+    createdAt: string;
+    sourceText: string;
+    total: number;
+    buckets: Array<{
+        category: string;
+        tags: string[];
+    }>;
+}
 /** Standalone prompt generation result (no INSERT_AFTER/INSERT_BEFORE) */
 export interface StandalonePromptResult {
     text: string;

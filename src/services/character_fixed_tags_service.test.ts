@@ -147,6 +147,20 @@ describe('applyCharacterFixedTags', () => {
     );
   });
 
+  it('should NOT inject when prompt contains normalized no_humans tag', () => {
+    const tags: Record<string, CharacterFixedTagEntry> = {
+      陆知微: makeEntry(['陆知微'], 'lu zhiwei, girl, orange long hair'),
+    };
+    const result = applyCharacterFixedTags(
+      'no_humans, underground clinic, cyberpunk style, masterpiece',
+      '陆知微离开了房间。',
+      tags
+    );
+    expect(result).toBe(
+      'no_humans, underground clinic, cyberpunk style, masterpiece'
+    );
+  });
+
   it('should NOT inject when prompt contains "scenery"', () => {
     const tags: Record<string, CharacterFixedTagEntry> = {
       Elysia: makeEntry(['Elysia'], 'elysia, girl, silver hair'),
@@ -234,5 +248,62 @@ describe('applyCharacterFixedTags', () => {
     expect(
       applyCharacterFixedTags('multiple girls, park', 'Elysia was there.', tags)
     ).toBe('{elysia, girl, silver hair}, multiple girls, park');
+  });
+
+  it('should inject into matching NAI pipe character segments in structure-aware mode', () => {
+    const tags: Record<string, CharacterFixedTagEntry> = {
+      Elysia: makeEntry(['Elysia'], 'elysia, girl, silver hair, red eyes'),
+      Traveler: makeEntry(['Traveler'], 'traveler, boy, black hair'),
+    };
+    const result = applyCharacterFixedTags(
+      '1girl, 1boy, garden | girl, Elysia, smiling | boy, Traveler, standing',
+      'Elysia and Traveler met in the garden.',
+      tags,
+      'structure-aware'
+    );
+    expect(result).toBe(
+      '1girl, 1boy, garden | {elysia, girl, silver hair, red eyes}, girl, Elysia, smiling | {traveler, boy, black hair}, boy, Traveler, standing'
+    );
+  });
+
+  it('should inject into matching Character Prompt lines in structure-aware mode', () => {
+    const tags: Record<string, CharacterFixedTagEntry> = {
+      Elysia: makeEntry(['Elysia'], 'elysia, girl, silver hair, red eyes'),
+    };
+    const result = applyCharacterFixedTags(
+      'Scene Composition: garden,;\nCharacter 1 Prompt: 1girl, Elysia, smiling,;\nCharacter 1 UC: bad anatomy,;',
+      'Elysia smiled in the garden.',
+      tags,
+      'structure-aware'
+    );
+    expect(result).toBe(
+      'Scene Composition: garden,;\nCharacter 1 Prompt: {elysia, girl, silver hair, red eyes}, 1girl, Elysia, smiling,;\nCharacter 1 UC: bad anatomy,;'
+    );
+  });
+
+  it('should skip unmatched multi-character prompts in safe mode', () => {
+    const tags: Record<string, CharacterFixedTagEntry> = {
+      Elysia: makeEntry(['Elysia'], 'elysia, girl, silver hair, red eyes'),
+      Traveler: makeEntry(['Traveler'], 'traveler, boy, black hair'),
+    };
+    const result = applyCharacterFixedTags(
+      '1girl, 1boy, garden, smiling, standing',
+      'Elysia and Traveler met in the garden.',
+      tags,
+      'skip-unmatched-multichar'
+    );
+    expect(result).toBe('1girl, 1boy, garden, smiling, standing');
+  });
+
+  it('should not duplicate an already injected fixed tag group', () => {
+    const tags: Record<string, CharacterFixedTagEntry> = {
+      Elysia: makeEntry(['Elysia'], 'elysia, girl, silver hair'),
+    };
+    const result = applyCharacterFixedTags(
+      '{elysia, girl, silver hair}, 1girl, garden',
+      'Elysia appeared.',
+      tags
+    );
+    expect(result).toBe('{elysia, girl, silver hair}, 1girl, garden');
   });
 });

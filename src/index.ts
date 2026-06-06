@@ -86,6 +86,8 @@ import {
 import {initializeCharacterTagsPanel} from './character_tags_ui';
 import {initializeStandaloneGeneration} from './standalone_generation_ui';
 import {initializePromptLibrary} from './prompt_library_ui';
+import {initializeTagCatalog} from './tag_catalog_ui';
+import {initializePresetImport} from './preset_import_ui';
 import {listAvailableStyleNames} from './services/sd_style_randomizer';
 import {createVibeSourceDataUrl} from './services/vibe_source_image';
 import {htmlEncode} from './utils/dom_utils';
@@ -793,6 +795,9 @@ function updateUI(): void {
   const commonStyleTagsPositionSelect = document.getElementById(
     UI_ELEMENT_IDS.COMMON_STYLE_TAGS_POSITION
   ) as HTMLSelectElement;
+  const characterTagInjectionModeSelect = document.getElementById(
+    UI_ELEMENT_IDS.CHARACTER_TAG_INJECTION_MODE
+  ) as HTMLSelectElement;
   const manualGenModeSelect = document.getElementById(
     UI_ELEMENT_IDS.MANUAL_GEN_MODE
   ) as HTMLSelectElement;
@@ -853,6 +858,10 @@ function updateUI(): void {
     commonStyleTagsTextarea.value = settings.commonStyleTags;
   if (commonStyleTagsPositionSelect)
     commonStyleTagsPositionSelect.value = settings.commonStyleTagsPosition;
+  if (characterTagInjectionModeSelect) {
+    characterTagInjectionModeSelect.value =
+      settings.characterFixedTagInjectionMode || 'legacy';
+  }
   if (manualGenModeSelect)
     manualGenModeSelect.value = settings.manualGenerationMode;
   if (showGalleryWidgetCheckbox)
@@ -1361,6 +1370,9 @@ function handleSettingsChange(): void {
   const commonStyleTagsPositionSelect = document.getElementById(
     UI_ELEMENT_IDS.COMMON_STYLE_TAGS_POSITION
   ) as HTMLSelectElement;
+  const characterTagInjectionModeSelect = document.getElementById(
+    UI_ELEMENT_IDS.CHARACTER_TAG_INJECTION_MODE
+  ) as HTMLSelectElement;
   const manualGenModeSelect = document.getElementById(
     UI_ELEMENT_IDS.MANUAL_GEN_MODE
   ) as HTMLSelectElement;
@@ -1622,6 +1634,9 @@ function handleSettingsChange(): void {
   settings.commonStyleTagsPosition =
     (commonStyleTagsPositionSelect?.value as 'prefix' | 'suffix') ??
     settings.commonStyleTagsPosition;
+  settings.characterFixedTagInjectionMode =
+    (characterTagInjectionModeSelect?.value as AutoIllustratorSettings['characterFixedTagInjectionMode']) ??
+    settings.characterFixedTagInjectionMode;
   settings.manualGenerationMode =
     (manualGenModeSelect?.value as 'replace' | 'append') ??
     settings.manualGenerationMode;
@@ -2293,7 +2308,8 @@ function handleViewLastRequest(): void {
       maxHeight: '60vh',
       overflow: 'auto',
       fontSize: '0.85em',
-      background: 'var(--SmartThemeBotMesBlurTintColor, #1a1a2e)',
+      background: 'var(--ai-panel-bg-2)',
+      color: 'var(--ai-panel-text)',
       padding: '0.75rem',
       borderRadius: '6px',
     })
@@ -3964,6 +3980,9 @@ function initialize(): void {
       'change',
       handleSettingsChange
     );
+    document
+      .getElementById(UI_ELEMENT_IDS.CHARACTER_TAG_INJECTION_MODE)
+      ?.addEventListener('change', handleSettingsChange);
     manualGenModeSelect?.addEventListener('change', handleSettingsChange);
     promptGenModeRegexRadio?.addEventListener('change', () => {
       toggleIndependentApiSettingsVisibility();
@@ -4465,6 +4484,15 @@ function initialize(): void {
 
     // Initialize prompt library panel
     initializePromptLibrary(context, settings);
+
+    // Initialize prompt personalization panels
+    initializeTagCatalog(settings, () => saveSettings(settings, context));
+    initializePresetImport(
+      context,
+      settings,
+      () => saveSettings(settings, context),
+      updateUI
+    );
 
     // Mount the floating panel after all source controls and submodules are ready.
     initializeFloatingPanel();

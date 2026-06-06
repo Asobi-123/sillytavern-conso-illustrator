@@ -210,6 +210,25 @@ describe('settings', () => {
       expect(loaded.restoreSdStyleAfter).toBe(false);
     });
 
+    it('should sanitize custom tag bridge trigger overrides on load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            customTagBridgeTriggers: {
+              hair_ornament: [' 发饰 ', '', '头饰', '发饰'],
+              bad: 'not-array',
+            },
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.customTagBridgeTriggers).toEqual({
+        hair_ornament: ['发饰', '头饰'],
+      });
+    });
+
     it('should sanitize Vibe Transfer fields on load', () => {
       const mockContext = createMockContext({
         extensionSettings: {

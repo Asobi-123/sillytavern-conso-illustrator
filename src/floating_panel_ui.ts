@@ -23,6 +23,8 @@ const SLOT_IDS = {
   guidelines: 'ai-floating-panel-slot-guidelines',
   independentLlm: 'ai-floating-panel-slot-independent-llm',
   promptStyle: 'ai-floating-panel-slot-prompt-style',
+  tagCatalogOverlay: 'ai-floating-panel-slot-tag-catalog-overlay',
+  presetImportOverlay: 'ai-floating-panel-slot-preset-import-overlay',
   standalone: 'ai-floating-panel-slot-standalone',
   contextOverlay: 'ai-floating-panel-slot-context-overlay',
   worldOverlay: 'ai-floating-panel-slot-world-overlay',
@@ -49,6 +51,8 @@ const PANEL_IDS = {
   contextOverlay: 'ai-floating-panel-overlay-context',
   worldOverlay: 'ai-floating-panel-overlay-world',
   characterOverlay: 'ai-floating-panel-overlay-character',
+  tagCatalogOverlay: 'ai-floating-panel-overlay-tag-catalog',
+  presetImportOverlay: 'ai-floating-panel-overlay-preset-import',
   textOverlay: 'ai-floating-panel-overlay-text',
   textOverlayTitle: 'ai-floating-panel-text-overlay-title',
   textOverlayTextarea: 'ai-floating-panel-text-overlay-textarea',
@@ -91,6 +95,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#7aaef5',
     '--accent-soft': 'rgba(122, 174, 245, 0.15)',
     '--success': '#67e27a',
+    '--warning': '#e0a85f',
+    '--danger': '#d86f72',
     '--switch-off': '#3f495e',
     '--switch-on': '#5f88c3',
     '--switch-knob': '#dfe6f6',
@@ -111,6 +117,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#a8b0bf',
     '--accent-soft': 'rgba(168, 176, 191, 0.16)',
     '--success': '#67e27a',
+    '--warning': '#d0a05c',
+    '--danger': '#d77878',
     '--switch-off': '#4b4b4b',
     '--switch-on': '#7c8799',
     '--switch-knob': '#efefef',
@@ -131,6 +139,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#69b8ff',
     '--accent-soft': 'rgba(105, 184, 255, 0.16)',
     '--success': '#67e27a',
+    '--warning': '#e0b36a',
+    '--danger': '#dd7a7a',
     '--switch-off': '#38556e',
     '--switch-on': '#63a9e6',
     '--switch-knob': '#edf6ff',
@@ -151,6 +161,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#e0a85f',
     '--accent-soft': 'rgba(224, 168, 95, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#e0a85f',
+    '--danger': '#dd7b72',
     '--switch-off': '#665243',
     '--switch-on': '#c98d4a',
     '--switch-knob': '#f7efe8',
@@ -171,6 +183,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#7a94c9',
     '--accent-soft': 'rgba(122, 148, 201, 0.18)',
     '--success': '#167a3d',
+    '--warning': '#9a6a28',
+    '--danger': '#b94747',
     '--switch-off': '#b7c4d3',
     '--switch-on': '#7d97ca',
     '--switch-knob': '#ffffff',
@@ -191,6 +205,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#c48c52',
     '--accent-soft': 'rgba(196, 140, 82, 0.18)',
     '--success': '#167a3d',
+    '--warning': '#946321',
+    '--danger': '#b94747',
     '--switch-off': '#d3c2b0',
     '--switch-on': '#c69157',
     '--switch-knob': '#fffdf9',
@@ -211,6 +227,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#5d9fd6',
     '--accent-soft': 'rgba(93, 159, 214, 0.18)',
     '--success': '#167a3d',
+    '--warning': '#8f6728',
+    '--danger': '#b94747',
     '--switch-off': '#b8cedc',
     '--switch-on': '#659fd2',
     '--switch-knob': '#ffffff',
@@ -231,6 +249,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#d28faf',
     '--accent-soft': 'rgba(210, 143, 175, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#e2b164',
+    '--danger': '#e07b8d',
     '--switch-off': '#69566a',
     '--switch-on': '#cf8dac',
     '--switch-knob': '#fff8fc',
@@ -251,6 +271,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#6dc7b0',
     '--accent-soft': 'rgba(109, 199, 176, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#e1b85f',
+    '--danger': '#dc7a7a',
     '--switch-off': '#43665f',
     '--switch-on': '#68c3ac',
     '--switch-knob': '#f2fffb',
@@ -271,6 +293,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#a89ae6',
     '--accent-soft': 'rgba(168, 154, 230, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#d5b36b',
+    '--danger': '#d97d96',
     '--switch-off': '#57537e',
     '--switch-on': '#9f92df',
     '--switch-knob': '#fbfaff',
@@ -291,6 +315,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#9bad57',
     '--accent-soft': 'rgba(155, 173, 87, 0.18)',
     '--success': '#167a3d',
+    '--warning': '#7a6d19',
+    '--danger': '#b84747',
     '--switch-off': '#c5cda7',
     '--switch-on': '#93aa55',
     '--switch-knob': '#ffffff',
@@ -311,6 +337,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#8a8a8a',
     '--accent-soft': 'rgba(138, 138, 138, 0.14)',
     '--success': '#67e27a',
+    '--warning': '#c7a85f',
+    '--danger': '#d86f72',
     '--switch-off': '#3a3a3a',
     '--switch-on': '#6e6e6e',
     '--switch-knob': '#e0e0e0',
@@ -331,6 +359,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#555555',
     '--accent-soft': 'rgba(85, 85, 85, 0.12)',
     '--success': '#167a3d',
+    '--warning': '#7a6d19',
+    '--danger': '#b84747',
     '--switch-off': '#cccccc',
     '--switch-on': '#666666',
     '--switch-knob': '#ffffff',
@@ -351,6 +381,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#4d8aff',
     '--accent-soft': 'rgba(77, 138, 255, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#d0a65f',
+    '--danger': '#d86f72',
     '--switch-off': '#2c4a78',
     '--switch-on': '#4c85f2',
     '--switch-knob': '#e8f0ff',
@@ -371,6 +403,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#c09070',
     '--accent-soft': 'rgba(192, 144, 112, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#d0a064',
+    '--danger': '#d87972',
     '--switch-off': '#5a483c',
     '--switch-on': '#b58568',
     '--switch-knob': '#f5ede6',
@@ -391,6 +425,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#d4738e',
     '--accent-soft': 'rgba(212, 115, 142, 0.16)',
     '--success': '#167a3d',
+    '--warning': '#9a6a28',
+    '--danger': '#b84768',
     '--switch-off': '#d6bfc9',
     '--switch-on': '#d07590',
     '--switch-knob': '#ffffff',
@@ -411,6 +447,8 @@ const THEME_PRESETS: Record<PanelTheme, Record<string, string>> = {
     '--accent': '#b088e0',
     '--accent-soft': 'rgba(176, 136, 224, 0.18)',
     '--success': '#67e27a',
+    '--warning': '#d2a86c',
+    '--danger': '#d17a97',
     '--switch-off': '#504468',
     '--switch-on': '#a880d8',
     '--switch-knob': '#f5f0fa',
@@ -593,6 +631,16 @@ function panelHtml(): string {
                 <strong>${t('panel.commonSection')}</strong>
               </div>
               <div class="ai-floating-panel-stack">
+                <div class="ai-floating-panel-tool-strip">
+                  <button class="ai-floating-panel-tool-btn" data-open-overlay="${PANEL_IDS.tagCatalogOverlay}" type="button">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>${t('drawer.tagCatalog')}</span>
+                  </button>
+                  <button class="ai-floating-panel-tool-btn" data-open-overlay="${PANEL_IDS.presetImportOverlay}" type="button">
+                    <i class="fa-solid fa-file-import"></i>
+                    <span>${t('drawer.presetImport')}</span>
+                  </button>
+                </div>
                 <div class="ai-floating-panel-subcard no-collapse">
                   <div class="ai-floating-panel-subcard-head">
                     <strong>${t('drawer.promptDetectionAndStyle')}</strong>
@@ -699,17 +747,37 @@ function panelHtml(): string {
           </div>
         </div>
 
-        <div id="${PANEL_IDS.textOverlay}" class="ai-floating-panel-overlay">
+        <div id="${PANEL_IDS.tagCatalogOverlay}" class="ai-floating-panel-overlay">
+          <div class="ai-floating-panel-overlay-head">
+            <strong>${t('drawer.tagCatalog')}</strong>
+            <button class="ai-floating-panel-icon-btn" data-close-overlay="${PANEL_IDS.tagCatalogOverlay}">×</button>
+          </div>
+          <div class="ai-floating-panel-overlay-body">
+            <div id="${SLOT_IDS.tagCatalogOverlay}"></div>
+          </div>
+        </div>
+
+        <div id="${PANEL_IDS.presetImportOverlay}" class="ai-floating-panel-overlay">
+          <div class="ai-floating-panel-overlay-head">
+            <strong>${t('drawer.presetImport')}</strong>
+            <button class="ai-floating-panel-icon-btn" data-close-overlay="${PANEL_IDS.presetImportOverlay}">×</button>
+          </div>
+          <div class="ai-floating-panel-overlay-body">
+            <div id="${SLOT_IDS.presetImportOverlay}"></div>
+          </div>
+        </div>
+
+        <div id="${PANEL_IDS.textOverlay}" class="ai-floating-panel-overlay ai-floating-panel-text-editor-overlay">
           <div class="ai-floating-panel-overlay-head">
             <strong id="${PANEL_IDS.textOverlayTitle}">${t('panel.fullscreenEditor')}</strong>
-            <button class="ai-floating-panel-icon-btn" data-close-overlay="${PANEL_IDS.textOverlay}">×</button>
+            <button class="ai-floating-panel-icon-btn" type="button" data-close-overlay="${PANEL_IDS.textOverlay}">×</button>
           </div>
           <div class="ai-floating-panel-overlay-body">
             <div class="ai-floating-panel-text-overlay">
               <textarea id="${PANEL_IDS.textOverlayTextarea}" class="text_pole textarea_compact" rows="18"></textarea>
               <div class="ai-floating-panel-text-overlay-actions">
-                <button class="ai-floating-panel-ghost-btn" data-close-overlay="${PANEL_IDS.textOverlay}">${t('settings.cancel')}</button>
-                <button id="${PANEL_IDS.textOverlayApply}" class="ai-floating-panel-ghost-btn">${t('panel.apply')}</button>
+                <button class="ai-floating-panel-ghost-btn" type="button" data-close-overlay="${PANEL_IDS.textOverlay}">${t('settings.cancel')}</button>
+                <button id="${PANEL_IDS.textOverlayApply}" class="ai-floating-panel-ghost-btn" type="button">${t('panel.apply')}</button>
               </div>
             </div>
           </div>
@@ -746,19 +814,59 @@ function ensureStyle(): void {
       --line: #465067;
       --text: #eef2f8;
       --text-2: #bcc5d8;
-      --text-3: #8892a9;
-      --accent: #7aaef5;
-      --accent-soft: rgba(122, 174, 245, 0.15);
-      --success: #67e27a;
-      --switch-off: #3f495e;
-      --switch-on: #5f88c3;
-      --switch-knob: #dfe6f6;
-      position: fixed;
+	      --text-3: #8892a9;
+	      --accent: #7aaef5;
+	      --accent-soft: rgba(122, 174, 245, 0.15);
+	      --success: #67e27a;
+	      --warning: #e0a85f;
+	      --danger: #d86f72;
+	      --switch-off: #3f495e;
+	      --switch-on: #5f88c3;
+	      --switch-knob: #dfe6f6;
+	      --ai-panel-bg: var(--panel);
+	      --ai-panel-bg-2: var(--panel-2);
+	      --ai-panel-bg-3: var(--panel-3);
+	      --ai-panel-overlay: var(--overlay-bg);
+	      --ai-panel-border: var(--line);
+	      --ai-panel-accent: var(--accent);
+	      --ai-panel-accent-soft: var(--accent-soft);
+	      --ai-panel-text: var(--text);
+	      --ai-panel-text-2: var(--text-2);
+	      --ai-panel-text-3: var(--text-3);
+	      --ai-panel-success: var(--success);
+	      --ai-panel-warning: var(--warning);
+	      --ai-panel-danger: var(--danger);
+	      --ai-control-bg: var(--field-bg);
+	      --ai-control-bg-focus: var(--field-bg);
+	      --ai-control-bg-disabled: var(--panel-soft);
+	      --ai-control-text: var(--text);
+	      --ai-control-text-muted: var(--text-3);
+	      --ai-control-text-disabled: var(--text-2);
+	      --ai-control-border: var(--line);
+	      --ai-control-border-focus: var(--accent);
+	      --ai-control-focus-ring: var(--accent-soft);
+	      position: fixed;
       left: 16px;
       top: 16px;
       z-index: 9998;
       color: var(--text);
       font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    }
+
+    #${ROOT_ID}.text-overlay-open {
+      left: 0 !important;
+      top: 0 !important;
+      width: 100vw;
+      height: 100dvh;
+      z-index: 100000;
+    }
+
+    .ai-floating-panel-root button,
+    .ai-floating-panel-root .menu_button,
+    .ai-floating-panel-root .menu_button_icon {
+      writing-mode: horizontal-tb !important;
+      text-orientation: mixed !important;
+      white-space: nowrap;
     }
 
     .ai-floating-panel-launcher {
@@ -838,6 +946,8 @@ function ensureStyle(): void {
     .ai-floating-panel-icon-btn {
       width: 28px;
       height: 28px;
+      min-width: 28px;
+      flex: 0 0 auto;
       border-radius: 9px;
       border: 1px solid var(--line);
       background: var(--panel-3);
@@ -1000,6 +1110,38 @@ function ensureStyle(): void {
       flex: 0 0 auto;
     }
 
+    .ai-floating-panel-tool-strip {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .ai-floating-panel-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex: 1 0 max-content;
+      min-height: 38px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel-3);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      writing-mode: horizontal-tb;
+      text-orientation: mixed;
+    }
+
+    .ai-floating-panel-tool-btn:hover {
+      border-color: var(--accent);
+      background: var(--panel-2);
+    }
+
     .ai-floating-panel-toggle {
       width: 18px;
       height: 18px;
@@ -1008,7 +1150,12 @@ function ensureStyle(): void {
     }
 
     .ai-floating-panel-ghost-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 7px 9px;
+      min-width: max-content;
+      min-height: 32px;
       border-radius: 10px;
       border: 1px solid var(--line);
       background: var(--panel-3);
@@ -1060,6 +1207,19 @@ function ensureStyle(): void {
       z-index: 5;
     }
 
+    #${PANEL_IDS.textOverlay} {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      max-width: none;
+      max-height: none;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      z-index: 100001;
+    }
+
     .ai-floating-panel-overlay.open {
       display: flex;
     }
@@ -1071,16 +1231,50 @@ function ensureStyle(): void {
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      min-width: 0;
     }
 
     .ai-floating-panel-overlay-head strong {
       font-size: 14px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .ai-floating-panel-overlay-body {
       flex: 1;
+      min-height: 0;
       overflow: auto;
       padding: 14px;
+    }
+
+    #${PANEL_IDS.tagCatalogOverlay} .ai-floating-panel-overlay-body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #${SLOT_IDS.tagCatalogOverlay} {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #${SLOT_IDS.tagCatalogOverlay} > #${UI_SECTION_IDS.TAG_CATALOG} {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #${PANEL_IDS.textOverlay} .ai-floating-panel-overlay-body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 12px;
     }
 
     .ai-floating-panel-text-actions {
@@ -1090,21 +1284,38 @@ function ensureStyle(): void {
     }
 
     .ai-floating-panel-text-overlay {
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 10px;
+      flex: 1 1 auto;
       height: 100%;
+      min-height: 0;
+      min-width: 0;
     }
 
     .ai-floating-panel-text-overlay textarea {
       flex: 1 1 auto;
-      min-height: min(55dvh, 420px);
-      resize: vertical;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      resize: none;
+      overflow: auto;
     }
 
     .ai-floating-panel-text-overlay-actions {
       display: flex;
+      flex: 0 0 auto;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
       justify-content: flex-end;
       gap: 8px;
+      min-width: 0;
+    }
+
+    .ai-floating-panel-text-overlay-actions .ai-floating-panel-ghost-btn {
+      flex: 0 0 auto;
+      min-width: 6rem;
     }
 
     .ai-floating-panel-root .text_pole,
@@ -1171,10 +1382,15 @@ function ensureStyle(): void {
 
     .ai-floating-panel-root .menu_button,
     .ai-floating-panel-root .menu_button_icon {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.35rem !important;
       border-radius: 10px !important;
       background: var(--panel-3) !important;
       color: var(--text) !important;
       border: 1px solid var(--line) !important;
+      min-width: max-content !important;
     }
 
     .ai-floating-panel-root .pattern-validation-status,
@@ -1584,12 +1800,20 @@ function setStandaloneWorldEnabled(enabled: boolean): void {
 
 function openOverlay(id: string): void {
   const overlay = document.getElementById(id);
+  if (id === PANEL_IDS.textOverlay) {
+    root()?.classList.add('text-overlay-open');
+  }
   if (overlay) overlay.classList.add('open');
 }
 
 function closeOverlay(id: string): void {
   const overlay = document.getElementById(id);
   if (overlay) overlay.classList.remove('open');
+  if (id === PANEL_IDS.textOverlay) {
+    root()?.classList.remove('text-overlay-open');
+    currentTextTarget = null;
+    textOverlayReadonly = false;
+  }
 }
 
 function closeAllOverlays(): void {
@@ -1598,6 +1822,7 @@ function closeAllOverlays(): void {
     .forEach(overlay => {
       overlay.classList.remove('open');
     });
+  root()?.classList.remove('text-overlay-open');
 }
 
 function ensureRoot(): HTMLElement {
@@ -1623,6 +1848,8 @@ function mountSourceSections(): void {
   mountSection(UI_SECTION_IDS.GUIDELINES, SLOT_IDS.guidelines);
   mountSection(UI_SECTION_IDS.INDEPENDENT_LLM, SLOT_IDS.independentLlm);
   mountSection(UI_SECTION_IDS.PROMPT_STYLE, SLOT_IDS.promptStyle);
+  mountSection(UI_SECTION_IDS.TAG_CATALOG, SLOT_IDS.tagCatalogOverlay);
+  mountSection(UI_SECTION_IDS.PRESET_IMPORT, SLOT_IDS.presetImportOverlay);
   mountSection(UI_SECTION_IDS.STANDALONE, SLOT_IDS.standalone);
   mountSection(UI_SECTION_IDS.CONTEXT_INJECTION, SLOT_IDS.contextOverlay);
   mountSection(UI_SECTION_IDS.WORLD_INFO, SLOT_IDS.worldOverlay);
@@ -1869,6 +2096,7 @@ function openTextOverlay(
   }
 
   openOverlay(PANEL_IDS.textOverlay);
+  textarea?.focus();
 }
 
 function applyTextOverlayChanges(): void {
@@ -1897,6 +2125,8 @@ function applyTextOverlayChanges(): void {
   }
 
   closeOverlay(PANEL_IDS.textOverlay);
+  currentTextTarget = null;
+  textOverlayReadonly = false;
 }
 
 function addExpandButton(
@@ -1938,12 +2168,56 @@ function enhanceLongTextEditors(): void {
       title: t('settings.llmPromptWritingGuidelines'),
     },
     {
+      selector: `#${UI_ELEMENT_IDS.PROMPT_PATTERNS}`,
+      title: t('drawer.promptDetectionAndStyle'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.COMMON_STYLE_TAGS}`,
+      title: t('settings.commonStyleTags'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.CONTENT_FILTER_TAGS}`,
+      title: t('settings.contentFilterTags'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.PRESET_IMPORT_JSON}`,
+      title: t('presetImport.json'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.PRESET_IMPORT_REQUIREMENT}`,
+      title: t('presetImport.requirement'),
+    },
+    {
+      selector: '[data-draft-field="sharedMetaPrompt"]',
+      title: t('presetImport.sharedDraft'),
+    },
+    {
+      selector: '[data-draft-field="promptWritingGuidelines"]',
+      title: t('presetImport.writingDraft'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.STANDALONE_SCENE_INPUT}`,
+      title: t('standalone.sceneDescription'),
+    },
+    {
       selector: `#${UI_ELEMENT_IDS.STANDALONE_MANUAL_PROMPT_INPUT}`,
       title: t('standalone.modeManual'),
     },
     {
       selector: '.standalone-prompt-card textarea',
       title: t('standalone.generatePrompts'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.PROMPT_LIBRARY_EDIT_POSITIVE}`,
+      title: t('promptLibrary.positivePrompt'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.PROMPT_LIBRARY_EDIT_NEGATIVE}`,
+      title: t('promptLibrary.negativePrompt'),
+    },
+    {
+      selector: `#${UI_ELEMENT_IDS.PROMPT_LIBRARY_EDIT_CHARACTER}`,
+      title: t('promptLibrary.characterPrompt'),
     },
   ];
 

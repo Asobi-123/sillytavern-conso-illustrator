@@ -648,7 +648,7 @@ Result: Operations run concurrently, no conflicts (different messages)
 
 **SETTINGS-005**: Reset button restores defaults with confirmation dialog
 
-**SETTINGS-006**: Plugin-owned panels, dialogs, and editors must keep text inputs, textareas, selects, placeholders, readonly states, and disabled states readable across SillyTavern themes. They must not rely only on inherited `SmartThemeBodyColor`.
+**SETTINGS-006**: Plugin-owned panels, dialogs, and editors must keep text inputs, textareas, selects, placeholders, readonly states, and disabled states readable across SillyTavern themes. They must not rely only on inherited SillyTavern theme text colors.
 
 **SETTINGS-007**: Floating panel content must use panel-local theme variables for text, muted text, success states, field backgrounds, and borders so light and dark panel themes remain readable after theme switching.
 

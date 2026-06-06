@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "gts clean",
-    "compile": "tsc"
+    "compile": "tsc",
+    "catalog:update": "node scripts/update-tag-catalog.mjs",
+    "catalog:bridge": "node scripts/generate-zh-tag-bridge.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",

@@ -8,7 +8,7 @@
  * - Each character's tags are wrapped in {} to prevent multi-character confusion
  *   e.g. {lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}
  */
-import type { CharacterFixedTagEntry } from '../types';
+import type { CharacterFixedTagEntry, CharacterFixedTagInjectionMode } from '../types';
 /**
  * Applies character fixed tags to a prompt based on which characters appear in the message.
  *
@@ -25,7 +25,7 @@ import type { CharacterFixedTagEntry } from '../types';
  * @param characterFixedTags - Character fixed tag entries keyed by primary name
  * @returns Enhanced prompt with character tag groups prepended
  */
-export declare function applyCharacterFixedTags(prompt: string, messageText: string, characterFixedTags: Record<string, CharacterFixedTagEntry>): string;
+export declare function applyCharacterFixedTags(prompt: string, messageText: string, characterFixedTags: Record<string, CharacterFixedTagEntry>, mode?: CharacterFixedTagInjectionMode): string;
 /**
  * Gets the current chat participants (main character + user persona).
  * Uses fresh context snapshot and characters array for reliable name lookup.
