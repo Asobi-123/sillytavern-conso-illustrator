@@ -28,32 +28,22 @@ Image appears inline in the chat
 
 ## Quick Start
 
-### Prerequisites
+Prerequisite: SillyTavern is running and the native `/sd` image generation command works.
 
-- SillyTavern installed and running
-- Image generation configured and working (e.g. NovelAI — test with `/sd` command first)
+Install from SillyTavern's extension installer:
 
-### Install
+```
+https://github.com/Asobi-123/sillytavern-conso-illustrator
+```
 
-**Option A** — From SillyTavern UI (recommended):
-
-1. Go to **Extensions** → **Install Extension**
-2. Enter: `https://github.com/Asobi-123/sillytavern-conso-illustrator`
-3. Reload the page
-
-**Option B** — Manual:
+Or install manually:
 
 ```bash
 cd SillyTavern/data/default-user/extensions/
 git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 ```
 
-### Start Generating
-
-1. Open **Extensions** → expand **Auto Illustrator** → check **Enable**
-2. Pick a Meta Prompt Preset (recommended: **NAI 4.5 Full** for NovelAI users)
-3. If you keep the floating panel enabled, a small launcher icon will appear on the right side; click it to open the workbench
-4. Send a chat message — images will appear automatically!
+Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 
 ---
 
@@ -127,33 +117,24 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 ## Tag Catalog and AI Candidate Tags
 
-Tag Catalog is an offline catalog bundled with the extension package. Runtime use does not fetch network resources, and users do not need to collect a base tag set manually. The current bundled catalog version is `2026-06` with 7928 tags across subject, hair, eyes, expression, pose/action, clothing, scene, camera, lighting/style, UC, and general categories.
+The extension ships with an offline tag catalog. Runtime use does not fetch network resources. The current bundled catalog version is `2026-06` with 7928 tags.
 
-It has two roles:
+Key points:
 
-- **Manual browsing**: search, filter, page through tags, copy selected tags, or add selected tags to common style tags. Selected tags are only a temporary basket and are not automatically sent to the AI.
-- **AI candidates**: Independent API prompt generation and standalone prompt generation build a matched candidate pool from the current text, randomly sample a small per-category subset, and send that subset to the LLM as vocabulary reference. The full catalog is never sent to the AI, and candidates are not forced into the final image prompt.
+- Search, page, copy, add to common tags, and add custom tags under the same category taxonomy.
+- Independent prompt generation sends only a small random sample from the current text's matched candidate pool, never the full catalog.
+- Chinese bridge coverage is visible; user trigger supplements are stored locally and do not overwrite the built-in bridge.
+- The latest candidate snapshot shows exactly which tags were sent to the AI.
 
-Chinese story text is matched through a bundled Chinese trigger bridge. The current bridge covers 3078 candidate tags; tags without Chinese triggers are visible through the “No zh triggers” filter. Users can add supplemental triggers per tag. Those local triggers do not overwrite the built-in bridge.
-
-Users can also add custom tags under the same category taxonomy. Duplicate tags are skipped automatically, and custom tags can be filtered and deleted later.
-
-Candidate counts are visible and editable in the Tag Catalog panel. The latest candidate snapshot shows the source text and the exact candidate tags sent to the AI.
+Detailed usage: [Tag Catalog tutorial](docs/QUICKSTART_CN.md#tag-超市可选).
 
 ---
 
 ## Preset Adapter
 
-Preset Adapter converts external JSON/text presets or free-form requirements into Conso-native preset drafts. It does not directly use external runtime formats and does not ship any external preset as built-in behavior.
+Preset Adapter converts external JSON/text presets or free-form requirements into Conso-native drafts. It does not directly use external runtime formats and does not ship any external preset as built-in behavior.
 
-Usage:
-
-1. Open **Preset Adapter** from the floating panel's **Prompt Settings** page.
-2. Choose a JSON/text file, paste preset text, or write requirements.
-3. Select the target: Shared API meta prompt, Independent API guidelines, or both.
-4. Generate a draft, review it, then save it as a custom preset.
-
-Shared API and Independent API targets are generated separately. Shared API drafts keep Conso's HTML comment output format and generation frequency rules; Independent API drafts focus on prompt-writing guidelines only.
+Shared API and Independent API targets are generated separately, and drafts require manual review before saving. Detailed usage: [Preset Adapter tutorial](docs/QUICKSTART_CN.md#预设适配可选进阶).
 
 ---
 
@@ -161,50 +142,18 @@ Shared API and Independent API targets are generated separately. Shared API draf
 
 Some NovelAI advanced features require the companion server plugin: Vibe Transfer and Inpaint. Normal `/sd` generation works with only the frontend extension, but these advanced features need the backend folder.
 
-### Install the companion server plugin
+Backend folder: `server-plugin/auto-illustrator-nai-advanced`. Install it, enable `enableServerPlugins`, and restart SillyTavern before using advanced features.
 
-1. Copy this repository's `server-plugin/auto-illustrator-nai-advanced` folder.
-2. Paste it into `<SillyTavern root>/plugins/auto-illustrator-nai-advanced`. If an older folder with the same name already exists, replace it with the new one.
-3. Make sure SillyTavern already has a NovelAI API token configured.
-4. Set `enableServerPlugins: true` in `<SillyTavern root>/config.yaml`.
-5. Restart SillyTavern. Reloading the page alone will not load a new server plugin.
-6. Reload the page, then use Vibe Transfer or Inpaint.
+- **Vibe Transfer**: adds NovelAI reference-image conditioning for chat and standalone generation.
+- **Inpaint**: paint a mask on an existing image, preview the edit, then append or replace.
 
-The panel also includes an **Install help** button with the same instructions.
-
-### NovelAI Vibe Transfer
-
-Vibe Transfer adds reference-image conditioning on top of the existing prompt flow. Positive prompts, negative prompts, common style tags, character fixed tags, SD Styles, and randomized SD Styles still apply; Vibe only adds reference conditioning to the same NovelAI generation request.
-
-### Usage and cache behavior
-
-- Works in both chat image generation and standalone generation.
-- For V4/V4.5, the cache is matched by current SD/NAI model, Information Extracted value, and reference-image fingerprint. If a matching encoded vibe exists, it is reused; otherwise the plugin calls `encode-vibe`.
-- Changing the model, Information Extracted value, or reference image creates a new cache entry.
-- V3 does not use the encode-vibe cache and still sends the original reference image payload.
-- Uploaded reference images are stored as compressed Vibe source images: longest side 768px, converted to JPEG. Large original PNG files are not stored in extension settings.
-- Each reference can be named, tagged with chips, and searched by name or tag. Enabled references are sorted to the top.
-- Presets save which references are enabled, not a specific encoded cache. After applying a preset, generation still resolves the matching cache from the current model and Information Extracted value.
-
-### NovelAI Inpaint
-
-Inpaint edits a selected region of an existing image. It starts from an existing generated image action, not from the normal automatic text-to-image queue.
-
-Workflow:
-
-1. Choose **NovelAI Inpaint** from an existing generated image action.
-2. Paint or erase the mask, using canvas zoom when needed.
-3. Edit the prompt, negative prompt, strength, mask padding, edge feather, edge guard, and source-tone preservation.
-4. Generate an edit and preview it in the editor.
-5. Insert the result only when satisfied, either appended after the source image or explicitly replacing it.
+Full installation and usage: [NovelAI advanced backend tutorial](docs/QUICKSTART_CN.md#novelai-高级后端功能可选进阶).
 
 ---
 
 ## How Does the Floating Panel Work?
 
-Starting from `1.6.0`, the plugin includes a floating workbench that pulls high-frequency actions out of the old drawer.
-
-### Five Pages
+The floating panel gathers high-frequency actions in one workbench. Low-frequency settings remain available in the old settings page as fallback.
 
 | Page | Purpose |
 |------|---------|
@@ -214,30 +163,7 @@ Starting from `1.6.0`, the plugin includes a floating workbench that pulls high-
 | **Standalone** | Test prompt generation and image output without sending chat messages |
 | **Prompt Library** | Upload NovelAI PNGs → extract positive/negative/character prompts → search, edit, copy, organize |
 
-### When does it appear?
-
-- By default, the floating panel starts **closed**
-- A small launcher icon appears on the right side
-- You can drag the launcher to a different position
-
-### Can I hide the launcher?
-
-Yes. Use the old settings page and turn off **Show Floating Panel Launcher**.
-
-After that:
-- the launcher icon disappears
-- you can still reopen the panel from the settings page using **Open Floating Panel**
-
-### Which long text fields support fullscreen editing?
-
-The following areas support fullscreen editing/preview:
-
-- Meta prompt preview/editing
-- Independent API guideline text
-- Standalone prompt text
-- Preset Adapter source text, requirements, and generated drafts
-
-> Note: the original image action dialog ("What would you like to do with this image?") is still unchanged and has not been merged into the floating panel.
+Long text editors support fullscreen viewing/editing. The original image action dialog is unchanged and has not been merged into the floating panel.
 
 ---
 
