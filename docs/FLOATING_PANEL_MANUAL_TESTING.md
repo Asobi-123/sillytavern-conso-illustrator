@@ -1,6 +1,6 @@
 # Floating Panel Manual Testing
 
-This checklist is focused on the floating panel UI work introduced on `feat/floating-panel-ui`.
+This checklist covers the floating panel UI and later tool overlays mounted inside the floating panel.
 
 ## Preconditions
 
@@ -70,8 +70,41 @@ This checklist is focused on the floating panel UI work introduced on `feat/floa
 
 ### Shared Between Modes
 
+- Open `Tag Catalog`
+  - Expected: opens as a separate overlay, not crowded into the prompt settings content flow
+  - Expected: total catalog count, built-in/custom counts, and category stats are visible
+  - Expected: search, category filter, source filter, pagination, and page size controls work
+  - Expected: list area scrolls and large catalogs do not expand the panel indefinitely
+  - Expected: action buttons stay horizontal; narrow layouts may wrap, but text must not become vertical
+- Test `Tag Catalog` custom tags
+  - Expected: custom tags can be batch-added under the existing category taxonomy
+  - Expected: duplicate tags are skipped and do not create duplicate entries
+  - Expected: the Custom source filter shows user-added tags
+  - Expected: custom tags can be deleted from the full catalog list and via selected batch actions
+  - Expected: selected tags are only a temporary basket for copy/add-to-common/delete-custom actions and are not automatically sent as AI candidates
+- Test `Tag Catalog` Chinese triggers
+  - Expected: the No zh triggers filter exposes bridge gaps
+  - Expected: trigger editing can be opened directly from a tag card
+  - Expected: saved user triggers appear on the tag card
+  - Expected: user triggers supplement local settings and do not overwrite the built-in bridge
+- Test `Tag Catalog` candidate transparency
+  - Expected: per-category AI candidate limits can be edited and persist after reload
+  - Expected: help text explains matched pools, random sampling, and that the full catalog is not sent
+  - Expected: after one independent prompt generation run, Last AI candidates shows the full source text and exact sent tags
+- Open `Preset Adapter`
+  - Expected: opens as a separate overlay, not crowded into prompt settings
+  - Expected: JSON/text file upload fills the source field, and manual paste still works
+  - Expected: save target can switch between Shared API, Independent API, and Both
+  - Expected: text analysis does not fail because long source text is truncated too early
+  - Expected: generated drafts require explicit save and do not overwrite the current preset automatically
+  - Expected: switching targets does not accidentally inject a built-in preset into the draft area
+  - Expected: Shared API drafts preserve Conso HTML comment format and generation frequency rules; Independent API drafts only generate independent prompt-writing guidance
 - Open `Character Fixed Tags`
   - Expected: overlay opens and existing character editor is usable
+  - Expected: injection mode can be changed and persists
+  - Expected: legacy prepend mode still works
+  - Expected: structure-aware mode handles recognizable character sections
+  - Expected: conservative multi-character mode skips injection when a flat multi-character prompt cannot be safely matched
 - Use `Prompt Detection & Style`
   - Expected: fields are editable and existing reset controls still work
 
@@ -122,10 +155,14 @@ This checklist is focused on the floating panel UI work introduced on `feat/floa
   - Expected: overlay opens
 - Open fullscreen editor for standalone prompt card
   - Expected: overlay opens
+- Open fullscreen editor for Preset Adapter source text, requirements, and draft fields
+  - Expected: overlay opens and textarea fills the available height without requiring manual resize
 - Apply changes to editable target
   - Expected: original field updates
 - Open fullscreen editor for read-only preview target
   - Expected: overlay opens in read-only mode, apply button hidden
+- Check fullscreen dialog footer buttons
+  - Expected: buttons remain horizontal; narrow layouts may wrap, but button text must not become vertical
 
 ## 9. Regression Checks
 
@@ -137,3 +174,5 @@ This checklist is focused on the floating panel UI work introduced on `feat/floa
   - Expected: per-chat world info and subfolder state refresh correctly
 - Generate images during streaming
   - Expected: existing progress and streaming preview systems still behave normally
+- Open every overlay in one light and one dark panel theme
+  - Expected: plugin-owned fields and dialogs use panel theme colors and remain readable

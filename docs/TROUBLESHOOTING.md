@@ -71,6 +71,52 @@ Ask the LLM directly:
 2. If the LLM includes it, the extension should detect and generate an image
 3. If not, check your LLM's instruction following capability
 
+## Tag Catalog and Candidate Tags
+
+### Candidate Tags Are Empty or Unexpected
+1. Open the floating panel → **Prompt Settings** → **Tag Catalog**
+2. Expand **Last AI candidates**
+3. Trigger one Independent API prompt generation or standalone prompt generation
+4. Check the source text and exact candidate tags shown there
+5. Expand **AI candidate count** and verify the relevant category limits are not set to 0
+
+The full catalog is not sent to the LLM. The extension builds a matched pool from the current source text, then randomly samples a limited per-category subset. Candidate tags are vocabulary references, not forced scene facts.
+
+### Chinese Text Does Not Match the Wanted Tag
+1. In **Tag Catalog**, search for the English tag you expected
+2. Check whether the card has Chinese triggers
+3. Use the **No zh triggers** source filter to inspect unbridged tags
+4. Add user triggers from the tag card or bridge form
+5. Run prompt generation again and check **Last AI candidates**
+
+User trigger supplements are stored in extension settings. They do not overwrite the built-in bridge.
+
+### Custom Tag Was Not Added
+1. Confirm the tag belongs to one of the existing catalog categories
+2. Check whether it already exists in built-in or custom catalog
+3. Use the **Custom** source filter to find user-added entries
+4. Duplicate tags are skipped automatically to avoid confusing candidate selection
+
+## Preset Adapter Issues
+
+### File Upload Does Not Fill the Source Field
+1. Confirm the file is plain JSON or text-like content
+2. Try pasting the content into the source field directly
+3. Check browser console for `[Auto Illustrator] [PresetImport]` messages
+
+### Draft Generation Fails
+1. Verify the selected prompt generation target: Shared API, Independent API, or Both
+2. Make sure an LLM route is available for draft generation
+3. If Independent API draft generation fails, test the Independent LLM API connection and selected model
+4. Reduce impossible format constraints in your requirements, then generate again
+
+### Generated Draft Looks Like the Wrong Mode
+Shared API and Independent API presets are not interchangeable.
+
+- Shared API drafts should preserve Conso's `<!--img-prompt="...">` output format and generation frequency rules.
+- Independent API drafts should focus on prompt-writing guidance for the separate prompt-generation request.
+- Review the draft before saving. The adapter does not automatically overwrite the current preset.
+
 ## Streaming Issues
 
 ### Enable Streaming
@@ -211,7 +257,7 @@ If memory usage grows over time:
 
 If you continue to experience issues:
 
-1. **Check existing issues**: [GitHub Issues](https://github.com/gamer-mitsuha/sillytavern-auto-illustrator/issues)
+1. **Check existing issues**: [GitHub Issues](https://github.com/Asobi-123/sillytavern-conso-illustrator/issues)
 2. **Gather information**:
    - Extension version (check manifest.json)
    - SillyTavern version

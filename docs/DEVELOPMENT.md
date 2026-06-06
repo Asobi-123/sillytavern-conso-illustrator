@@ -4,8 +4,8 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/sillytavern-auto-illustrator.git
-   cd sillytavern-auto-illustrator
+   git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
+   cd sillytavern-conso-illustrator
    ```
 
 2. Install dependencies:
@@ -34,12 +34,18 @@
    npm run build         # Production build
    ```
 
-5. **Test in SillyTavern**: Clone repo into `/public/scripts/extensions/third-party` for live testing
+5. **Catalog Maintenance**: Update bundled tag data only during development/release prep
+   ```bash
+   npm run catalog:update # Fetch public tag data and rebuild src/data/tag_catalog.json
+   npm run catalog:bridge # Rebuild the offline Chinese trigger bridge/report
+   ```
+
+6. **Test in SillyTavern**: Clone repo into the active SillyTavern extension directory for live testing
 
 ### Project Structure
 
 ```
-sillytavern-auto-illustrator/
+sillytavern-conso-illustrator/
 ├── src/
 │   ├── index.ts                    # Entry point, initialization, event handlers
 │   ├── constants.ts                # Centralized configuration constants & validation ranges
@@ -52,12 +58,41 @@ sillytavern-auto-illustrator/
 │   ├── chat_history_pruner.ts      # Removes generated images from LLM context
 │   ├── settings.ts                 # Settings management & UI generation
 │   ├── meta_prompt_presets.ts      # Meta-prompt preset management system
+│   ├── independent_llm_presets.ts  # Independent API guideline preset management
+│   ├── floating_panel_ui.ts        # Floating workbench, overlays, and section mounting
+│   ├── tag_catalog_ui.ts           # Built-in/custom Tag Catalog browser
+│   ├── preset_import_ui.ts         # JSON/text preset adapter UI
+│   ├── character_tags_ui.ts        # Character Fixed Tags editor
+│   ├── prompt_library_ui.ts        # NovelAI PNG metadata prompt library UI
+│   ├── standalone_generation_ui.ts # Standalone prompt/image workbench
+│   ├── inpainting_editor.ts        # NovelAI inpaint editor UI
 │   ├── streaming_monitor.ts        # Monitors streaming text for new prompts
 │   ├── streaming_image_queue.ts    # Queue management for detected prompts
 │   ├── queue_processor.ts          # Async image generation processor
+│   ├── services/
+│   │   ├── tag_catalog_prompt.ts   # Candidate tag selection and prompt tag normalization
+│   │   ├── prompt_tags.ts          # Tag parsing/deduplication helpers
+│   │   ├── character_fixed_tags_service.ts
+│   │   ├── independent_llm.ts
+│   │   ├── inpainting.ts
+│   │   ├── vibe_transfer.ts
+│   │   └── ...
+│   ├── data/
+│   │   ├── tag_catalog.json        # Bundled offline catalog
+│   │   ├── zh_tag_bridge.generated.json
+│   │   ├── tag_bridge_report.json
+│   │   └── zh_visual_concepts.source.json
 │   ├── test_helpers.ts             # Test utility functions (createMockContext)
 │   ├── style.css                   # Extension styles
 │   └── *.test.ts                   # Unit tests with comprehensive coverage
+├── i18n/
+│   ├── en-us.json
+│   └── zh-cn.json
+├── scripts/
+│   ├── update-tag-catalog.mjs      # Development-time catalog fetch/filter/classify
+│   └── generate-zh-tag-bridge.mjs  # Development-time bridge/report generator
+├── server-plugin/
+│   └── auto-illustrator-nai-advanced/ # Companion backend for NovelAI Vibe/Inpaint
 ├── globals.d.ts                    # TypeScript type definitions (SillyTavern context)
 ├── manifest.json                   # Extension metadata
 ├── package.json                    # Dependencies and scripts
@@ -72,6 +107,15 @@ sillytavern-auto-illustrator/
     ├── design_doc.md               # Architecture documentation
     └── silly_tavern_dev_tips.md    # SillyTavern extension development guide
 ```
+
+### Tag Catalog Data Rules
+
+- Runtime must never fetch tag catalog or bridge data from the network.
+- `src/data/tag_catalog.json`, `src/data/zh_tag_bridge.generated.json`, and `src/data/tag_bridge_report.json` ship with the extension bundle.
+- `npm run catalog:update` is a development/release-prep script. It fetches public tag data, filters/classifies general tags, writes the bundled catalog, then regenerates the Chinese bridge/report.
+- `npm run catalog:bridge` rebuilds the Chinese trigger bridge/report from the current catalog and `src/data/zh_visual_concepts.source.json`.
+- User-added tags and trigger supplements live in extension settings. They supplement bundled data and must not mutate the bundled JSON at runtime.
+- Prompt generation sends only a compact matched candidate subset. It must not send the full catalog to the LLM.
 
 ### Coding Standards
 
@@ -118,6 +162,15 @@ npm run test:coverage
 - Chat history pruning
 - Message handling
 - Barrier coordination and session lifecycle
+
+**Current Release Gate:**
+- `npm test`
+- `npm run lint`
+- `node --check server-plugin/auto-illustrator-nai-advanced/index.mjs`
+- `npm run build`
+- `git diff --check`
+
+`npm run compile` currently has known legacy test/mock TypeScript debt. Treat it as a cleanup backlog item until that branch is handled; do not use it as the release gate for unrelated feature work.
 
 #### Manual Testing
 

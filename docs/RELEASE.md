@@ -59,6 +59,14 @@ Update version in these files:
 {
   "version": "1.3.0"
 }
+
+# src/constants.ts
+export const EXTENSION_VERSION = '1.3.0';
+
+# package-lock.json
+{
+  "version": "1.3.0"
+}
 ```
 
 **Note:** These files should already be updated. Verify they match the release version.
@@ -125,14 +133,15 @@ The most important step! Create user-facing release notes.
    ...
    ```
 
-### 3. Update README.md
+### 3. Update README.md and README_EN.md
 
 Add documentation for new features:
 
-- [ ] Update **Features** section with new capabilities
-- [ ] Add new sections for major features (e.g., "Gallery Widget")
-- [ ] Update **Configuration** section with new settings
-- [ ] Add version markers for new features (e.g., "v1.3.0+")
+- [ ] Update **README.md** (Chinese primary README) with new capabilities
+- [ ] Update **README_EN.md** with matching English documentation
+- [ ] Add new sections for major features
+- [ ] Update configuration/usage sections with new settings
+- [ ] Add version markers for new features when useful
 - [ ] Update screenshots if UI changed significantly
 - [ ] Review troubleshooting section for new common issues
 
@@ -157,14 +166,15 @@ Brief description of what the feature does and why it's useful.
 - Related settings or dependencies
 ```
 
-### 4. Update README_CN.md
+### 4. Check README Parity
 
-Mirror all README.md changes in Chinese:
+Keep the Chinese and English READMEs aligned:
 
-- [ ] Translate new feature sections
-- [ ] Translate updated configuration settings
-- [ ] Maintain exact parity with English version
-- [ ] Verify technical terms are correctly translated
+- [ ] `README.md` contains the Chinese documentation
+- [ ] `README_EN.md` contains the English documentation
+- [ ] New feature sections exist in both files
+- [ ] Version comparison tables are updated in both files
+- [ ] Technical behavior is the same in both languages
 
 **Common Translations:**
 - Widget → 组件
@@ -229,6 +239,12 @@ npm run lint
 npm run build
 # Expected: Successful build, note bundle size
 
+# Server plugin syntax check, when companion backend changed or is release-critical
+node --check server-plugin/auto-illustrator-nai-advanced/index.mjs
+
+# Redline scan for panel theme/button regressions and private/community preset references.
+# Keep the forbidden terms out of committed documentation so the scan does not match this guide itself.
+
 # Format code (if needed)
 npm run fix
 ```
@@ -249,7 +265,7 @@ npm run fix
 git status
 
 # Stage all documentation changes
-git add CHANGELOG.md README.md README_CN.md docs/
+git add CHANGELOG.md README.md README_EN.md docs/ package.json package-lock.json manifest.json src/constants.ts
 
 # Commit with detailed message
 git commit -m "docs: prepare v1.3.0 release documentation
@@ -266,9 +282,9 @@ README updates:
 - Add Feature 2 documentation section
 - Update configuration with new settings
 
-README_CN updates:
-- Mirror all English README changes in Chinese
-- Add Chinese translations for new features
+README_EN updates:
+- Mirror Chinese README changes in English
+- Add English documentation for new features
 
 (Additional changes as applicable)
 "
@@ -480,19 +496,22 @@ Copy this checklist for each release:
 - [ ] All tests passing
 - [ ] Build succeeds
 - [ ] Manual testing complete
-- [ ] Version numbers updated (package.json, manifest.json)
+- [ ] Version numbers updated (`package.json`, `package-lock.json`, `manifest.json`, `src/constants.ts`)
 
 ### Documentation
 - [ ] CHANGELOG.md consolidated (user-facing, grouped, dated)
-- [ ] README.md updated (features, configuration)
-- [ ] README_CN.md updated (Chinese translations)
+- [ ] README.md updated (Chinese features, configuration)
+- [ ] README_EN.md updated (English parity)
+- [ ] docs/QUICKSTART_CN.md updated when user workflow changed
 - [ ] Obsolete docs archived (if applicable)
 - [ ] PRD updated (if needed)
 
 ### Quality
 - [ ] `npm test` passes (XXX tests)
 - [ ] `npm run lint` clean
+- [ ] `node --check server-plugin/auto-illustrator-nai-advanced/index.mjs` passes when backend is included
 - [ ] `npm run build` succeeds (XXX KB bundle)
+- [ ] Redline scans return no forbidden theme variables, vertical button rules, or private preset references
 
 ### Git
 - [ ] Documentation committed with detailed message
@@ -547,7 +566,7 @@ Copy this checklist for each release:
 npm test && npm run lint && npm run build
 
 # 2. Update documentation
-# (Edit CHANGELOG.md, README.md, README_CN.md)
+# (Edit CHANGELOG.md, README.md, README_EN.md, docs/)
 
 # 3. Commit documentation
 git add -A
@@ -587,5 +606,5 @@ If you encounter problems during the release process:
 
 ---
 
-**Last Updated**: 2025-10-13
-**Document Version**: 1.0
+**Last Updated**: 2026-06-06
+**Document Version**: 1.1

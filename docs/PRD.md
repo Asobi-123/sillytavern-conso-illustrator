@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # SillyTavern Auto Illustrator
 
-**Version**: 1.2
-**Last Updated**: 2025-10-17
+**Version**: 1.4
+**Last Updated**: 2026-06-06
 **Purpose**: Define desired behaviors for all features to prevent regressions
 
 ---
@@ -18,10 +18,12 @@
 7. [Concurrency & Rate Limiting](#7-concurrency--rate-limiting)
 8. [Settings & Configuration](#8-settings--configuration)
 9. [Prompt Generation Modes](#9-prompt-generation-modes)
-10. [Error Handling](#10-error-handling)
-11. [System Invariants](#11-system-invariants)
-12. [Modal Image Viewer Behaviors](#12-modal-image-viewer-behaviors)
-13. [Appendix](#13-appendix)
+10. [Prompt Personalization Suite](#10-prompt-personalization-suite)
+11. [Error Handling](#11-error-handling)
+12. [System Invariants](#12-system-invariants)
+13. [Modal Image Viewer Behaviors](#13-modal-image-viewer-behaviors)
+14. [Streaming Preview Widget](#14-streaming-preview-widget)
+15. [Appendix](#15-appendix)
 
 ---
 
@@ -1009,13 +1011,93 @@ Result: Extension doesn't interfere with custom API calls
 
 ---
 
-## 10. Error Handling
+## 10. Prompt Personalization Suite
 
 ### 10.1 Desired Behavior
 
+**Users can improve prompt vocabulary, preset drafting, and character consistency without runtime network dependencies, external preset lock-in, or unsafe multi-character tag injection.**
+
+### 10.2 Tag Catalog Requirements
+
+**TAG-CATALOG-001**: The extension ships a generated offline catalog in `src/data/tag_catalog.json`. Runtime catalog browsing and candidate generation MUST NOT fetch network resources.
+
+**TAG-CATALOG-002**: The catalog UI MUST expose the true catalog scale with total counts, category counts, source filters, and pagination. It MUST NOT silently cap browsing to a small fixed subset.
+
+**TAG-CATALOG-003**: User-added tags MUST use the same category taxonomy as built-in tags. Duplicate tags MUST be skipped instead of creating duplicate entries.
+
+**TAG-CATALOG-004**: Selected tags are a temporary basket for copy, add-to-common-tags, and custom-tag deletion actions. Selection MUST NOT automatically send tags to the AI candidate system.
+
+**TAG-CATALOG-005**: Independent prompt generation MAY send catalog candidates, but only as a compact subset derived from the current source text. It MUST NOT send the full catalog to the LLM.
+
+**TAG-CATALOG-006**: Candidate limits MUST be visible and editable per category. A value of 0 means that category is not sent.
+
+**TAG-CATALOG-007**: Candidate selection MUST build a matched pool first, then randomly sample within that pool so repeated runs do not always send only the first sorted tags. Baseline fallback tags may only fill remaining category room when the matched pool is insufficient.
+
+**TAG-CATALOG-008**: Candidate tags are spelling/vocabulary references. The LLM must still decide whether the current visual moment supports using them.
+
+**TAG-CATALOG-009**: The latest candidate snapshot MUST be inspectable, including source text and the exact candidate tags sent to the LLM.
+
+**TAG-CATALOG-010**: Chinese story text matching MUST use the bundled Chinese bridge plus user trigger supplements. Tags without Chinese triggers MUST be visible through coverage reporting/filtering rather than silently pretending they are covered.
+
+**TAG-CATALOG-011**: User trigger supplements MUST be stored in settings and merged at runtime. They MUST NOT overwrite or mutate the built-in bridge JSON.
+
+### 10.3 Preset Adapter Requirements
+
+**PRESET-ADAPTER-001**: The adapter accepts local JSON/text files, pasted preset text, and free-form user requirements.
+
+**PRESET-ADAPTER-002**: External preset runtime formats MUST NOT be used directly as Conso runtime formats. The adapter generates review-first Conso-native drafts.
+
+**PRESET-ADAPTER-003**: Shared API and Independent API targets MUST be generated separately because their prompt logic differs.
+
+**PRESET-ADAPTER-004**: Shared API drafts MUST preserve Conso's image prompt wrapper and generation frequency rules.
+
+**PRESET-ADAPTER-005**: Independent API drafts MUST focus on independent prompt-writing guidance and MUST NOT inject shared-mode frequency meta-prompt scaffolding as if it were the active output format.
+
+**PRESET-ADAPTER-006**: Generated drafts require explicit user save. They MUST NOT overwrite current presets automatically.
+
+**PRESET-ADAPTER-007**: The adapter MUST remain generic. It MUST NOT ship private/community preset names, distinctive workflows, examples, or hidden single-preset logic in source, tests, docs, dist, or release notes.
+
+### 10.4 Character Fixed Tags Requirements
+
+**CHAR-TAGS-001**: Legacy prepend injection remains available and is the default migration-safe behavior.
+
+**CHAR-TAGS-002**: Structure-aware injection MAY insert fixed tags into recognizable role/character prompt sections.
+
+**CHAR-TAGS-003**: Conservative multi-character mode MUST skip injection when a flat multi-character prompt cannot be matched to a character safely.
+
+**CHAR-TAGS-004**: Multi-character injection MUST NOT flatten all character fixed tags into a shared prompt segment where traits can bleed across participants.
+
+**CHAR-TAGS-005**: Fixed tags are most appropriate for stable character identity and appearance. Current clothing, pose, expression, and scene facts still belong to the active prompt generation context unless the user intentionally locks them as fixed tags.
+
+### 10.5 UI Requirements
+
+**PPS-UI-001**: Tag Catalog and Preset Adapter are low-frequency tools and SHOULD open as separate floating-panel overlays rather than occupying the prompt settings content flow.
+
+**PPS-UI-002**: Tool buttons and fullscreen dialog actions MUST remain horizontally readable. Narrow layouts may wrap, but text MUST NOT become vertical.
+
+**PPS-UI-003**: Long text fields that support fullscreen editing MUST expand to the available overlay space without requiring manual textarea resizing.
+
+**PPS-UI-004**: Plugin-owned overlays, inputs, selects, textareas, and buttons MUST use panel-scoped theme colors and remain readable in light and dark panel themes.
+
+### 10.6 Anti-Patterns
+
+❌ **DO NOT** fetch catalog/bridge data at runtime.
+❌ **DO NOT** send the full catalog to the LLM.
+❌ **DO NOT** hide unbridged tags from the user.
+❌ **DO NOT** treat selected catalog tags as automatic AI candidates.
+❌ **DO NOT** append raw forbidden words to positive prompts as universal negative prompts when the backend does not support that syntax.
+❌ **DO NOT** convert any specific external preset into built-in project behavior.
+❌ **DO NOT** inject fixed tags into a multi-character prompt when the target character section is ambiguous.
+
+---
+
+## 11. Error Handling
+
+### 11.1 Desired Behavior
+
 **When errors occur, the system recovers gracefully, informs the user appropriately, and maintains consistent state.**
 
-### 10.2 Requirements
+### 11.2 Requirements
 
 **ERROR-001**: Display user-friendly error messages (not technical details)
 
@@ -1027,7 +1109,7 @@ Result: Extension doesn't interfere with custom API calls
 
 **ERROR-005**: Continue processing remaining tasks after individual failures
 
-### 10.3 Error Scenarios
+### 11.3 Error Scenarios
 
 **ERROR-API**: Image generation API failure
 - **User Sees**: Toast notification "Failed to generate image"
@@ -1053,7 +1135,7 @@ Result: Extension doesn't interfere with custom API calls
 - **Recovery**: Uses default/clamped value
 - **Continues**: Extension functions normally
 
-### 10.4 Examples
+### 11.4 Examples
 
 **Example 1: Partial Batch Failure**
 ```
@@ -1113,7 +1195,7 @@ Result:
   - No orphaned progress widgets
 ```
 
-### 10.5 Anti-Patterns
+### 11.5 Anti-Patterns
 
 ❌ **DO NOT** show technical error messages to users (use friendly language)
 ❌ **DO NOT** leave progress widget stuck on error (always clean up)
@@ -1122,13 +1204,13 @@ Result:
 
 ---
 
-## 11. System Invariants
+## 12. System Invariants
 
-### 11.1 Definition
+### 12.1 Definition
 
 **System invariants are conditions that MUST always be true, regardless of user actions or system state.**
 
-### 11.2 Core Invariants
+### 12.2 Core Invariants
 
 **INV-001**: Progress completed count never exceeds total count
 ```
@@ -1192,7 +1274,7 @@ Never: Widget disappears while tasks still running
 Never: Widget remains visible after operation completes
 ```
 
-### 11.3 Verification
+### 12.3 Verification
 
 These invariants should be verified:
 - **In unit tests**: Assert conditions in test assertions
@@ -1202,9 +1284,9 @@ These invariants should be verified:
 
 ---
 
-## 12. Modal Image Viewer Behaviors
+## 13. Modal Image Viewer Behaviors
 
-### 12.1 Image Rotation
+### 13.1 Image Rotation
 
 **ROTATION-001**: Rotate button rotates image 90° clockwise on each click
 
@@ -1221,7 +1303,7 @@ User clicks rotate button 4 times:
 Closes and reopens modal: rotation resets to 0°
 ```
 
-### 12.2 Tap Navigation (Mobile)
+### 13.2 Tap Navigation (Mobile)
 
 **TAP-001**: Tapping left 40% of image navigates to previous image
 
@@ -1244,7 +1326,7 @@ At 2x zoom:
 - Tap anywhere → pan image (navigation disabled)
 ```
 
-### 12.3 View All Images Button
+### 13.3 View All Images Button
 
 **VIEW-ALL-001**: "View All Images" button appears in regeneration dialog
 
@@ -1271,13 +1353,13 @@ User clicks image #2 in message #20
 
 ---
 
-## 13. Streaming Preview Widget
+## 14. Streaming Preview Widget
 
-### 13.1 Desired Behavior
+### 14.1 Desired Behavior
 
 **Users can view streaming text with inline images in a dedicated preview widget, providing an immersive reading experience during LLM generation.**
 
-### 13.2 Requirements
+### 14.2 Requirements
 
 **PREVIEW-001**: Display streaming text in real-time as LLM generates response
 
@@ -1295,7 +1377,7 @@ User clicks image #2 in message #20
 
 **PREVIEW-008**: Widget state clears automatically when chat changes
 
-### 13.3 Examples
+### 14.3 Examples
 
 **Example 1: Basic Streaming with Inline Images**
 ```
@@ -1370,7 +1452,7 @@ T+10s:  Widget appears fresh for chat B content
 Result: Widget state correctly tied to current chat
 ```
 
-### 13.4 UI Design
+### 14.4 UI Design
 
 **Widget Layout:**
 ```
@@ -1407,7 +1489,7 @@ Result: Widget state correctly tied to current chat
 3. **Completed** (Full image, smooth fade-in): Clickable for modal
 4. **Failed** (Red border): "⚠️ Generation failed"
 
-### 13.5 Anti-Patterns
+### 14.5 Anti-Patterns
 
 ❌ **DO NOT** auto-hide widget after streaming completes (user manually dismisses)
 ❌ **DO NOT** modify existing progress or gallery widgets
@@ -1417,9 +1499,9 @@ Result: Widget state correctly tied to current chat
 
 ---
 
-## 14. Appendix
+## 15. Appendix
 
-### 14.1 Glossary
+### 15.1 Glossary
 
 - **Prompt**: Text pattern like `<img-prompt="sunset, beach">` that triggers image generation
 - **Streaming**: Real-time LLM response generation (character by character)
@@ -1428,7 +1510,7 @@ Result: Widget state correctly tied to current chat
 - **Task**: Individual image generation within an operation
 - **Session**: Isolated state for streaming image generation per message
 
-### 14.2 How to Update This Document
+### 15.2 How to Update This Document
 
 **When adding new features**:
 1. Add requirements in appropriate section
@@ -1446,7 +1528,7 @@ Result: Widget state correctly tied to current chat
 2. Update examples to match new behavior
 3. Mark deprecated behaviors in anti-patterns section
 
-### 14.3 Version History
+### 15.3 Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
@@ -1454,6 +1536,7 @@ Result: Widget state correctly tied to current chat
 | 1.1 | 2025-10-15 | Added modal viewer behaviors: image rotation, tap navigation, View All Images button |
 | 1.2 | 2025-10-17 | Added prompt generation modes section, metaPromptDepth setting, updated settings table |
 | 1.3 | 2025-10-18 | Added streaming preview widget section with inline image display and user control features |
+| 1.4 | 2026-06-06 | Added prompt personalization suite requirements for Tag Catalog, Preset Adapter, Character Fixed Tags injection modes, and related UI constraints |
 
 ---
 

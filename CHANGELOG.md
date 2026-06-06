@@ -7,12 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-06-06
+
 ### Added
 
-- **Prompt personalization suite** - Added a bundled Tag Catalog, an external preset adapter, and optional structure-aware Character Fixed Tags injection as one testable feature set.
-- **Bundled Tag Catalog** - Added a generated `tag_catalog.json` from public general tag data. The catalog is searchable, categorized, copyable, and available offline at runtime.
-- **Preset adapter** - Added a review-first importer that reads local JSON/text-like preset files or free-form requirements, then asks the configured LLM to draft Conso-native custom presets without using external preset formats directly.
+- **Prompt personalization suite** - Added Tag Catalog, Preset Adapter, and Character Fixed Tags injection modes as one reviewable feature set.
+- **Offline Tag Catalog** - Added a bundled searchable catalog with category counts, pagination, copy/add-to-common actions, custom user tags, duplicate skipping, custom tag deletion, and source filters for built-in, custom, user-triggered, and unbridged tags.
+- **AI catalog candidates** - Independent prompt generation and standalone prompt generation can send a small text-matched catalog subset to the LLM. Per-category candidate limits are visible and editable, candidates are randomly sampled from the matched pool, and the latest sent candidate snapshot can be inspected.
+- **Chinese trigger bridge** - Added an offline Chinese trigger bridge for matching Chinese story text to English catalog tags. Users can add supplemental triggers per tag without overwriting the built-in bridge, and unbridged tags are visible in the catalog report/filter.
+- **Preset Adapter** - Added a review-first adapter that reads local JSON/text preset files or free-form requirements, then asks the configured LLM to draft Conso-native custom presets. Shared API and Independent API targets are generated separately and external runtime formats are not used directly.
 - **Character Fixed Tags injection modes** - Added optional structure-aware insertion for pipe-separated or `Character N Prompt:` prompts, plus a conservative multi-character mode that skips injection when a flat multi-character prompt cannot be matched safely. The legacy prepend behavior remains the default.
+
+### Changed
+
+- **Prompt settings layout** - Tag Catalog and Preset Adapter now open as separate floating-panel tool overlays instead of being crowded into the prompt settings tab.
+- **Fullscreen text editing** - Long text editors now expand to usable fullscreen layouts instead of requiring manual textarea resizing inside the fullscreen dialog.
+- **Panel theme isolation** - Plugin-owned inputs, overlays, dialogs, and tool panels now use panel-scoped theme colors rather than SillyTavern theme variables, improving light/dark panel consistency.
+- **Action button layout** - Tool overlays and fullscreen dialogs keep action buttons horizontal and wrap/scroll as needed instead of collapsing into vertical text buttons.
 
 ## [1.10.0] - 2026-06-04
 
@@ -141,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **README restructured** — Beginner-friendly layout with usage flow, feature overview tables, and two-mode comparison. Separated into English (README.md) and Chinese (README_CN.md) versions
+- **README restructured** — Beginner-friendly layout with usage flow, feature overview tables, and two-mode comparison. Current docs use Chinese `README.md` and English `README_EN.md`
 - **Beginner tutorial added** — New `docs/QUICKSTART_CN.md`: step-by-step guide from configuring NovelAI in SillyTavern to generating images, with recommended parameters and screenshots
 - **Tutorial link in settings panel** — Added a "Tutorial" button next to the version display that links to the quickstart guide
 
@@ -736,7 +747,7 @@ Initial release of SillyTavern Auto Illustrator extension.
   - Full i18n support with English (en-us) and Simplified Chinese (zh-cn)
   - 76 translation keys covering all UI text
   - Automatic language detection via SillyTavern i18n system
-  - Simplified Chinese README translation (README_CN.md)
+  - Simplified Chinese README translation
 
 - **Logging & Debugging**
 
@@ -772,7 +783,7 @@ Initial release of SillyTavern Auto Illustrator extension.
 
 - **Documentation**
   - Comprehensive README with installation, usage, troubleshooting
-  - Chinese README translation (README_CN.md)
+  - Chinese README translation
   - Development guide (docs/DEVELOPMENT.md)
   - Logging documentation (docs/LOGGING.md)
   - Architecture documentation (docs/design_doc.md, docs/silly_tavern_dev_tips.md)

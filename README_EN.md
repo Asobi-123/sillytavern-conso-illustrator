@@ -64,7 +64,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | Feature | Description |
 |---------|-------------|
 | **Auto Illustration** | Detects visual scenes during streaming and generates images in real-time |
-| **Floating Workbench** | Main dashboard, prompt settings, gallery, and standalone generation in one high-frequency UI |
+| **Floating Workbench** | Main dashboard, prompt settings, gallery, standalone generation, and prompt library in one high-frequency UI |
 | **Dual Prompt Editing** | AI-assisted optimization or manual direct editing — switch freely |
 | **Standalone Workbench** | Generate images without chat context — describe a scene or paste prompts directly |
 | **Streaming Preview** | Live preview widget showing streamed text and generated images |
@@ -77,11 +77,15 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | Feature | Description |
 |---------|-------------|
 | **Character Card Injection** | Auto-sends character appearance, personality, and persona to the LLM |
-| **Character Fixed Tags** | Lock visual tags per character — auto-injected with `{}` isolation in multi-character scenes |
+| **Character Fixed Tags** | Lock visual tags per character, with legacy prepend mode and optional structure-aware character-section insertion |
 | **World Info Injection** | Plugin-independent world book selection per chat |
 | **Common Style Tags** | Global prefix/suffix tags applied to all generated prompts |
+| **Tag Catalog** | Bundled offline catalog for searching, paging, copying, adding common tags, custom tags, and Chinese triggers |
+| **AI Candidate Tags** | Independent prompt generation sends only a small text-matched candidate subset; limits are editable and the latest candidate snapshot is inspectable |
+| **Preset Adapter** | Upload JSON/text or write requirements to draft Conso-native Shared API meta prompts or Independent API guidelines |
 | **Random SD Style** | Randomly pick one Style from the stable-diffusion extension before each generation, apply its prefix/negative, then restore. Optional whitelist limits the eligible pool |
 | **NovelAI Vibe Transfer** | Optional reference-image conditioning for chat and standalone generation. V4/V4.5 encoded vibes are cached to reduce repeated Anlas usage |
+| **NovelAI Inpaint** | Paint a mask on an existing image, preview the edit, then append or replace the original; supports canvas zoom, edge feather, mask padding, and edge guard |
 | **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
 | **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
 
@@ -121,22 +125,56 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 ---
 
-## NovelAI Vibe Transfer (Optional)
+## Tag Catalog and AI Candidate Tags
 
-Vibe Transfer adds reference-image conditioning on top of the existing prompt flow. Positive prompts, negative prompts, common style tags, character fixed tags, SD Styles, and randomized SD Styles still apply; Vibe only adds reference conditioning to the same NovelAI generation request.
+Tag Catalog is an offline catalog bundled with the extension package. Runtime use does not fetch network resources, and users do not need to collect a base tag set manually. The current bundled catalog version is `2026-06` with 7928 tags across subject, hair, eyes, expression, pose/action, clothing, scene, camera, lighting/style, UC, and general categories.
+
+It has two roles:
+
+- **Manual browsing**: search, filter, page through tags, copy selected tags, or add selected tags to common style tags. Selected tags are only a temporary basket and are not automatically sent to the AI.
+- **AI candidates**: Independent API prompt generation and standalone prompt generation build a matched candidate pool from the current text, randomly sample a small per-category subset, and send that subset to the LLM as vocabulary reference. The full catalog is never sent to the AI, and candidates are not forced into the final image prompt.
+
+Chinese story text is matched through a bundled Chinese trigger bridge. The current bridge covers 3078 candidate tags; tags without Chinese triggers are visible through the “No zh triggers” filter. Users can add supplemental triggers per tag. Those local triggers do not overwrite the built-in bridge.
+
+Users can also add custom tags under the same category taxonomy. Duplicate tags are skipped automatically, and custom tags can be filtered and deleted later.
+
+Candidate counts are visible and editable in the Tag Catalog panel. The latest candidate snapshot shows the source text and the exact candidate tags sent to the AI.
+
+---
+
+## Preset Adapter
+
+Preset Adapter converts external JSON/text presets or free-form requirements into Conso-native preset drafts. It does not directly use external runtime formats and does not ship any external preset as built-in behavior.
+
+Usage:
+
+1. Open **Preset Adapter** from the floating panel's **Prompt Settings** page.
+2. Choose a JSON/text file, paste preset text, or write requirements.
+3. Select the target: Shared API meta prompt, Independent API guidelines, or both.
+4. Generate a draft, review it, then save it as a custom preset.
+
+Shared API and Independent API targets are generated separately. Shared API drafts keep Conso's HTML comment output format and generation frequency rules; Independent API drafts focus on prompt-writing guidelines only.
+
+---
+
+## NovelAI Advanced Backend Features (Optional)
+
+Some NovelAI advanced features require the companion server plugin: Vibe Transfer and Inpaint. Normal `/sd` generation works with only the frontend extension, but these advanced features need the backend folder.
 
 ### Install the companion server plugin
-
-Vibe Transfer requires the backend plugin included in this repository:
 
 1. Copy this repository's `server-plugin/auto-illustrator-nai-advanced` folder.
 2. Paste it into `<SillyTavern root>/plugins/auto-illustrator-nai-advanced`. If an older folder with the same name already exists, replace it with the new one.
 3. Make sure SillyTavern already has a NovelAI API token configured.
 4. Set `enableServerPlugins: true` in `<SillyTavern root>/config.yaml`.
 5. Restart SillyTavern. Reloading the page alone will not load a new server plugin.
-6. Open the floating panel's **Vibe Transfer** card, enable it, and upload reference images.
+6. Reload the page, then use Vibe Transfer or Inpaint.
 
 The panel also includes an **Install help** button with the same instructions.
+
+### NovelAI Vibe Transfer
+
+Vibe Transfer adds reference-image conditioning on top of the existing prompt flow. Positive prompts, negative prompts, common style tags, character fixed tags, SD Styles, and randomized SD Styles still apply; Vibe only adds reference conditioning to the same NovelAI generation request.
 
 ### Usage and cache behavior
 
@@ -147,6 +185,18 @@ The panel also includes an **Install help** button with the same instructions.
 - Uploaded reference images are stored as compressed Vibe source images: longest side 768px, converted to JPEG. Large original PNG files are not stored in extension settings.
 - Each reference can be named, tagged with chips, and searched by name or tag. Enabled references are sorted to the top.
 - Presets save which references are enabled, not a specific encoded cache. After applying a preset, generation still resolves the matching cache from the current model and Information Extracted value.
+
+### NovelAI Inpaint
+
+Inpaint edits a selected region of an existing image. It starts from an existing generated image action, not from the normal automatic text-to-image queue.
+
+Workflow:
+
+1. Choose **NovelAI Inpaint** from an existing generated image action.
+2. Paint or erase the mask, using canvas zoom when needed.
+3. Edit the prompt, negative prompt, strength, mask padding, edge feather, edge guard, and source-tone preservation.
+4. Generate an edit and preview it in the editor.
+5. Insert the result only when satisfied, either appended after the source image or explicitly replacing it.
 
 ---
 
@@ -185,6 +235,7 @@ The following areas support fullscreen editing/preview:
 - Meta prompt preview/editing
 - Independent API guideline text
 - Standalone prompt text
+- Preset Adapter source text, requirements, and generated drafts
 
 > Note: the original image action dialog ("What would you like to do with this image?") is still unchanged and has not been merged into the floating panel.
 
@@ -196,9 +247,13 @@ The following areas support fullscreen editing/preview:
 |---------|-----------|
 | No images generated | Make sure `/sd` command works first — the plugin depends on SillyTavern's Image Generation extension |
 | Vibe Transfer does not affect output | Make sure `auto-illustrator-nai-advanced` is installed into SillyTavern's `plugins/` directory, `enableServerPlugins: true` is set in `config.yaml`, and SillyTavern has been restarted |
+| Inpaint is unavailable | Install or update the companion server plugin, enable `enableServerPlugins: true`, and restart SillyTavern |
 | Images appear then disappear | Check browser console for errors; verify image storage path exists |
 | Independent mode fails and you do not know where to look | The plugin now shows a failure toast with the likely reason. If the affected chat message still has no prompt tags, it also shows a **Retry Prompt Generation** button on that message. If it says the main reply was empty, first make sure your main API is switched back to Chat Completion. If it says API request failed or returned empty, check the independent LLM configuration |
 | Wrong character appearance | Use **Character Fixed Tags** to lock visual tags per character |
+| Chinese text does not match the wanted catalog tag | Open **Tag Catalog**, inspect gaps with the “No zh triggers” filter, and add local triggers for the tag when needed |
+| You want to know which candidate tags were sent | Open **Tag Catalog → Last AI candidates** to inspect the source text and exact candidate tags |
+| External preset format is hard to convert | Use **Preset Adapter** to upload JSON/text or write requirements, then review the generated draft before saving |
 | Prompts are inaccurate | Try **Independent API mode** with **NAI 4.5 Full** preset |
 | Too many console logs | Adjust **Log Level** in settings (default: INFO) |
 
@@ -228,8 +283,11 @@ For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING
 | World Info Injection | - | - | Supported |
 | API Profile Management | - | - | Supported |
 | Character Fixed Tags | - | - | Supported |
+| Tag Catalog / AI Candidate Tags | - | - | Supported |
+| Preset Adapter | - | - | Supported |
 | Random SD Style | - | - | Supported |
 | NovelAI Vibe Transfer | - | - | Supported (requires companion server plugin) |
+| NovelAI Inpaint | - | - | Supported (requires companion server plugin) |
 | Standalone Workbench | - | - | Supported |
 | Guidelines Presets | - | - | Supported |
 | Collapsible Settings | - | - | Supported |

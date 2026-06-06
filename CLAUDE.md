@@ -79,8 +79,17 @@ Before committing, you **must** perform the following checks and ensure they all
 2. **Run Linter:** Use `npm run lint` to check for linting errors (should already be fixed by `npm run fix`)
 3. **Run All Unit Tests:** Use `npm run test` to execute the entire test suite and confirm no regressions
 4. **Run Build:** Use `npm run build` to ensure the project builds successfully (dist/ is needed for users)
+5. **Server Plugin Syntax Check:** When the companion backend is included or release-critical, run `node --check server-plugin/auto-illustrator-nai-advanced/index.mjs`
+6. **Release Redline Scans:** Before release, scan for forbidden panel theme variables, vertical button CSS, and private/community preset references. Do not commit private preset names, distinctive preset workflows, or hidden single-preset logic.
 
 **Do not proceed to the next step if any of these checks fail.**
+
+## **4.1 Tag Catalog Data Boundary**
+
+- The runtime extension must use bundled catalog and bridge JSON only. It must not fetch tag catalog data from the network.
+- `npm run catalog:update` and `npm run catalog:bridge` are development/release-prep scripts, not runtime behavior.
+- User-added catalog tags and trigger supplements are stored in settings and merged locally. They must not mutate bundled JSON files at runtime.
+- Prompt generation must send only a compact text-matched candidate subset to the LLM, never the full catalog.
 
 ## **5\. Commit Messages**
 

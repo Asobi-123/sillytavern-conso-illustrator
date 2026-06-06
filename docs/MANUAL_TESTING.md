@@ -267,7 +267,38 @@ Before starting manual testing:
 
 ## Edge Cases
 
-### 11. Empty/Malformed Prompts
+### 11. Prompt Personalization Suite
+
+**Purpose**: Verify Tag Catalog, Preset Adapter, and Character Fixed Tags injection modes work without breaking the base prompt generation flow.
+
+**Steps**:
+1. Open the floating panel and go to Prompt Settings
+2. Open **Tag Catalog**
+3. **Verify**: catalog total/counts render, search/filter/page controls work, and the list scrolls
+4. Add a custom tag under an existing category
+5. **Verify**: duplicate custom tags are skipped, custom tags can be filtered, and custom entries can be deleted
+6. Add a Chinese trigger for one catalog tag
+7. **Verify**: user trigger appears on the tag card and does not replace built-in triggers
+8. Run one independent prompt generation or standalone prompt generation
+9. **Verify**: Last AI candidates shows the full source text and exact candidate tags sent
+10. Open **Preset Adapter**
+11. Upload or paste JSON/text-like preset content, choose Shared API, Independent API, and Both targets
+12. **Verify**: generated drafts require explicit save and target switching does not overwrite drafts unexpectedly
+13. Open **Character Fixed Tags** and switch injection modes
+14. **Verify**: legacy mode remains available, structure-aware mode handles recognizable role sections, and conservative multi-character mode skips unsafe flat prompts
+15. **Verify**: buttons stay horizontal and all related overlays remain readable in one light and one dark panel theme
+
+**Expected Behavior**:
+- Runtime tag catalog usage does not fetch network resources
+- Full catalog is browsable through pagination and filters
+- AI candidates are a matched, limited subset, not the full catalog
+- User triggers supplement the bridge without overwriting built-in bridge data
+- Preset Adapter creates Conso-native drafts for the selected target only
+- Character Fixed Tags do not overwrite the wrong character in unsafe multi-character prompts
+
+---
+
+### 12. Empty/Malformed Prompts
 
 **Purpose**: Verify robustness against edge cases.
 
@@ -287,7 +318,7 @@ Before starting manual testing:
 
 ---
 
-### 12. Barrier Timeout Scenario
+### 13. Barrier Timeout Scenario
 
 **Purpose**: Verify timeout handling when MESSAGE_RECEIVED is delayed.
 
@@ -309,7 +340,7 @@ Before starting manual testing:
 
 ## Browser Compatibility
 
-### 13. Cross-Browser Check
+### 14. Cross-Browser Check
 
 **Quick smoke test** in each supported browser:
 - ✅ Chrome/Edge (Chromium)
@@ -327,7 +358,7 @@ Before starting manual testing:
 
 Before merging feature branch to `main`:
 
-- [ ] All 13 test scenarios passed
+- [ ] All 14 test scenarios passed
 - [ ] No errors or warnings in browser console
 - [ ] Performance acceptable (no freezes/lag)
 - [ ] Error messages user-friendly
@@ -357,6 +388,6 @@ If manual testing reveals issues:
 ## Notes
 
 - **Time estimate**: 30-45 minutes for full manual test suite
-- **Priority**: Tests 1-8 are critical; 9-13 are important but can be quick checks
+- **Priority**: Tests 1-8 are critical; 9-14 are important but can be quick checks
 - **Automation goal**: Eventually automate some of these with E2E tests (Playwright/Puppeteer)
 - **Update this doc**: Add new tests when new major features are added
