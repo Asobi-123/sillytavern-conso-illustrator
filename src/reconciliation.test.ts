@@ -15,7 +15,31 @@ import {
   removeAllMarkers,
 } from './reconciliation';
 import type {AutoIllustratorChatMetadata} from './types';
-import type {PromptRegistry} from './prompt_manager';
+import type {PromptNode} from './prompt_manager';
+
+function createTestPromptNode(
+  id: string,
+  messageId: number,
+  promptIndex: number,
+  text: string,
+  generatedImages: string[]
+): PromptNode {
+  const now = Date.now();
+  return {
+    id,
+    messageId,
+    promptIndex,
+    text,
+    parentId: null,
+    childIds: [],
+    generatedImages,
+    metadata: {
+      createdAt: now,
+      lastUsedAt: now,
+      source: 'ai-message',
+    },
+  };
+}
 
 describe('Reconciliation Module', () => {
   describe('createMarker', () => {
@@ -250,17 +274,7 @@ describe('Reconciliation Module', () => {
       const metadata: AutoIllustratorChatMetadata = {
         promptRegistry: {
           nodes: {
-            [promptId]: {
-              id: promptId,
-              messageId: 1,
-              promptIndex: 0,
-              text: 'cat',
-              parentId: null,
-              childIds: [],
-              generatedImages: [imageUrl],
-              source: 'ai-message',
-              createdAt: Date.now(),
-            },
+            [promptId]: createTestPromptNode(promptId, 1, 0, 'cat', [imageUrl]),
           },
           imageToPromptId: {
             [imageUrl]: promptId,
@@ -285,17 +299,7 @@ describe('Reconciliation Module', () => {
       const metadata: AutoIllustratorChatMetadata = {
         promptRegistry: {
           nodes: {
-            [promptId]: {
-              id: promptId,
-              messageId: 1,
-              promptIndex: 0,
-              text: 'cat',
-              parentId: null,
-              childIds: [],
-              generatedImages: [imageUrl],
-              source: 'ai-message',
-              createdAt: Date.now(),
-            },
+            [promptId]: createTestPromptNode(promptId, 1, 0, 'cat', [imageUrl]),
           },
           imageToPromptId: {
             [imageUrl]: promptId,
@@ -322,17 +326,7 @@ describe('Reconciliation Module', () => {
       const metadata: AutoIllustratorChatMetadata = {
         promptRegistry: {
           nodes: {
-            [promptId]: {
-              id: promptId,
-              messageId: 1,
-              promptIndex: 0,
-              text: 'cat',
-              parentId: null,
-              childIds: [],
-              generatedImages: [imageUrl],
-              source: 'ai-message',
-              createdAt: Date.now(),
-            },
+            [promptId]: createTestPromptNode(promptId, 1, 0, 'cat', [imageUrl]),
           },
           imageToPromptId: {
             [imageUrl]: promptId,
@@ -360,28 +354,12 @@ describe('Reconciliation Module', () => {
       const metadata: AutoIllustratorChatMetadata = {
         promptRegistry: {
           nodes: {
-            [promptId1]: {
-              id: promptId1,
-              messageId: 1,
-              promptIndex: 0,
-              text: 'cat',
-              parentId: null,
-              childIds: [],
-              generatedImages: [imageUrl1],
-              source: 'ai-message',
-              createdAt: Date.now(),
-            },
-            [promptId2]: {
-              id: promptId2,
-              messageId: 1,
-              promptIndex: 1,
-              text: 'dog',
-              parentId: null,
-              childIds: [],
-              generatedImages: [imageUrl2],
-              source: 'ai-message',
-              createdAt: Date.now(),
-            },
+            [promptId1]: createTestPromptNode(promptId1, 1, 0, 'cat', [
+              imageUrl1,
+            ]),
+            [promptId2]: createTestPromptNode(promptId2, 1, 1, 'dog', [
+              imageUrl2,
+            ]),
           },
           imageToPromptId: {
             [imageUrl1]: promptId1,
@@ -425,17 +403,7 @@ describe('Reconciliation Module', () => {
       const metadata: AutoIllustratorChatMetadata = {
         promptRegistry: {
           nodes: {
-            [promptId]: {
-              id: promptId,
-              messageId: 1,
-              promptIndex: 0,
-              text: 'cat',
-              parentId: null,
-              childIds: [],
-              generatedImages: [], // No images
-              source: 'ai-message',
-              createdAt: Date.now(),
-            },
+            [promptId]: createTestPromptNode(promptId, 1, 0, 'cat', []),
           },
           imageToPromptId: {},
           rootPromptIds: [promptId],

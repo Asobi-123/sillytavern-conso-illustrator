@@ -20,10 +20,12 @@ import {
 const {
   generatePromptsForMessageMock,
   insertPromptTagsWithContextMock,
+  syncIndependentPromptRetryButtonsMock,
   toastrErrorMock,
 } = vi.hoisted(() => ({
   generatePromptsForMessageMock: vi.fn(),
   insertPromptTagsWithContextMock: vi.fn(),
+  syncIndependentPromptRetryButtonsMock: vi.fn(),
   toastrErrorMock: vi.fn(),
 }));
 
@@ -50,6 +52,15 @@ vi.mock('./services/prompt_generation_service', () => ({
 vi.mock('./prompt_insertion', () => ({
   insertPromptTagsWithContext: insertPromptTagsWithContextMock,
 }));
+
+vi.mock('./independent_prompt_retry', async importOriginal => {
+  const actual =
+    await importOriginal<typeof import('./independent_prompt_retry')>();
+  return {
+    ...actual,
+    syncIndependentPromptRetryButtons: syncIndependentPromptRetryButtonsMock,
+  };
+});
 
 vi.mock('./session_manager', () => ({
   sessionManager: {
@@ -99,10 +110,9 @@ vi.mock('./reconciliation', () => ({
   })),
 }));
 
-// Mock global SillyTavern
-global.SillyTavern = {
+const mockSillyTavern = {
   getContext: vi.fn(),
-} as any;
+};
 
 describe('Message Handler V2', () => {
   let mockContext: any;
@@ -128,20 +138,22 @@ describe('Message Handler V2', () => {
       maxPromptsPerMessage: 5,
     };
 
-    global.toastr = {
+    vi.stubGlobal('toastr', {
       error: toastrErrorMock,
       warning: vi.fn(),
       info: vi.fn(),
       success: vi.fn(),
-    } as any;
+    });
 
     // Clear all mocks
     vi.clearAllMocks();
     generatePromptsForMessageMock.mockReset();
     insertPromptTagsWithContextMock.mockReset();
+    syncIndependentPromptRetryButtonsMock.mockReset();
     toastrErrorMock.mockReset();
     clearIndependentPromptRetryState();
-    global.SillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
+    mockSillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
+    vi.stubGlobal('SillyTavern', mockSillyTavern);
   });
 
   afterEach(() => {
@@ -380,7 +392,8 @@ describe('Message Handler V2', () => {
   describe('handleGenerationEnded - Delayed Reconciliation', () => {
     beforeEach(() => {
       vi.useFakeTimers();
-      global.SillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
+      mockSillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
+      vi.stubGlobal('SillyTavern', mockSillyTavern);
       mockSettings.finalReconciliationDelayMs = 5000;
     });
 

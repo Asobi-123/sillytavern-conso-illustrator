@@ -75,11 +75,11 @@ describe('settings', () => {
 
     it('should load existing settings from context', () => {
       const existingSettings: AutoIllustratorSettings = {
+        ...getDefaultSettings(),
         enabled: false,
         metaPrompt: 'custom prompt',
         currentPresetId: 'custom-123',
         customPresets: [],
-        streamingEnabled: false,
         streamingPollInterval: 500,
         maxConcurrentGenerations: 2,
         minGenerationInterval: 100,
@@ -324,11 +324,11 @@ describe('settings', () => {
       });
 
       const settings: AutoIllustratorSettings = {
+        ...getDefaultSettings(),
         enabled: true,
         metaPrompt: 'test prompt',
         currentPresetId: 'default',
         customPresets: [],
-        streamingEnabled: true,
         streamingPollInterval: 300,
         maxConcurrentGenerations: 1,
         minGenerationInterval: 0,
@@ -367,11 +367,11 @@ describe('settings', () => {
       });
 
       const newSettings: AutoIllustratorSettings = {
+        ...getDefaultSettings(),
         enabled: false,
         metaPrompt: 'new',
         currentPresetId: 'custom-456',
         customPresets: [],
-        streamingEnabled: false,
         streamingPollInterval: 500,
         maxConcurrentGenerations: 2,
         minGenerationInterval: 100,

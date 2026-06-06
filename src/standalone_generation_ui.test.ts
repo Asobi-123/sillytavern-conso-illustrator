@@ -56,12 +56,12 @@ describe('standalone_generation_ui', () => {
     toastrErrorMock.mockReset();
     toastrWarningMock.mockReset();
     toastrSuccessMock.mockReset();
-    global.toastr = {
+    vi.stubGlobal('toastr', {
       error: toastrErrorMock,
       warning: toastrWarningMock,
       info: vi.fn(),
       success: toastrSuccessMock,
-    } as any;
+    });
   });
 
   it('should restore and persist standalone subfolder label via localStorage', async () => {

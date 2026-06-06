@@ -286,9 +286,6 @@ describe('StreamingImageQueue', () => {
  * Tests for ImageGenerationQueue with regeneration metadata support
  */
 
-import {describe, it, expect, beforeEach} from 'vitest';
-import {ImageGenerationQueue} from './streaming_image_queue';
-
 describe('ImageGenerationQueue with regeneration metadata', () => {
   let queue: ImageGenerationQueue;
 

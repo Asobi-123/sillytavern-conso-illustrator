@@ -7,6 +7,7 @@ import {
   shouldUseVibeTransfer,
 } from './vibe_transfer';
 import {clearCsrfTokenCache} from '../utils/api';
+import type {VibeTransferReferenceImage} from '../types';
 
 vi.mock('../logger', () => ({
   createLogger: () => ({
@@ -48,6 +49,17 @@ function createSettings(
   return partial as unknown as AutoIllustratorSettings;
 }
 
+function createReferenceImage(
+  partial: Omit<VibeTransferReferenceImage, 'tags' | 'enabled'> &
+    Partial<Pick<VibeTransferReferenceImage, 'tags' | 'enabled'>>
+): VibeTransferReferenceImage {
+  return {
+    tags: [],
+    enabled: true,
+    ...partial,
+  };
+}
+
 describe('vibe_transfer service', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -59,12 +71,12 @@ describe('vibe_transfer service', () => {
       createSettings({
         vibeTransferEnabled: false,
         vibeTransferReferenceImages: [
-          {
+          createReferenceImage({
             id: 'ref1',
             name: 'ref.png',
             dataUrl: 'data:image/png;base64,AAAA',
             addedAt: 1,
-          },
+          }),
         ],
         vibeTransferReferenceStrength: 0.6,
         vibeTransferInformationExtracted: 1,
@@ -95,18 +107,18 @@ describe('vibe_transfer service', () => {
       createSettings({
         vibeTransferEnabled: true,
         vibeTransferReferenceImages: [
-          {
+          createReferenceImage({
             id: 'ref1',
             name: 'ref.png',
             dataUrl: 'data:image/png;base64,QUJDRA==',
             addedAt: 1,
-          },
-          {
+          }),
+          createReferenceImage({
             id: 'ref2',
             name: 'ref2.png',
             dataUrl: ' RUZH ',
             addedAt: 2,
-          },
+          }),
         ],
         vibeTransferReferenceStrength: 0.75,
         vibeTransferInformationExtracted: 0.35,
@@ -135,7 +147,7 @@ describe('vibe_transfer service', () => {
       createSettings({
         vibeTransferEnabled: true,
         vibeTransferReferenceImages: [
-          {
+          createReferenceImage({
             id: 'ref1',
             name: 'ref.png',
             dataUrl: 'data:image/png;base64,QUJDRA==',
@@ -150,14 +162,14 @@ describe('vibe_transfer service', () => {
               },
             ],
             addedAt: 1,
-          },
-          {
+          }),
+          createReferenceImage({
             id: 'ref2',
             name: 'ref2.png',
             dataUrl: 'data:image/png;base64,RUZH',
             enabled: false,
             addedAt: 2,
-          },
+          }),
         ],
         vibeTransferReferenceStrength: 0.75,
         vibeTransferInformationExtracted: 0.35,
@@ -178,23 +190,23 @@ describe('vibe_transfer service', () => {
   it('merges updated encoded cache without dropping disabled references', () => {
     const merged = mergeVibeTransferReferenceUpdates(
       [
-        {
+        createReferenceImage({
           id: 'ref1',
           name: 'ref.png',
           dataUrl: 'data:image/png;base64,AAAA',
           enabled: true,
           addedAt: 1,
-        },
-        {
+        }),
+        createReferenceImage({
           id: 'ref2',
           name: 'ref2.png',
           dataUrl: 'data:image/png;base64,BBBB',
           enabled: false,
           addedAt: 2,
-        },
+        }),
       ],
       [
-        {
+        createReferenceImage({
           id: 'ref1',
           name: 'ref.png',
           dataUrl: 'data:image/png;base64,AAAA',
@@ -209,7 +221,7 @@ describe('vibe_transfer service', () => {
             },
           ],
           addedAt: 1,
-        },
+        }),
       ]
     );
 
@@ -238,12 +250,12 @@ describe('vibe_transfer service', () => {
       createSettings({
         vibeTransferEnabled: true,
         vibeTransferReferenceImages: [
-          {
+          createReferenceImage({
             id: 'ref1',
             name: 'ref.png',
             dataUrl: 'data:image/png;base64,QUJDRA==',
             addedAt: 1,
-          },
+          }),
         ],
         vibeTransferReferenceStrength: 0.6,
         vibeTransferInformationExtracted: 1,

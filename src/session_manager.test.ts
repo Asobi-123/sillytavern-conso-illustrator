@@ -9,10 +9,9 @@ import {ImageGenerationQueue} from './streaming_image_queue';
 import {QueueProcessor} from './queue_processor';
 import {StreamingMonitor} from './streaming_monitor';
 
-// Mock global SillyTavern
-global.SillyTavern = {
+const mockSillyTavern = {
   getContext: vi.fn(),
-} as any;
+};
 
 // Mock dependencies
 vi.mock('./streaming_image_queue');
@@ -71,7 +70,8 @@ describe('SessionManager', () => {
     } as AutoIllustratorSettings;
 
     // Setup SillyTavern mock to return mockContext
-    global.SillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
+    mockSillyTavern.getContext = vi.fn().mockReturnValue(mockContext);
+    vi.stubGlobal('SillyTavern', mockSillyTavern);
   });
 
   describe('Streaming Sessions', () => {

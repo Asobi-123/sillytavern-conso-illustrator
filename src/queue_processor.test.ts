@@ -29,10 +29,9 @@ describe('QueueProcessor', () => {
     });
     mockSettings = getDefaultSettings();
 
-    // Mock global SillyTavern
-    global.SillyTavern = {
+    vi.stubGlobal('SillyTavern', {
       getContext: () => mockContext,
-    } as any;
+    });
 
     processor = new QueueProcessor(queue, mockSettings, 1);
   });
@@ -44,8 +43,7 @@ describe('QueueProcessor', () => {
     });
 
     it('should start with correct state', () => {
-      const mockCallback = vi.fn();
-      processor.start(0, mockCallback);
+      processor.start(0);
 
       expect(processor.getStatus().isRunning).toBe(true);
       expect(processor.getStatus().messageId).toBe(0);
@@ -53,7 +51,7 @@ describe('QueueProcessor', () => {
     });
 
     it('should stop processor', () => {
-      processor.start(0, vi.fn());
+      processor.start(0);
       expect(processor.getStatus().isRunning).toBe(true);
 
       processor.stop();
@@ -69,10 +67,10 @@ describe('QueueProcessor', () => {
     });
 
     it('should stop previous processor when starting new one', () => {
-      processor.start(0, vi.fn());
+      processor.start(0);
       expect(processor.getStatus().messageId).toBe(0);
 
-      processor.start(1, vi.fn());
+      processor.start(1);
       expect(processor.getStatus().messageId).toBe(1);
     });
   });
@@ -89,7 +87,7 @@ describe('QueueProcessor', () => {
     });
 
     it('should return correct status when running', () => {
-      processor.start(5, vi.fn());
+      processor.start(5);
 
       const status = processor.getStatus();
 
@@ -111,7 +109,7 @@ describe('QueueProcessor', () => {
 
   describe('processRemaining', () => {
     it('should handle empty queue', async () => {
-      processor.start(0, vi.fn());
+      processor.start(0);
 
       // Should not throw
       await processor.processRemaining();
@@ -123,7 +121,7 @@ describe('QueueProcessor', () => {
       queue.addPrompt('prompt1', '<!--img-prompt="prompt1"-->', 0, 10);
       queue.addPrompt('prompt2', '<!--img-prompt="prompt2"-->', 10, 20);
 
-      processor.start(0, vi.fn());
+      processor.start(0);
 
       // ProcessRemaining should handle the queue
       await processor.processRemaining();
@@ -138,7 +136,7 @@ describe('QueueProcessor', () => {
 
   describe('trigger', () => {
     it('should not throw when processor is running', () => {
-      processor.start(0, vi.fn());
+      processor.start(0);
       queue.addPrompt('test', '<!--img-prompt="test"-->', 0, 10);
 
       // Should not throw
@@ -168,11 +166,11 @@ describe('QueueProcessor', () => {
     });
 
     it('should not start processing if already processing', () => {
-      processor.start(0, vi.fn());
+      processor.start(0);
       const initialMessageId = processor.getStatus().messageId;
 
       // Starting again should update messageId
-      processor.start(1, vi.fn());
+      processor.start(1);
 
       expect(processor.getStatus().messageId).not.toBe(initialMessageId);
     });
@@ -188,11 +186,15 @@ describe('QueueProcessor', () => {
       );
       queue.addPrompt('test2', '<!--img-prompt="test2"-->', 20, 30);
 
+      expect(prompt1).not.toBeNull();
+
       // Mark first as GENERATING
-      queue.updateState(prompt1.id, 'GENERATING');
+      queue.updateState(prompt1!.id, 'GENERATING');
 
       // Simulate active generation
-      const processorInternal = processor as {activeGenerations: number};
+      const processorInternal = processor as unknown as {
+        activeGenerations: number;
+      };
       processorInternal.activeGenerations = 1;
 
       const processRemainingPromise = processor.processRemaining();

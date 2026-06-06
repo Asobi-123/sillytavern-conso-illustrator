@@ -16,6 +16,7 @@ export default defineConfig({
           const code = `export default ${JSON.stringify(content)};`;
           return {code, map: null};
         }
+        return null;
       },
     },
   ],
