@@ -13,10 +13,11 @@ const POSITION_STORAGE_KEY = `${EXTENSION_NAME}_floating_panel_position`;
 
 const SLOT_IDS = {
   mainEnabled: 'ai-floating-panel-slot-main-enabled',
-  mainRandomSdStyle: 'ai-floating-panel-slot-main-random-sd-style',
-  mainVibeTransfer: 'ai-floating-panel-slot-main-vibe-transfer',
   mainMode: 'ai-floating-panel-slot-main-mode',
   mainSubfolder: 'ai-floating-panel-slot-main-subfolder',
+  mainRegex: 'ai-floating-panel-slot-main-regex',
+  mainRandomSdStyle: 'ai-floating-panel-slot-main-random-sd-style',
+  mainVibeTransfer: 'ai-floating-panel-slot-main-vibe-transfer',
   mainInfo: 'ai-floating-panel-slot-main-info',
   sharedMeta: 'ai-floating-panel-slot-shared-meta',
   independentBase: 'ai-floating-panel-slot-independent-base',
@@ -492,23 +493,9 @@ function panelHtml(): string {
           <section id="${PANEL_IDS.mainPage}" class="ai-floating-panel-page active" data-page="main">
             <section class="ai-floating-panel-card no-collapse">
               <div class="ai-floating-panel-card-head">
-                <strong>${t('settings.enable')}</strong>
+                <strong>${t('panel.startIllustration')}</strong>
               </div>
               <div id="${SLOT_IDS.mainEnabled}"></div>
-            </section>
-
-            <section class="ai-floating-panel-card">
-              <div class="ai-floating-panel-card-head">
-                <strong>${t('settings.randomizeSdStyle')}</strong>
-              </div>
-              <div id="${SLOT_IDS.mainRandomSdStyle}"></div>
-            </section>
-
-            <section class="ai-floating-panel-card">
-              <div class="ai-floating-panel-card-head">
-                <strong>${t('settings.vibeTransfer')}</strong>
-              </div>
-              <div id="${SLOT_IDS.mainVibeTransfer}"></div>
             </section>
 
             <section class="ai-floating-panel-card no-collapse">
@@ -523,6 +510,27 @@ function panelHtml(): string {
                 <strong>${t('panel.currentChat')}</strong>
               </div>
               <div id="${SLOT_IDS.mainSubfolder}"></div>
+            </section>
+
+            <section class="ai-floating-panel-card">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('panel.regex')}</strong>
+              </div>
+              <div id="${SLOT_IDS.mainRegex}"></div>
+            </section>
+
+            <section class="ai-floating-panel-card">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('settings.randomizeSdStyle')}</strong>
+              </div>
+              <div id="${SLOT_IDS.mainRandomSdStyle}"></div>
+            </section>
+
+            <section class="ai-floating-panel-card">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('settings.vibeTransfer')}</strong>
+              </div>
+              <div id="${SLOT_IDS.mainVibeTransfer}"></div>
             </section>
 
             <section class="ai-floating-panel-card">
@@ -1838,10 +1846,11 @@ function ensureRoot(): HTMLElement {
 
 function mountSourceSections(): void {
   mountSection(UI_SECTION_IDS.MAIN_ENABLED, SLOT_IDS.mainEnabled);
-  mountSection(UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE, SLOT_IDS.mainRandomSdStyle);
-  mountSection(UI_SECTION_IDS.MAIN_VIBE_TRANSFER, SLOT_IDS.mainVibeTransfer);
   mountSection(UI_SECTION_IDS.PROMPT_MODE_SELECTOR, SLOT_IDS.mainMode);
   mountSection(UI_SECTION_IDS.MAIN_IMAGE_SUBFOLDER, SLOT_IDS.mainSubfolder);
+  mountSection(UI_SECTION_IDS.MAIN_REGEX, SLOT_IDS.mainRegex);
+  mountSection(UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE, SLOT_IDS.mainRandomSdStyle);
+  mountSection(UI_SECTION_IDS.MAIN_VIBE_TRANSFER, SLOT_IDS.mainVibeTransfer);
   mountSection(UI_SECTION_IDS.MAIN_INFO, SLOT_IDS.mainInfo);
   mountSection(UI_SECTION_IDS.SHARED_META_DISPLAY, SLOT_IDS.sharedMeta);
   mountSection(UI_SECTION_IDS.INDEPENDENT_BASE, SLOT_IDS.independentBase);

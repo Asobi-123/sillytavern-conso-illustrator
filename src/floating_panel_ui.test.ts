@@ -87,10 +87,36 @@ describe('floating_panel_ui', () => {
     const movedMainEnabled = document.getElementById(
       UI_SECTION_IDS.MAIN_ENABLED
     );
+    const movedRegex = document.getElementById(UI_SECTION_IDS.MAIN_REGEX);
 
     expect(sourceContainer).not.toBeNull();
     expect(movedMainEnabled).not.toBeNull();
+    expect(movedRegex).not.toBeNull();
     expect(sourceContainer?.contains(movedMainEnabled)).toBe(false);
+    expect(sourceContainer?.contains(movedRegex)).toBe(false);
+  });
+
+  it('should render main page cards in the requested order', () => {
+    document.body.insertAdjacentHTML('beforeend', createSettingsUI());
+
+    initializeFloatingPanel();
+
+    const titles = Array.from(
+      document.querySelectorAll(
+        '[data-page="main"] > .ai-floating-panel-card > .ai-floating-panel-card-head strong'
+      )
+    ).map(element => element.textContent);
+
+    expect(titles).toEqual([
+      'panel.startIllustration',
+      'settings.promptGenerationMode',
+      'panel.currentChat',
+      'panel.regex',
+      'settings.randomizeSdStyle',
+      'settings.vibeTransfer',
+      'panel.theme',
+      'panel.info',
+    ]);
   });
 
   it('should create fullscreen text editor overlay and decorate long text fields', () => {

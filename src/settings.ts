@@ -872,6 +872,38 @@ export function createSettingsUI(): string {
       <div id="${UI_ELEMENT_IDS.SD_STYLE_POOL_LIST}" class="auto-illustrator-sd-style-pool-list" style="max-height: 280px; overflow-y: auto; margin-top: 0.3rem; padding-right: 4px;"></div>
     </div>`;
 
+  const regexSanitizerContent = `
+    <div class="auto-illustrator-regex-sanitizer">
+      <div id="${UI_ELEMENT_IDS.REGEX_STATUS}" class="auto-illustrator-regex-status"></div>
+
+      <label class="checkbox_label" for="${UI_ELEMENT_IDS.REGEX_MASTER}">
+        <input id="${UI_ELEMENT_IDS.REGEX_MASTER}" type="checkbox" />
+        <span>${t('regex.enableAll')}</span>
+        <small>${t('regex.enableAllDesc')}</small>
+      </label>
+
+      <div class="auto-illustrator-regex-rule-list">
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.REGEX_IMG_PROMPT}">
+          <input id="${UI_ELEMENT_IDS.REGEX_IMG_PROMPT}" type="checkbox" />
+          <span>${t('regex.rule.imgPromptShort')}</span>
+        </label>
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.REGEX_AUTO_ILLUSTRATOR}">
+          <input id="${UI_ELEMENT_IDS.REGEX_AUTO_ILLUSTRATOR}" type="checkbox" />
+          <span>${t('regex.rule.autoIllustratorShort')}</span>
+        </label>
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.REGEX_IMG_TAG}">
+          <input id="${UI_ELEMENT_IDS.REGEX_IMG_TAG}" type="checkbox" />
+          <span>${t('regex.rule.imgTagShort')}</span>
+        </label>
+      </div>
+
+      <div class="auto-illustrator-regex-actions">
+        <button id="${UI_ELEMENT_IDS.REGEX_SYNC}" class="menu_button auto-illustrator-action-btn" type="button">
+          <i class="fa-solid fa-rotate"></i> ${t('regex.sync')}
+        </button>
+      </div>
+    </div>`;
+
   const vibeTransferContent = `
     <div class="auto-illustrator-vibe-transfer">
       <div class="auto-illustrator-vibe-transfer-header">
@@ -1023,6 +1055,10 @@ export function createSettingsUI(): string {
             <small>${t('settings.imageSubfolderLabelDesc')}</small>
             <input id="${UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL}" class="text_pole" type="text" placeholder="${t('settings.imageSubfolderLabelPlaceholder')}" />
           </label>`
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_REGEX,
+          regexSanitizerContent
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_INFO,

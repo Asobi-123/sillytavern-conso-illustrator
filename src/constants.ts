@@ -25,7 +25,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.11.0';
+export const EXTENSION_VERSION = '1.12.0';
 
 /**
  * GitHub repository for update checks
@@ -383,7 +383,7 @@ export const DEFAULT_SETTINGS = {
   commonStyleTagsPosition: 'prefix' as StyleTagPosition,
   showGalleryWidget: true,
   showProgressWidget: true,
-  showStreamingPreviewWidget: true,
+  showStreamingPreviewWidget: false,
   showFloatingPanelLauncher: true,
   enableClickToRegenerate: true,
   promptGenerationMode: PROMPT_GENERATION_MODE.DEFAULT,
@@ -627,6 +627,12 @@ export const UI_ELEMENT_IDS = {
     'auto_illustrator_conso_tag_catalog_bridge_triggers',
   TAG_CATALOG_SAVE_BRIDGE_TRIGGERS:
     'auto_illustrator_conso_tag_catalog_save_bridge_triggers',
+  REGEX_MASTER: 'auto_illustrator_conso_regex_master',
+  REGEX_IMG_PROMPT: 'auto_illustrator_conso_regex_img_prompt',
+  REGEX_AUTO_ILLUSTRATOR: 'auto_illustrator_conso_regex_auto_illustrator',
+  REGEX_IMG_TAG: 'auto_illustrator_conso_regex_img_tag',
+  REGEX_SYNC: 'auto_illustrator_conso_regex_sync',
+  REGEX_STATUS: 'auto_illustrator_conso_regex_status',
   PRESET_IMPORT_JSON: 'auto_illustrator_conso_preset_import_json',
   PRESET_IMPORT_FILE: 'auto_illustrator_conso_preset_import_file',
   PRESET_IMPORT_REQUIREMENT: 'auto_illustrator_conso_preset_import_requirement',
@@ -678,6 +684,7 @@ export const UI_SECTION_IDS = {
   MAIN_ENABLED: 'auto_illustrator_conso_panel_main_enabled',
   MAIN_IMAGE_SUBFOLDER: 'auto_illustrator_conso_panel_main_image_subfolder',
   MAIN_INFO: 'auto_illustrator_conso_panel_main_info',
+  MAIN_REGEX: 'auto_illustrator_conso_panel_main_regex',
   PROMPT_MODE_SELECTOR: 'auto_illustrator_conso_panel_prompt_mode_selector',
   SHARED_META_DISPLAY: 'auto_illustrator_conso_panel_shared_meta_display',
   INDEPENDENT_BASE: 'auto_illustrator_conso_panel_independent_base',

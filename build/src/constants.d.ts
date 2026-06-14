@@ -16,7 +16,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.11.0";
+export declare const EXTENSION_VERSION = "1.12.0";
 /**
  * GitHub repository for update checks
  */
@@ -505,6 +505,12 @@ export declare const UI_ELEMENT_IDS: {
     readonly TAG_CATALOG_BRIDGE_EXISTING: "auto_illustrator_conso_tag_catalog_bridge_existing";
     readonly TAG_CATALOG_BRIDGE_TRIGGERS: "auto_illustrator_conso_tag_catalog_bridge_triggers";
     readonly TAG_CATALOG_SAVE_BRIDGE_TRIGGERS: "auto_illustrator_conso_tag_catalog_save_bridge_triggers";
+    readonly REGEX_MASTER: "auto_illustrator_conso_regex_master";
+    readonly REGEX_IMG_PROMPT: "auto_illustrator_conso_regex_img_prompt";
+    readonly REGEX_AUTO_ILLUSTRATOR: "auto_illustrator_conso_regex_auto_illustrator";
+    readonly REGEX_IMG_TAG: "auto_illustrator_conso_regex_img_tag";
+    readonly REGEX_SYNC: "auto_illustrator_conso_regex_sync";
+    readonly REGEX_STATUS: "auto_illustrator_conso_regex_status";
     readonly PRESET_IMPORT_JSON: "auto_illustrator_conso_preset_import_json";
     readonly PRESET_IMPORT_FILE: "auto_illustrator_conso_preset_import_file";
     readonly PRESET_IMPORT_REQUIREMENT: "auto_illustrator_conso_preset_import_requirement";
@@ -545,6 +551,7 @@ export declare const UI_SECTION_IDS: {
     readonly MAIN_ENABLED: "auto_illustrator_conso_panel_main_enabled";
     readonly MAIN_IMAGE_SUBFOLDER: "auto_illustrator_conso_panel_main_image_subfolder";
     readonly MAIN_INFO: "auto_illustrator_conso_panel_main_info";
+    readonly MAIN_REGEX: "auto_illustrator_conso_panel_main_regex";
     readonly PROMPT_MODE_SELECTOR: "auto_illustrator_conso_panel_prompt_mode_selector";
     readonly SHARED_META_DISPLAY: "auto_illustrator_conso_panel_shared_meta_display";
     readonly INDEPENDENT_BASE: "auto_illustrator_conso_panel_independent_base";

@@ -72,6 +72,7 @@ Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 | **Common Style Tags** | Global prefix/suffix tags applied to all generated prompts |
 | **Tag Catalog** | Bundled offline catalog for searching, paging, copying, adding common tags, custom tags, and Chinese triggers |
 | **AI Candidate Tags** | Independent prompt generation sends only a small text-matched candidate subset; limits are editable and the latest candidate snapshot is inspectable |
+| **Built-in Regex Filtering** | Keeps illustration metadata in chat text and filters illustration tags only from prompts sent to the model |
 | **Preset Adapter** | Upload JSON/text or write requirements to draft Conso-native Shared API meta prompts or Independent API guidelines |
 | **Random SD Style** | Randomly pick one Style from the stable-diffusion extension before each generation, apply its prefix/negative, then restore. Optional whitelist limits the eligible pool |
 | **NovelAI Vibe Transfer** | Optional reference-image conditioning for chat and standalone generation. V4/V4.5 encoded vibes are cached to reduce repeated Anlas usage |
@@ -127,6 +128,12 @@ Key points:
 - The latest candidate snapshot shows exactly which tags were sent to the AI.
 
 Detailed usage: [Tag Catalog tutorial](docs/QUICKSTART_CN.md#tag-超市可选).
+
+---
+
+## Built-in Regex Filtering
+
+The extension can write and control native SillyTavern Regex rules. Illustration metadata stays in chat text, while `img-prompt`, `auto-illustrator`, and `img` tags are filtered only from prompts sent to the model.
 
 ---
 

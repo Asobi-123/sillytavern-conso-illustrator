@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-06-15
+
+### Added
+
+- **Built-in ST Regex filtering** - Added a main-dashboard Regex card that installs and controls Conso-managed SillyTavern Regex rules for filtering `img-prompt`, `auto-illustrator`, and `img` tags from outgoing prompts while keeping chat text intact.
+
+### Changed
+
+- **Main dashboard order** - Reordered the main floating-panel cards around the common workflow: start illustration, prompt generation mode, current chat, Regex, random SD Style, Vibe Transfer, panel theme, and info.
+- **Tag Catalog mobile layout** - Collapsed helper controls into one assist panel and kept search/category/source controls compact on narrow screens.
+- **Streaming preview default** - New installs now keep the streaming preview widget disabled by default.
+
 ## [1.11.0] - 2026-06-06
 
 ### Added

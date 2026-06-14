@@ -179,17 +179,20 @@ Before starting manual testing:
 
 **Steps**:
 1. Open extension settings
-2. Change multiple settings (timeouts, concurrency, patterns, etc.)
-3. Click "Save"
-4. **Verify**: Toast confirms save
-5. Reload page
-6. **Verify**: Settings persist across reload
-7. **Verify**: Changed settings take effect immediately
+2. In a fresh profile or after clearing extension settings, **Verify**: the streaming preview widget setting is disabled by default
+3. Enable the streaming preview widget manually
+4. Change multiple settings (timeouts, concurrency, patterns, etc.)
+5. Click "Save"
+6. **Verify**: Toast confirms save
+7. Reload page
+8. **Verify**: Settings persist across reload
+9. **Verify**: Changed settings take effect immediately
 
 **Expected Behavior**:
 - All settings have change event listeners
 - Settings stored in chat metadata
 - UI reflects current values on load
+- New installs do not show the streaming preview widget until the user enables it
 
 **Common Issues**:
 - Settings don't persist → Check event listener registration
@@ -267,7 +270,32 @@ Before starting manual testing:
 
 ## Edge Cases
 
-### 11. Prompt Personalization Suite
+### 11. Floating Panel Dashboard and Managed Regex
+
+**Purpose**: Verify the main floating-panel card order and the managed SillyTavern Regex prompt filters.
+
+**Steps**:
+1. Open the floating panel and go to the main dashboard
+2. **Verify**: card order is Start Illustration → Prompt Generation Mode → Current Chat → Regex → Randomize SD Style → Vibe Transfer → Panel Theme → Info
+3. **Verify**: the Regex card is collapsed by default
+4. Expand **Regex**
+5. **Verify**: the three built-in rules are installed and enabled by default: `img-prompt`, `auto-illustrator`, and `img tag`
+6. Toggle the master switch and each individual rule
+7. **Verify**: enable/disable state persists after page refresh
+8. Click **Sync to ST Regex**
+9. Refresh the page and open the native SillyTavern Regex panel
+10. **Verify**: the managed rules appear in the native list after refresh
+11. **Verify**: managed rules use outgoing-prompt filtering, user/AI output placements, `minDepth: 0`, and do not delete metadata from chat text
+
+**Expected Behavior**:
+- Conso manages only its three known Regex scripts by stable IDs
+- Manual sync refreshes built-in template fields while preserving current enable/disable state
+- Chat text keeps illustration metadata; only prompts sent to the model are filtered
+- If the native Regex extension is disabled, the Conso Regex card shows a disabled status instead of silently changing state
+
+---
+
+### 12. Prompt Personalization Suite
 
 **Purpose**: Verify Tag Catalog, Preset Adapter, and Character Fixed Tags injection modes work without breaking the base prompt generation flow.
 
@@ -275,22 +303,26 @@ Before starting manual testing:
 1. Open the floating panel and go to Prompt Settings
 2. Open **Tag Catalog**
 3. **Verify**: catalog total/counts render, search/filter/page controls work, and the list scrolls
-4. Add a custom tag under an existing category
-5. **Verify**: duplicate custom tags are skipped, custom tags can be filtered, and custom entries can be deleted
-6. Add a Chinese trigger for one catalog tag
-7. **Verify**: user trigger appears on the tag card and does not replace built-in triggers
-8. Run one independent prompt generation or standalone prompt generation
-9. **Verify**: Last AI candidates shows the full source text and exact candidate tags sent
-10. Open **Preset Adapter**
-11. Upload or paste JSON/text-like preset content, choose Shared API, Independent API, and Both targets
-12. **Verify**: generated drafts require explicit save and target switching does not overwrite drafts unexpectedly
-13. Open **Character Fixed Tags** and switch injection modes
-14. **Verify**: legacy mode remains available, structure-aware mode handles recognizable role sections, and conservative multi-character mode skips unsafe flat prompts
-15. **Verify**: buttons stay horizontal and all related overlays remain readable in one light and one dark panel theme
+4. Use a narrow viewport or mobile browser
+5. **Verify**: search, category, and source controls stay in one compact row
+6. **Verify**: AI candidate count, Last AI candidates, bridge settings, and custom tags are grouped inside one assist panel with visually distinct inner collapsibles
+7. Add a custom tag under an existing category
+8. **Verify**: duplicate custom tags are skipped, custom tags can be filtered, and custom entries can be deleted
+9. Add a Chinese trigger for one catalog tag
+10. **Verify**: user trigger appears on the tag card and does not replace built-in triggers
+11. Run one independent prompt generation or standalone prompt generation
+12. **Verify**: Last AI candidates shows the full source text and exact candidate tags sent
+13. Open **Preset Adapter**
+14. Upload or paste JSON/text-like preset content, choose Shared API, Independent API, and Both targets
+15. **Verify**: generated drafts require explicit save and target switching does not overwrite drafts unexpectedly
+16. Open **Character Fixed Tags** and switch injection modes
+17. **Verify**: legacy mode remains available, structure-aware mode handles recognizable role sections, and conservative multi-character mode skips unsafe flat prompts
+18. **Verify**: buttons stay horizontal and all related overlays remain readable in one light and one dark panel theme
 
 **Expected Behavior**:
 - Runtime tag catalog usage does not fetch network resources
 - Full catalog is browsable through pagination and filters
+- Mobile Tag Catalog leaves most vertical space for tag browsing
 - AI candidates are a matched, limited subset, not the full catalog
 - User triggers supplement the bridge without overwriting built-in bridge data
 - Preset Adapter creates Conso-native drafts for the selected target only
@@ -298,7 +330,7 @@ Before starting manual testing:
 
 ---
 
-### 12. Empty/Malformed Prompts
+### 13. Empty/Malformed Prompts
 
 **Purpose**: Verify robustness against edge cases.
 
@@ -318,7 +350,7 @@ Before starting manual testing:
 
 ---
 
-### 13. Barrier Timeout Scenario
+### 14. Barrier Timeout Scenario
 
 **Purpose**: Verify timeout handling when MESSAGE_RECEIVED is delayed.
 
@@ -340,7 +372,7 @@ Before starting manual testing:
 
 ## Browser Compatibility
 
-### 14. Cross-Browser Check
+### 15. Cross-Browser Check
 
 **Quick smoke test** in each supported browser:
 - ✅ Chrome/Edge (Chromium)
@@ -358,7 +390,7 @@ Before starting manual testing:
 
 Before merging feature branch to `main`:
 
-- [ ] All 14 test scenarios passed
+- [ ] All 15 test scenarios passed
 - [ ] No errors or warnings in browser console
 - [ ] Performance acceptable (no freezes/lag)
 - [ ] Error messages user-friendly
@@ -388,6 +420,6 @@ If manual testing reveals issues:
 ## Notes
 
 - **Time estimate**: 30-45 minutes for full manual test suite
-- **Priority**: Tests 1-8 are critical; 9-14 are important but can be quick checks
+- **Priority**: Tests 1-8 and 11 are critical; 9-10 and 12-15 are important but can be quick checks
 - **Automation goal**: Eventually automate some of these with E2E tests (Playwright/Puppeteer)
 - **Update this doc**: Add new tests when new major features are added

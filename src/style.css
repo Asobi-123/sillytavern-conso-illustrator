@@ -3383,6 +3383,51 @@ img[data-failed-placeholder='true']:hover {
   margin-bottom: 0.25rem;
 }
 
+/* ===== ST Regex Sanitizer ===== */
+
+.auto-illustrator-regex-sanitizer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.auto-illustrator-regex-status {
+  padding: 0.38rem 0.5rem;
+  border: 1px solid rgba(128, 128, 128, 0.24);
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.08);
+  color: var(--ai-panel-text-2);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.auto-illustrator-regex-sanitizer .checkbox_label {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.auto-illustrator-regex-sanitizer .checkbox_label small {
+  display: block;
+  flex-basis: 100%;
+  margin-left: 1.35rem;
+  color: var(--ai-panel-text-3);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.auto-illustrator-regex-rule-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 0.3rem 0.45rem;
+  padding-left: 0.2rem;
+}
+
+.auto-illustrator-regex-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* ===== NovelAI Vibe Transfer ===== */
 
 .auto-illustrator-vibe-transfer {
@@ -3972,6 +4017,11 @@ img[data-failed-placeholder='true']:hover {
   gap: 0.5rem;
 }
 
+.tag-catalog-toolbar .text_pole {
+  min-width: 0;
+  width: 100%;
+}
+
 .tag-catalog-selected-row {
   display: flex;
   flex-direction: column;
@@ -4021,17 +4071,45 @@ img[data-failed-placeholder='true']:hover {
   text-orientation: mixed;
 }
 
-.tag-catalog-settings {
+.tag-catalog-assist-panel {
   border: 1px solid var(--ai-panel-border);
   border-radius: 6px;
   padding: 0.45rem 0.55rem;
   background: var(--ai-panel-bg-2);
 }
 
+.tag-catalog-assist-panel summary {
+  cursor: pointer;
+  color: var(--ai-panel-text);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.tag-catalog-assist-panel[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tag-catalog-assist-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-left: 0.45rem;
+  border-left: 2px solid rgba(128, 128, 128, 0.22);
+}
+
+.tag-catalog-settings {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  background: rgba(128, 128, 128, 0.07);
+}
+
 .tag-catalog-settings summary {
   cursor: pointer;
   color: var(--ai-panel-text);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
@@ -4330,7 +4408,17 @@ img[data-failed-placeholder='true']:hover {
 
 @media (max-width: 520px) {
   .tag-catalog-toolbar {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(78px, 0.52fr) minmax(
+        78px,
+        0.52fr
+      );
+    gap: 0.32rem;
+  }
+
+  .tag-catalog-toolbar .text_pole {
+    padding-right: 0.42rem;
+    padding-left: 0.42rem;
+    font-size: 0.82rem;
   }
 
   .tag-catalog-custom-form {

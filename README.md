@@ -72,6 +72,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **通用样式 Tag** | 全局前缀/后缀标签，应用到所有生成的提示词 |
 | **Tag 超市** | 内置离线 catalog，可搜索、分页、复制、加入通用标签、补自定义 tag 和中文触发词 |
 | **AI 候选 Tag** | 独立提示词生成时只发送当前文本命中的少量候选 tag；候选数量可编辑，最近一次候选可查看 |
+| **内置正则过滤** | 保留正文里的插画元数据，只从发送给模型的 prompt 中过滤插画标签 |
 | **预设适配** | 上传 JSON / 文本或输入需求，生成 Conso 原生共享 API 元提示或独立 API 指南草稿 |
 | **随机 SD Style** | 每次生图前从酒馆 SD 扩展保存的 Style 列表中随机抽一条临时套用，可用白名单限定参与抽签的范围 |
 | **NovelAI Vibe Transfer** | 可选参考图生图增强；支持文生图和独立生图，V4/V4.5 会缓存 vibe 编码以减少重复 Anlas 消耗 |
@@ -127,6 +128,12 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 - 最近一次实际发送给 AI 的候选 tag 可以在面板里查看。
 
 具体使用见：[Tag 超市教程](docs/QUICKSTART_CN.md#tag-超市可选)。
+
+---
+
+## 内置正则过滤
+
+插件可以写入并操控 SillyTavern 原生 Regex 规则。正文里的插画元数据会保留，只从发送给模型的 prompt 中过滤 `img-prompt`、`auto-illustrator`、`img` 标签。
 
 ---
 

@@ -17,9 +17,12 @@ describe('settings', () => {
       expect(html).toContain(UI_SECTION_IDS.FLOATING_PANEL_SOURCE);
       expect(html).toContain(UI_SECTION_IDS.MAIN_ENABLED);
       expect(html).toContain(UI_SECTION_IDS.PROMPT_MODE_SELECTOR);
+      expect(html).toContain(UI_SECTION_IDS.MAIN_REGEX);
       expect(html).toContain(UI_SECTION_IDS.SHARED_META_DISPLAY);
       expect(html).toContain(UI_SECTION_IDS.STANDALONE);
       expect(html).toContain(UI_ELEMENT_IDS.ENABLED);
+      expect(html).toContain(UI_ELEMENT_IDS.REGEX_MASTER);
+      expect(html).toContain(UI_ELEMENT_IDS.REGEX_SYNC);
       expect(html).toContain(UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL);
     });
   });
@@ -36,6 +39,7 @@ describe('settings', () => {
       expect(defaults.customPresets).toEqual([]);
       expect(defaults.showGalleryWidget).toBe(true);
       expect(defaults.showProgressWidget).toBe(true);
+      expect(defaults.showStreamingPreviewWidget).toBe(false);
       expect(defaults.promptGenerationMode).toBe('shared-api');
       expect(defaults.maxPromptsPerMessage).toBe(5);
       expect(defaults.standalonePromptCount).toBe(3);

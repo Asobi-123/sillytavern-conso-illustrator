@@ -244,61 +244,66 @@ export function createTagCatalogContent(): string {
         </select>
       </div>
 
-      <details class="tag-catalog-settings">
-        <summary>${t('tagCatalog.candidateSettings')}</summary>
-        <div class="tag-catalog-candidate-summary" id="${UI_ELEMENT_IDS.TAG_CATALOG_CANDIDATE_LIMITS}"></div>
-        <div class="tag-catalog-candidate-rules">
-          ${t('tagCatalog.candidateRules')}
-        </div>
-        <div class="tag-catalog-limit-grid">
-          ${candidateLimitInputs()}
-        </div>
-        <button id="${UI_ELEMENT_IDS.TAG_CATALOG_RESET_CANDIDATE_LIMITS}" class="menu_button" type="button">
-          <i class="fa-solid fa-rotate-left"></i> ${t('tagCatalog.resetCandidateLimits')}
-        </button>
-      </details>
+      <details class="tag-catalog-assist-panel">
+        <summary>${t('tagCatalog.assistPanelTitle')}</summary>
+        <div class="tag-catalog-assist-panel-body">
+          <details class="tag-catalog-settings">
+            <summary>${t('tagCatalog.candidateSettings')}</summary>
+            <div class="tag-catalog-candidate-summary" id="${UI_ELEMENT_IDS.TAG_CATALOG_CANDIDATE_LIMITS}"></div>
+            <div class="tag-catalog-candidate-rules">
+              ${t('tagCatalog.candidateRules')}
+            </div>
+            <div class="tag-catalog-limit-grid">
+              ${candidateLimitInputs()}
+            </div>
+            <button id="${UI_ELEMENT_IDS.TAG_CATALOG_RESET_CANDIDATE_LIMITS}" class="menu_button" type="button">
+              <i class="fa-solid fa-rotate-left"></i> ${t('tagCatalog.resetCandidateLimits')}
+            </button>
+          </details>
 
-      <details class="tag-catalog-settings">
-        <summary>${t('tagCatalog.lastCandidatesTitle')}</summary>
-        <div id="${UI_ELEMENT_IDS.TAG_CATALOG_LAST_CANDIDATES}" class="tag-catalog-last-candidates"></div>
-        <button id="${UI_ELEMENT_IDS.TAG_CATALOG_REFRESH_LAST_CANDIDATES}" class="menu_button" type="button">
-          <i class="fa-solid fa-rotate"></i> ${t('tagCatalog.refreshLastCandidates')}
-        </button>
-      </details>
+          <details class="tag-catalog-settings">
+            <summary>${t('tagCatalog.lastCandidatesTitle')}</summary>
+            <div id="${UI_ELEMENT_IDS.TAG_CATALOG_LAST_CANDIDATES}" class="tag-catalog-last-candidates"></div>
+            <button id="${UI_ELEMENT_IDS.TAG_CATALOG_REFRESH_LAST_CANDIDATES}" class="menu_button" type="button">
+              <i class="fa-solid fa-rotate"></i> ${t('tagCatalog.refreshLastCandidates')}
+            </button>
+          </details>
 
-      <details class="tag-catalog-settings" id="auto_illustrator_conso_tag_catalog_bridge_panel">
-        <summary>${t('tagCatalog.bridgeSettings')}</summary>
-        <div class="tag-catalog-bridge-summary" id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_SUMMARY}"></div>
-        <div class="tag-catalog-candidate-rules">
-          ${t('tagCatalog.bridgeRules')}
-        </div>
-        <div class="tag-catalog-bridge-form">
-          <input id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_TAG}" class="text_pole" type="text"
-                 placeholder="${t('tagCatalog.bridgeTagPlaceholder')}" />
-          <div id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_EXISTING}" class="tag-catalog-bridge-existing"></div>
-          <textarea id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_TRIGGERS}" class="text_pole textarea_compact"
-                    rows="2" placeholder="${t('tagCatalog.bridgeTriggersPlaceholder')}"></textarea>
-          <button id="${UI_ELEMENT_IDS.TAG_CATALOG_SAVE_BRIDGE_TRIGGERS}" class="menu_button" type="button">
-            <i class="fa-solid fa-link"></i> ${t('tagCatalog.saveBridgeTriggers')}
-          </button>
-        </div>
-      </details>
+          <details class="tag-catalog-settings" id="auto_illustrator_conso_tag_catalog_bridge_panel">
+            <summary>${t('tagCatalog.bridgeSettings')}</summary>
+            <div class="tag-catalog-bridge-summary" id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_SUMMARY}"></div>
+            <div class="tag-catalog-candidate-rules">
+              ${t('tagCatalog.bridgeRules')}
+            </div>
+            <div class="tag-catalog-bridge-form">
+              <input id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_TAG}" class="text_pole" type="text"
+                     placeholder="${t('tagCatalog.bridgeTagPlaceholder')}" />
+              <div id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_EXISTING}" class="tag-catalog-bridge-existing"></div>
+              <textarea id="${UI_ELEMENT_IDS.TAG_CATALOG_BRIDGE_TRIGGERS}" class="text_pole textarea_compact"
+                        rows="2" placeholder="${t('tagCatalog.bridgeTriggersPlaceholder')}"></textarea>
+              <button id="${UI_ELEMENT_IDS.TAG_CATALOG_SAVE_BRIDGE_TRIGGERS}" class="menu_button" type="button">
+                <i class="fa-solid fa-link"></i> ${t('tagCatalog.saveBridgeTriggers')}
+              </button>
+            </div>
+          </details>
 
-      <details class="tag-catalog-settings">
-        <summary>${t('tagCatalog.customTitle')}</summary>
-        <div class="tag-catalog-custom-form">
-          <textarea id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_TAG}" class="text_pole textarea_compact"
-                    rows="2" placeholder="${t('tagCatalog.customTagPlaceholder')}"></textarea>
-          <input id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_LABEL}" class="text_pole" type="text"
-                 placeholder="${t('tagCatalog.customLabelPlaceholder')}" />
-          <textarea id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_TRIGGERS}" class="text_pole textarea_compact"
-                    rows="2" placeholder="${t('tagCatalog.customTriggersPlaceholder')}"></textarea>
-          <select id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_CATEGORY}" class="text_pole">
-            ${categoryOptions(false)}
-          </select>
-          <button id="${UI_ELEMENT_IDS.TAG_CATALOG_ADD_CUSTOM}" class="menu_button" type="button">
-            <i class="fa-solid fa-plus"></i> ${t('tagCatalog.addCustom')}
-          </button>
+          <details class="tag-catalog-settings">
+            <summary>${t('tagCatalog.customTitle')}</summary>
+            <div class="tag-catalog-custom-form">
+              <textarea id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_TAG}" class="text_pole textarea_compact"
+                        rows="2" placeholder="${t('tagCatalog.customTagPlaceholder')}"></textarea>
+              <input id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_LABEL}" class="text_pole" type="text"
+                     placeholder="${t('tagCatalog.customLabelPlaceholder')}" />
+              <textarea id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_TRIGGERS}" class="text_pole textarea_compact"
+                        rows="2" placeholder="${t('tagCatalog.customTriggersPlaceholder')}"></textarea>
+              <select id="${UI_ELEMENT_IDS.TAG_CATALOG_CUSTOM_CATEGORY}" class="text_pole">
+                ${categoryOptions(false)}
+              </select>
+              <button id="${UI_ELEMENT_IDS.TAG_CATALOG_ADD_CUSTOM}" class="menu_button" type="button">
+                <i class="fa-solid fa-plus"></i> ${t('tagCatalog.addCustom')}
+              </button>
+            </div>
+          </details>
         </div>
       </details>
 

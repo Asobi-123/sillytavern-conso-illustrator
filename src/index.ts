@@ -88,6 +88,7 @@ import {initializeStandaloneGeneration} from './standalone_generation_ui';
 import {initializePromptLibrary} from './prompt_library_ui';
 import {initializeTagCatalog} from './tag_catalog_ui';
 import {initializePresetImport} from './preset_import_ui';
+import {initializeRegexSanitizerPanel} from './st_regex_sanitizer';
 import {listAvailableStyleNames} from './services/sd_style_randomizer';
 import {createVibeSourceDataUrl} from './services/vibe_source_image';
 import {htmlEncode} from './utils/dom_utils';
@@ -4487,6 +4488,7 @@ function initialize(): void {
 
     // Initialize prompt personalization panels
     initializeTagCatalog(settings, () => saveSettings(settings, context));
+    initializeRegexSanitizerPanel(context);
     initializePresetImport(
       context,
       settings,

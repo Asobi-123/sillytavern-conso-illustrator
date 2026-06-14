@@ -57,6 +57,7 @@ sillytavern-conso-illustrator/
 │   ├── image_generator.ts          # SD command integration, image insertion
 │   ├── chat_history_pruner.ts      # Removes generated images from LLM context
 │   ├── settings.ts                 # Settings management & UI generation
+│   ├── st_regex_sanitizer.ts       # Managed SillyTavern Regex prompt filters
 │   ├── meta_prompt_presets.ts      # Meta-prompt preset management system
 │   ├── independent_llm_presets.ts  # Independent API guideline preset management
 │   ├── floating_panel_ui.ts        # Floating workbench, overlays, and section mounting
@@ -117,6 +118,14 @@ sillytavern-conso-illustrator/
 - User-added tags and trigger supplements live in extension settings. They supplement bundled data and must not mutate the bundled JSON at runtime.
 - Prompt generation sends only a compact matched candidate subset. It must not send the full catalog to the LLM.
 
+### Managed SillyTavern Regex Rules
+
+- `src/st_regex_sanitizer.ts` owns the three Conso-managed native Regex scripts.
+- The managed rules filter `img-prompt`, `auto-illustrator`, and `img` tags only from outgoing prompts. They must not delete metadata from chat text.
+- Rules are written to `context.extensionSettings.regex` with stable IDs and should preserve the user's enabled/disabled state when template fields are refreshed.
+- Default runtime fields are `promptOnly: true`, `placement: [1, 2]`, `runOnEdit: true`, and `minDepth: 0`.
+- The native SillyTavern Regex list redraws after page refresh. Do not depend on private Regex UI loaders from the SillyTavern extension.
+
 ### Coding Standards
 
 - **Style Guide**: Google TypeScript Style Guide (enforced by `gts`)
@@ -166,11 +175,10 @@ npm run test:coverage
 **Current Release Gate:**
 - `npm test`
 - `npm run lint`
+- `npm run compile`
 - `node --check server-plugin/auto-illustrator-nai-advanced/index.mjs`
 - `npm run build`
 - `git diff --check`
-
-`npm run compile` currently has known legacy test/mock TypeScript debt. Treat it as a cleanup backlog item until that branch is handled; do not use it as the release gate for unrelated feature work.
 
 #### Manual Testing
 
