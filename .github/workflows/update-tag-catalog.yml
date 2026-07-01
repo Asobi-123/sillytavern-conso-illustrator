@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,7 +54,8 @@ jobs:
           git switch -c "$branch"
           git add src/data/tag_catalog.json src/data/zh_tag_bridge.generated.json src/data/tag_bridge_report.json dist/index.js
           git commit -m "chore: update tag catalog data"
-          git push --force-with-lease origin "$branch"
+          git fetch origin "$branch:refs/remotes/origin/$branch" || true
+          git push --force-with-lease origin "HEAD:$branch"
           echo "branch=$branch" >> "$GITHUB_ENV"
 
       - name: Create or update pull request
