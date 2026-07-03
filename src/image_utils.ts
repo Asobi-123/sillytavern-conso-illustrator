@@ -109,6 +109,7 @@ export function extractImagesFromMessage(
     const promptNode = metadata
       ? getPromptForImage(normalizedUrl, metadata)
       : null;
+    const randomization = metadata?.imageRandomizations?.[normalizedUrl];
 
     let promptText: string;
     if (promptNode) {
@@ -135,6 +136,7 @@ export function extractImagesFromMessage(
       imageUrl,
       promptText,
       promptPreview,
+      randomization,
       messageId,
       imageIndex,
     });

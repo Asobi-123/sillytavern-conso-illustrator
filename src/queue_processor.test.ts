@@ -26,6 +26,13 @@ describe('QueueProcessor', () => {
           },
         },
       },
+      extensionSettings: {
+        sd: {
+          styles: [],
+          prompt_prefix: '',
+          negative_prompt: '',
+        },
+      },
     });
     mockSettings = getDefaultSettings();
 
@@ -226,6 +233,125 @@ describe('QueueProcessor', () => {
 
       const sdCommand = mockContext.SlashCommandParser?.commands?.sd;
       expect(sdCommand?.callback).toHaveBeenCalledTimes(3);
+    });
+
+    it('should keep randomization metadata on deferred images', async () => {
+      mockSettings.generationStyleMode = 'random';
+      mockSettings.randomizeSdStylePerGeneration = true;
+      mockContext.extensionSettings = {
+        ...mockContext.extensionSettings,
+        sd: {
+          ...(mockContext.extensionSettings?.sd ?? {}),
+          model: 'nai-diffusion-4-curated-preview',
+          styles: [
+            {
+              name: 'Oil Style',
+              prefix: 'oil prefix',
+              negative: 'oil negative',
+            },
+          ],
+          prompt_prefix: 'original prefix',
+          negative_prompt: 'original negative',
+        },
+      };
+
+      queue.addPrompt(
+        'test',
+        '<!--img-prompt="test"-->',
+        0,
+        10,
+        undefined,
+        'prompt_id_1'
+      );
+
+      processor.start(0);
+      await processor.processRemaining();
+
+      const deferred = processor.getDeferredImages();
+      expect(deferred).toHaveLength(1);
+      expect(deferred[0].randomization).toMatchObject({
+        sdStyleName: 'Oil Style',
+      });
+    });
+
+    it('should keep random Vibe combination metadata on deferred images', async () => {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({token: 'csrf'}),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({format: 'png', data: 'AAAA'}),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({path: 'https://example.com/vibe.png'}),
+        });
+      vi.stubGlobal('fetch', fetchMock);
+
+      mockSettings.vibeTransferEnabled = true;
+      mockSettings.generationStyleMode = 'random';
+      mockSettings.randomizeVibeCombinationPerGeneration = true;
+      mockSettings.vibeCombinationPoolWhitelist = ['combo1'];
+      mockContext.extensionSettings = {
+        ...mockContext.extensionSettings,
+        sd: {
+          ...(mockContext.extensionSettings?.sd ?? {}),
+          model: 'nai-diffusion-4-curated-preview',
+        },
+      };
+      mockSettings.vibeTransferCombinations = [
+        {
+          id: 'combo1',
+          name: 'Oil Vibe',
+          itemIds: ['item1'],
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ];
+      mockSettings.vibeTransferLibraryItems = [
+        {
+          id: 'item1',
+          name: 'Item 1',
+          enabled: true,
+          tags: [],
+          createdAt: 1,
+          updatedAt: 1,
+          encodings: {
+            v4curated: {
+              unknown: {
+                encoding: 'encoded',
+                params: {information_extracted: 0},
+              },
+            },
+          },
+          generation: {
+            strength: 0.6,
+            information_extracted: 0,
+          },
+        },
+      ];
+
+      queue.addPrompt(
+        'test',
+        '<!--img-prompt="test"-->',
+        0,
+        10,
+        undefined,
+        'prompt_id_1'
+      );
+
+      processor.start(0);
+      await processor.processRemaining();
+
+      const deferred = processor.getDeferredImages();
+      expect(deferred).toHaveLength(1);
+      expect(deferred[0].randomization).toMatchObject({
+        vibeCombinationId: 'combo1',
+        vibeCombinationName: 'Oil Vibe',
+      });
     });
 
     it('should return early if no queued prompts', async () => {

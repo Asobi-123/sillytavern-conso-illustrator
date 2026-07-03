@@ -4,13 +4,15 @@
  */
 
 import {ImageGenerationQueue} from './streaming_image_queue';
-import {generateImage} from './image_generator';
+import {generateImageWithMetadata} from './image_generator';
 import {createPlaceholderUrl} from './placeholder';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
 import {normalizePromptTagsWithCatalog} from './services/tag_catalog_prompt';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
+  buildVibeCombinationRandomConfigFromSettings,
   buildVibeTransferConfigFromSettings,
+  mergeVibeTransferLibraryItemUpdates,
   mergeVibeTransferReferenceUpdates,
 } from './services/vibe_transfer';
 import type {QueuedPrompt, DeferredImage} from './types';
@@ -181,7 +183,7 @@ export class QueueProcessor {
         this.settings.characterFixedTagInjectionMode
       );
 
-      const imageUrl = await generateImage(
+      const generationResult = await generateImageWithMetadata(
         injectedPrompt,
         context,
         this.settings.commonStyleTags,
@@ -195,9 +197,17 @@ export class QueueProcessor {
               this.settings.vibeTransferReferenceImages,
               references
             );
+          this.settings.vibeTransferLibraryItems =
+            mergeVibeTransferLibraryItemUpdates(
+              this.settings.vibeTransferLibraryItems,
+              references
+            );
           saveSettings(this.settings, context);
-        }
+        },
+        buildVibeCombinationRandomConfigFromSettings(this.settings),
+        this.settings
       );
+      const imageUrl = generationResult.imageUrl;
 
       if (imageUrl) {
         // Success
@@ -226,6 +236,7 @@ export class QueueProcessor {
           imageUrl,
           promptId,
           promptPreview,
+          randomization: generationResult.randomization,
           completedAt: Date.now(),
         });
         logger.debug(
@@ -237,7 +248,8 @@ export class QueueProcessor {
           this.messageId,
           imageUrl,
           prompt.prompt,
-          promptPreview
+          promptPreview,
+          generationResult.randomization
         );
 
         // Update progress tracking

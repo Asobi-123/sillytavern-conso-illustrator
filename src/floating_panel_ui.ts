@@ -18,6 +18,7 @@ const SLOT_IDS = {
   mainRegex: 'ai-floating-panel-slot-main-regex',
   mainRandomSdStyle: 'ai-floating-panel-slot-main-random-sd-style',
   mainVibeTransfer: 'ai-floating-panel-slot-main-vibe-transfer',
+  vibeManager: 'ai-floating-panel-slot-vibe-manager',
   mainInfo: 'ai-floating-panel-slot-main-info',
   sharedMeta: 'ai-floating-panel-slot-shared-meta',
   independentBase: 'ai-floating-panel-slot-independent-base',
@@ -40,6 +41,7 @@ const PANEL_IDS = {
   close: 'ai-floating-panel-close',
   mainPage: 'ai-floating-panel-page-main',
   promptPage: 'ai-floating-panel-page-prompt',
+  vibePage: 'ai-floating-panel-page-vibe',
   galleryPage: 'ai-floating-panel-page-gallery',
   standalonePage: 'ai-floating-panel-page-standalone',
   promptLibraryPage: 'ai-floating-panel-page-prompt-library',
@@ -484,6 +486,7 @@ function panelHtml(): string {
         <nav class="ai-floating-panel-tabs">
           <button class="ai-floating-panel-tab active" data-panel-tab="main">${t('panel.main')}</button>
           <button class="ai-floating-panel-tab" data-panel-tab="prompt">${t('panel.promptSettings')}</button>
+          <button class="ai-floating-panel-tab" data-panel-tab="vibe">${t('panel.vibeManager')}</button>
           <button class="ai-floating-panel-tab" data-panel-tab="gallery">${t('gallery.title')}</button>
           <button class="ai-floating-panel-tab" data-panel-tab="standalone">${t('drawer.standaloneGeneration')}</button>
           <button class="ai-floating-panel-tab" data-panel-tab="prompt-library">${t('promptLibrary.title')}</button>
@@ -521,7 +524,7 @@ function panelHtml(): string {
 
             <section class="ai-floating-panel-card">
               <div class="ai-floating-panel-card-head">
-                <strong>${t('settings.randomizeSdStyle')}</strong>
+                <strong>${t('settings.randomizePerGeneration')}</strong>
               </div>
               <div id="${SLOT_IDS.mainRandomSdStyle}"></div>
             </section>
@@ -668,6 +671,15 @@ function panelHtml(): string {
                   </div>
                 </div>
               </div>
+            </section>
+          </section>
+
+          <section id="${PANEL_IDS.vibePage}" class="ai-floating-panel-page" data-page="vibe">
+            <section class="ai-floating-panel-card no-collapse">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('panel.vibeManager')}</strong>
+              </div>
+              <div id="${SLOT_IDS.vibeManager}"></div>
             </section>
           </section>
 
@@ -965,7 +977,7 @@ function ensureStyle(): void {
 
     .ai-floating-panel-tabs {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
       padding: 10px 14px;
       border-bottom: 1px solid var(--line);
@@ -1656,8 +1668,11 @@ function setOpen(isOpen: boolean): void {
   });
 }
 
-export function openFloatingPanel(): void {
+export function openFloatingPanel(page?: string): void {
   setOpen(true);
+  if (page) {
+    showPage(page);
+  }
 }
 
 export function setFloatingPanelLauncherVisible(visible: boolean): void {
@@ -1851,6 +1866,7 @@ function mountSourceSections(): void {
   mountSection(UI_SECTION_IDS.MAIN_REGEX, SLOT_IDS.mainRegex);
   mountSection(UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE, SLOT_IDS.mainRandomSdStyle);
   mountSection(UI_SECTION_IDS.MAIN_VIBE_TRANSFER, SLOT_IDS.mainVibeTransfer);
+  mountSection(UI_SECTION_IDS.VIBE_MANAGER, SLOT_IDS.vibeManager);
   mountSection(UI_SECTION_IDS.MAIN_INFO, SLOT_IDS.mainInfo);
   mountSection(UI_SECTION_IDS.SHARED_META_DISPLAY, SLOT_IDS.sharedMeta);
   mountSection(UI_SECTION_IDS.INDEPENDENT_BASE, SLOT_IDS.independentBase);

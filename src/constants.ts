@@ -11,8 +11,11 @@ import type {CharacterFixedTagEntry} from './types';
 import type {CharacterFixedTagInjectionMode} from './types';
 import type {StyleTagPosition} from './types';
 import type {
+  GenerationStylePreset,
   PromptLibraryEntry,
   TagCatalogEntry,
+  VibeLibraryItem,
+  VibeTransferCombination,
   VibeTransferPreset,
   VibeTransferReferenceImage,
 } from './types';
@@ -25,7 +28,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.12.0';
+export const EXTENSION_VERSION = '1.13.0';
 
 /**
  * GitHub repository for update checks
@@ -310,7 +313,7 @@ export const TAG_CATALOG_PAGE_SIZE = {
  */
 export const SERVER_PLUGIN = {
   ID: 'auto-illustrator-nai-advanced',
-  VERSION: '2026-06-03-inpaint-v3',
+  VERSION: '2026-07-03-vibe-bundle-v2',
   STATUS_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/status',
 } as const;
 
@@ -418,10 +421,22 @@ export const DEFAULT_SETTINGS = {
   customTagCatalogEntries: [] as TagCatalogEntry[],
   customTagBridgeTriggers: {} as Record<string, string[]>,
   tagCatalogCandidateLimits: {...TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS},
+  generationStyleMode: 'off' as 'off' | 'fixed' | 'random',
+  generationStylePresets: [] as GenerationStylePreset[],
+  currentGenerationStylePresetId: '',
+  fixedSdStyleName: '',
+  fixedVibeCombinationId: '',
   randomizeSdStylePerGeneration: false,
   sdStylePoolWhitelist: [] as string[],
   restoreSdStyleAfter: true,
+  randomizeVibeCombinationPerGeneration: false,
+  vibeCombinationPoolWhitelist: [] as string[],
   vibeTransferEnabled: VIBE_TRANSFER.DEFAULT_ENABLED,
+  vibeTransferLibraryItems: [] as VibeLibraryItem[],
+  vibeTransferCombinations: [] as VibeTransferCombination[],
+  currentVibeTransferCombinationId: '',
+  vibeTransferManagerEditMode: false,
+  vibeTransferManagerView: 'all' as 'all' | 'pending',
   vibeTransferReferenceImages: [] as VibeTransferReferenceImage[],
   vibeTransferPresets: [] as VibeTransferPreset[],
   currentVibeTransferPresetId: '',
@@ -643,14 +658,57 @@ export const UI_ELEMENT_IDS = {
   PRESET_IMPORT_RESULT: 'auto_illustrator_conso_preset_import_result',
   PRESET_IMPORT_NAME: 'auto_illustrator_conso_preset_import_name',
   RANDOMIZE_SD_STYLE: 'auto_illustrator_conso_randomize_sd_style',
+  GENERATION_STYLE_MODE: 'auto_illustrator_conso_generation_style_mode',
+  FIXED_STYLE_PANEL: 'auto_illustrator_conso_fixed_style_panel',
+  RANDOM_STYLE_PANEL: 'auto_illustrator_conso_random_style_panel',
+  GENERATION_STYLE_PRESET_SELECT:
+    'auto_illustrator_conso_generation_style_preset_select',
+  GENERATION_STYLE_PRESET_NAME:
+    'auto_illustrator_conso_generation_style_preset_name',
+  GENERATION_STYLE_PRESET_SAVE:
+    'auto_illustrator_conso_generation_style_preset_save',
+  GENERATION_STYLE_PRESET_OVERWRITE:
+    'auto_illustrator_conso_generation_style_preset_overwrite',
+  GENERATION_STYLE_PRESET_DELETE:
+    'auto_illustrator_conso_generation_style_preset_delete',
+  FIXED_SD_STYLE_SELECT: 'auto_illustrator_conso_fixed_sd_style_select',
+  FIXED_VIBE_COMBINATION_SELECT:
+    'auto_illustrator_conso_fixed_vibe_combination_select',
   RESTORE_SD_STYLE_AFTER: 'auto_illustrator_conso_restore_sd_style_after',
+  SD_STYLE_POOL_SUMMARY: 'auto_illustrator_conso_sd_style_pool_summary',
   SD_STYLE_POOL_LIST: 'auto_illustrator_conso_sd_style_pool_list',
   SD_STYLE_POOL_SEARCH: 'auto_illustrator_conso_sd_style_pool_search',
   SD_STYLE_POOL_REFRESH: 'auto_illustrator_conso_sd_style_pool_refresh',
+  RANDOMIZE_VIBE_COMBINATION:
+    'auto_illustrator_conso_randomize_vibe_combination',
+  VIBE_COMBINATION_POOL_SUMMARY:
+    'auto_illustrator_conso_vibe_combination_pool_summary',
+  VIBE_COMBINATION_POOL_LIST:
+    'auto_illustrator_conso_vibe_combination_pool_list',
+  VIBE_COMBINATION_POOL_SEARCH:
+    'auto_illustrator_conso_vibe_combination_pool_search',
   VIBE_TRANSFER_ENABLED: 'auto_illustrator_conso_vibe_transfer_enabled',
   VIBE_TRANSFER_UPLOAD: 'auto_illustrator_conso_vibe_transfer_upload',
   VIBE_TRANSFER_UPLOAD_INPUT:
     'auto_illustrator_conso_vibe_transfer_upload_input',
+  VIBE_TRANSFER_MANAGER_OPEN:
+    'auto_illustrator_conso_vibe_transfer_manager_open',
+  VIBE_TRANSFER_MANAGER_EDIT_MODE:
+    'auto_illustrator_conso_vibe_transfer_manager_edit_mode',
+  VIBE_TRANSFER_MANAGER_SEARCH:
+    'auto_illustrator_conso_vibe_transfer_manager_search',
+  VIBE_TRANSFER_MANAGER_LIST:
+    'auto_illustrator_conso_vibe_transfer_manager_list',
+  VIBE_TRANSFER_MANAGER_STATUS:
+    'auto_illustrator_conso_vibe_transfer_manager_status',
+  VIBE_TRANSFER_BUNDLE_IMPORT:
+    'auto_illustrator_conso_vibe_transfer_bundle_import',
+  VIBE_TRANSFER_BUNDLE_IMPORT_INPUT:
+    'auto_illustrator_conso_vibe_transfer_bundle_import_input',
+  VIBE_TRANSFER_BUNDLE_EXPORT:
+    'auto_illustrator_conso_vibe_transfer_bundle_export',
+  VIBE_TRANSFER_PRESET_OVERWRITE:
+    'auto_illustrator_conso_vibe_transfer_preset_overwrite',
   VIBE_TRANSFER_REFERENCE_LIST:
     'auto_illustrator_conso_vibe_transfer_reference_list',
   VIBE_TRANSFER_REFERENCE_SEARCH:
@@ -700,4 +758,5 @@ export const UI_SECTION_IDS = {
   PROMPT_LIBRARY: 'auto_illustrator_conso_panel_prompt_library',
   MAIN_RANDOM_SD_STYLE: 'auto_illustrator_conso_panel_main_random_sd_style',
   MAIN_VIBE_TRANSFER: 'auto_illustrator_conso_panel_main_vibe_transfer',
+  VIBE_MANAGER: 'auto_illustrator_conso_panel_vibe_manager',
 } as const;

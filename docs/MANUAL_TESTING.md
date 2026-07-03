@@ -276,16 +276,17 @@ Before starting manual testing:
 
 **Steps**:
 1. Open the floating panel and go to the main dashboard
-2. **Verify**: card order is Start Illustration → Prompt Generation Mode → Current Chat → Regex → Randomize SD Style → Vibe Transfer → Panel Theme → Info
-3. **Verify**: the Regex card is collapsed by default
-4. Expand **Regex**
-5. **Verify**: the three built-in rules are installed and enabled by default: `img-prompt`, `auto-illustrator`, and `img tag`
-6. Toggle the master switch and each individual rule
-7. **Verify**: enable/disable state persists after page refresh
-8. Click **Sync to ST Regex**
-9. Refresh the page and open the native SillyTavern Regex panel
-10. **Verify**: the managed rules appear in the native list after refresh
-11. **Verify**: managed rules use outgoing-prompt filtering, user/AI output placements, `minDepth: 0`, and do not delete metadata from chat text
+2. **Verify**: tab order is Main → Prompt Settings → Vibe Manager → Gallery → Standalone → Prompt Library
+3. **Verify**: card order is Start Illustration → Prompt Generation Mode → Current Chat → Regex → Randomize SD Style → Vibe Transfer → Panel Theme → Info
+4. **Verify**: the Regex card is collapsed by default
+5. Expand **Regex**
+6. **Verify**: the three built-in rules are installed and enabled by default: `img-prompt`, `auto-illustrator`, and `img tag`
+7. Toggle the master switch and each individual rule
+8. **Verify**: enable/disable state persists after page refresh
+9. Click **Sync to ST Regex**
+10. Refresh the page and open the native SillyTavern Regex panel
+11. **Verify**: the managed rules appear in the native list after refresh
+12. **Verify**: managed rules use outgoing-prompt filtering, user/AI output placements, `minDepth: 0`, and do not delete metadata from chat text
 
 **Expected Behavior**:
 - Conso manages only its three known Regex scripts by stable IDs
@@ -295,7 +296,68 @@ Before starting manual testing:
 
 ---
 
-### 12. Prompt Personalization Suite
+### 12. Generation SD Style and Vibe Combination
+
+**Purpose**: Verify fixed/random per-generation SD Style and Vibe combination selection.
+
+**Steps**:
+1. Open the floating panel main dashboard and expand **Generation SD Style and Vibe combination**
+2. Select **Fixed**
+3. Pick one SD Style and one saved Vibe combination
+4. Generate one chat image and one standalone image
+5. **Verify**: both generations use the selected SD Style / Vibe combination and show the selected names in image metadata surfaces
+6. Select **Random**
+7. Expand the SD Style and Vibe combination pools
+8. Tick two or more entries in each pool, then generate several images
+9. **Verify**: generation randomly picks from the eligible pools; unticked entries are not picked
+10. Clear all pool selections
+11. **Verify**: empty pool selection means all available entries are eligible
+12. Save a named SD Style + Vibe pairing, then save another with the same name
+13. **Verify**: Save As creates a new preset with a unique suffix instead of overwriting
+
+**Expected Behavior**:
+- Fixed mode applies one explicit pairing without changing the Vibe Manager selection permanently
+- Random mode records which SD Style / Vibe combination was used for each generated image
+- SD Style apply/restore remains serialized so concurrent generations do not corrupt SillyTavern SD settings
+
+---
+
+### 13. Vibe Bundle Manager
+
+**Purpose**: Verify Vibe Transfer library management, bundle interoperability, parameter modes, and mobile layout.
+
+**Steps**:
+1. Open the floating panel and go to **Vibe Manager**
+2. Upload one reference image
+3. **Verify**: the library switches to the built-in Pending encoding group and shows the source-image item with preview, name, tags, enable switch, and encoding status; the new item is not enabled automatically
+4. Import a `.naiv4vibebundle.json` file
+5. **Verify**: encoded-only items are added without overwriting existing items
+6. Search by Vibe name and tag
+7. **Verify**: filtering and empty-state messaging work
+8. Switch between Display mode and Edit mode in Vibe Manager
+9. **Verify**: Display mode shows each card's saved Strength / Information values read-only, while Edit mode exposes per-card sliders without changing the selected Vibe set
+10. **Verify**: encoded-only items show imported information extraction without offering false re-encoding controls
+11. Save the current enabled set with **Save As**
+12. **Verify**: a new set is created; existing sets are not overwritten
+13. Select a saved set and use **Overwrite set**
+14. **Verify**: overwrite requires confirmation and updates only the selected set
+15. Generate with one source-image Vibe and one encoded-only Vibe enabled
+16. **Verify**: the advanced backend route accepts the mixed payload
+17. Export a bundle
+18. **Verify**: the exported `.naiv4vibebundle.json` contains encoded Vibes only and does not include local source/preview images or local search tags
+19. Use a narrow viewport or mobile browser
+20. **Verify**: Vibe cards use a single-column readable layout, action buttons wrap horizontally, slider rows stay full-width, and the list scrolls inside the panel
+
+**Expected Behavior**:
+- Imported bundle items work without source images
+- Existing source-image Vibes keep working and can be mixed with encoded-only items
+- Import creates new local items instead of overwriting existing library entries
+- Export is interoperable encoded data, not a Conso-private backup of local previews
+- Mobile layout does not overlap content or create vertical button text
+
+---
+
+### 14. Prompt Personalization Suite
 
 **Purpose**: Verify Tag Catalog, Preset Adapter, and Character Fixed Tags injection modes work without breaking the base prompt generation flow.
 
@@ -330,7 +392,7 @@ Before starting manual testing:
 
 ---
 
-### 13. Empty/Malformed Prompts
+### 14. Empty/Malformed Prompts
 
 **Purpose**: Verify robustness against edge cases.
 
@@ -350,7 +412,7 @@ Before starting manual testing:
 
 ---
 
-### 14. Barrier Timeout Scenario
+### 15. Barrier Timeout Scenario
 
 **Purpose**: Verify timeout handling when MESSAGE_RECEIVED is delayed.
 
@@ -372,7 +434,7 @@ Before starting manual testing:
 
 ## Browser Compatibility
 
-### 15. Cross-Browser Check
+### 16. Cross-Browser Check
 
 **Quick smoke test** in each supported browser:
 - ✅ Chrome/Edge (Chromium)
@@ -390,7 +452,7 @@ Before starting manual testing:
 
 Before merging feature branch to `main`:
 
-- [ ] All 15 test scenarios passed
+- [ ] All 16 test scenarios passed
 - [ ] No errors or warnings in browser console
 - [ ] Performance acceptable (no freezes/lag)
 - [ ] Error messages user-friendly

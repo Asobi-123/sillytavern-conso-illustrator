@@ -9,6 +9,7 @@
  * - Emits events for all state changes
  * - Consumers (e.g., ProgressWidget) subscribe to events
  */
+import type { GenerationRandomizationMetadata } from './types';
 /**
  * Event detail for progress:started event
  */
@@ -56,6 +57,7 @@ export interface ProgressImageCompletedEventDetail {
     imageUrl: string;
     promptText: string;
     promptPreview: string;
+    randomization?: GenerationRandomizationMetadata;
     completedAt: number;
 }
 /**
@@ -224,7 +226,7 @@ export declare class ProgressManager extends EventTarget {
      * @param promptText - Full prompt text
      * @param promptPreview - Truncated prompt for display
      */
-    emitImageCompleted(messageId: number, imageUrl: string, promptText: string, promptPreview: string): void;
+    emitImageCompleted(messageId: number, imageUrl: string, promptText: string, promptPreview: string, randomization?: GenerationRandomizationMetadata): void;
 }
 export declare const progressManager: ProgressManager;
 /**

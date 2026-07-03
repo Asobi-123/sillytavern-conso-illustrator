@@ -21,6 +21,7 @@ export declare class GalleryWidgetView {
     private hostContainer;
     private messageOrder;
     private refreshTimeout;
+    private imageRandomizations;
     private readonly REFRESH_DEBOUNCE_MS;
     constructor(manager: ProgressManager);
     /**
@@ -86,6 +87,8 @@ export declare class GalleryWidgetView {
      * Get message groups in the configured display order
      */
     private getOrderedMessageGroups;
+    private enrichImagesWithRandomization;
+    private createRandomizationLabels;
     /**
      * Immediately updates the display, bypassing any throttle
      * Used for user-triggered actions that need immediate feedback

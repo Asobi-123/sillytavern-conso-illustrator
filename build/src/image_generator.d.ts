@@ -2,9 +2,10 @@
  * Image Generator Module
  * Handles image generation using the SD slash command and replacing prompts with images
  */
-import type { DeferredImage, VibeTransferReferenceImage } from './types';
+import type { DeferredImage, ImageGenerationResult, VibeTransferReferenceImage } from './types';
 import { type ReconciliationConfig } from './reconciliation';
 import { type SdStyleRandomConfig } from './services/sd_style_randomizer';
+import { type VibeCombinationRandomConfig } from './services/vibe_transfer';
 import type { VibeTransferGenerationConfig } from './types';
 export { applyCommonTags, deduplicateTags, parseCommonTags, validateCommonTags, } from './services/prompt_tags';
 /**
@@ -48,7 +49,8 @@ export declare function setImageSubfolderLabel(label: string | null, fullOverrid
  * @param onVibeReferencesUpdated - Optional callback for encoded Vibe cache persistence
  * @returns URL of generated image or null on failure
  */
-export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig, vibeTransferConfig?: VibeTransferGenerationConfig, onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void): Promise<string | null>;
+export declare function generateImage(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig, vibeTransferConfig?: VibeTransferGenerationConfig, onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void, vibeCombinationRandomConfig?: VibeCombinationRandomConfig, settingsForVibeCombinationRandom?: AutoIllustratorSettings): Promise<string | null>;
+export declare function generateImageWithMetadata(prompt: string, context: SillyTavernContext, commonTags?: string, tagsPosition?: 'prefix' | 'suffix', signal?: AbortSignal, sdStyleConfig?: SdStyleRandomConfig, vibeTransferConfig?: VibeTransferGenerationConfig, onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void, vibeCombinationRandomConfig?: VibeCombinationRandomConfig, settingsForVibeCombinationRandom?: AutoIllustratorSettings): Promise<ImageGenerationResult>;
 /**
  * Unified batch insertion for both streaming and regeneration modes
  * Handles new images (streaming) and regenerated images atomically

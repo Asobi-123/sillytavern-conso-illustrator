@@ -2,7 +2,7 @@
 # SillyTavern Auto Illustrator
 
 **Version**: 1.4
-**Last Updated**: 2026-06-06
+**Last Updated**: 2026-07-03
 **Purpose**: Define desired behaviors for all features to prevent regressions
 
 ---
@@ -673,13 +673,19 @@ Result: Operations run concurrently, no conflicts (different messages)
 | LLM Prompt Writing Guidelines | String | multi-line | (default text) | How to write prompts (independent API mode) |
 | Common Style Tags | String | any | "" | Tags added to all prompts |
 | Style Tags Position | Choice | prefix/suffix | prefix | Where to add common tags |
-| Randomize SD Style | Boolean | true/false | false | Pick a random Style from the stable-diffusion extension before each `/sd` call |
+| Generation Style Mode | Choice | off/fixed/random | off | Controls whether SD Style and Vibe combination are left alone, fixed, or randomized before each generation |
+| Fixed SD Style | String | style name | "" | Optional saved SD Style to apply in fixed mode |
+| Fixed Vibe Combination | String | combination ID | "" | Optional saved Vibe combination to apply in fixed mode |
+| Randomize SD Style | Boolean | true/false | false | Pick a random Style from the stable-diffusion extension before each `/sd` call in random mode |
 | Restore SD Style After | Boolean | true/false | true | Restore original prefix/negative after generation completes |
 | SD Style Pool Whitelist | string[] | style names | [] | Empty = all eligible; non-empty = restrict to listed styles |
+| Randomize Vibe Combination | Boolean | true/false | false | Pick a random saved Vibe combination before each generation in random mode |
+| Vibe Combination Pool Whitelist | string[] | combination IDs | [] | Empty = all eligible; non-empty = restrict to listed Vibe combinations |
+| Generation Style Presets | Preset[] | named presets | [] | Saved pairings of SD Style and Vibe combination for fixed generation |
 | NovelAI Vibe Transfer | Boolean | true/false | false | Use NovelAI reference-image conditioning through the companion advanced backend route |
-| Vibe Reference Images | Image[] | max 16 | [] | Reference images sent as NovelAI Vibe Transfer arrays |
-| Vibe Reference Strength | Number | 0-1 (step: 0.05) | 0.6 | Strength applied to every reference image |
-| Vibe Information Extracted | Number | 0-1 (step: 0.05) | 1.0 | Information extraction amount applied to every reference image |
+| Vibe Library Items | Vibe[] | max 16 enabled per generation | [] | Source-image or encoded-only Vibe items managed by Vibe Manager |
+| Vibe Combinations | Combination[] | saved sets | [] | Saved enabled Vibe item IDs and per-card Strength / Information values |
+| Vibe Reference Images | Image[] | legacy migrated field | [] | Legacy reference image storage migrated into Vibe Library Items |
 | Log Level | Choice | trace/debug/info/warn/error/silent | info | Console verbosity |
 
 ### 8.4 Examples
@@ -851,11 +857,23 @@ Users should be able to edit an existing generated image by painting a mask, the
 
 **VIBE-009**: For NovelAI V4/V4.5, encoded vibe cache entries MUST be keyed by current SD/NAI model, Information Extracted value, and reference-image source fingerprint. Matching cache entries are reused; cache misses call `encode-vibe`.
 
-**VIBE-010**: Vibe presets MUST store the enabled reference image IDs only. They MUST NOT pin a specific encoded cache entry.
+**VIBE-010**: Vibe presets MUST store the enabled Vibe IDs and their per-card Strength / Information Extracted values. They MUST NOT pin one specific encoded cache entry.
 
 **VIBE-011**: Uploaded Vibe source images MUST be compressed before being persisted in extension settings. The extension MUST NOT store large original PNG files when compression succeeds.
 
 **VIBE-012**: Reference image tags are user labels for organization and search only. They MUST NOT be sent to NovelAI or injected into prompts.
+
+**VIBE-013**: Selecting a saved Vibe set in the Vibe Manager MUST apply that set immediately. Selecting "no vibe set" MUST clear the currently enabled Vibes so generation falls back unless the user manually enables Vibes again.
+
+**VIBE-014**: Vibe bundle export MUST include only the currently enabled encoded Vibes. It MUST NOT export every encoding in the local library by default.
+
+**VIBE-015**: In the Vibe Manager, every Vibe card owns its own Strength and Information Extracted values. There MUST NOT be a visible global Strength or Information control that can silently overwrite card parameters. Display mode shows parameters read-only; Edit mode exposes per-card controls immediately without requiring a page refresh.
+
+**VIBE-016**: For source-image V4/V4.5 Vibes, Information Extracted is an encode parameter. Changing it MUST NOT reuse an encoding produced with a different Information Extracted value. Encoded-only bundle Vibes without a source image cannot be re-encoded locally.
+
+**VIBE-017**: Adding source images MUST show them in a pending-encoding view and MUST NOT enable them automatically. A source-image Vibe only creates a new encoding cache when the user enables it and runs generation with a model / Information Extracted value that has no matching cache.
+
+**VIBE-018**: Vibe Manager cards MUST expose encoding-cache visibility: current model cache status and the number of cached encodings, with expandable model / Information Extracted / creation-time details when known.
 
 **Anti-pattern**: do not add a NovelAI token field to Auto Illustrator settings. The companion route reuses the NovelAI key already stored in SillyTavern secrets.
 
@@ -1537,6 +1555,7 @@ Result: Widget state correctly tied to current chat
 | 1.2 | 2025-10-17 | Added prompt generation modes section, metaPromptDepth setting, updated settings table |
 | 1.3 | 2025-10-18 | Added streaming preview widget section with inline image display and user control features |
 | 1.4 | 2026-06-06 | Added prompt personalization suite requirements for Tag Catalog, Preset Adapter, Character Fixed Tags injection modes, and related UI constraints |
+| 1.5 | 2026-07-03 | Added Vibe Manager, encoded bundle import/export, per-card Vibe parameters, fixed/random SD Style + Vibe combination selection, and backend plugin version policy requirements |
 
 ---
 

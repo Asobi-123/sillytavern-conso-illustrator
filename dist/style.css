@@ -527,6 +527,34 @@ dialog.ai-inpaint-dialog textarea[readonly] {
   gap: 0.5rem;
 }
 
+.standalone-randomization-meta,
+.auto-illustrator-randomization-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.82em;
+}
+
+.standalone-randomization-meta span,
+.auto-illustrator-randomization-meta span {
+  border: 1px solid
+    color-mix(in srgb, var(--SmartThemeBodyColor) 22%, transparent);
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: color-mix(
+    in srgb,
+    var(--SmartThemeBlurTintColor) 70%,
+    transparent
+  );
+  color: var(--SmartThemeBodyColor);
+  line-height: 1.35;
+}
+
+.auto-illustrator-randomization-meta {
+  justify-content: center;
+  margin: -2px 0 8px;
+}
+
 .standalone-generating-spinner {
   padding: 0.5rem;
   text-align: center;
@@ -543,6 +571,105 @@ dialog.ai-inpaint-dialog textarea[readonly] {
 
 .standalone-mode-panel {
   margin-top: 0.5rem;
+}
+
+.auto-illustrator-random-generation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.auto-illustrator-generation-style-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.auto-illustrator-random-generation-desc {
+  opacity: 0.75;
+  line-height: 1.35;
+}
+
+.auto-illustrator-random-pool {
+  border: 1px solid
+    color-mix(in srgb, var(--SmartThemeBodyColor) 18%, transparent);
+  border-radius: 6px;
+  padding: 0.35rem 0.45rem;
+}
+
+.auto-illustrator-random-pool summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.92em;
+}
+
+.auto-illustrator-random-pool summary > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.auto-illustrator-random-pool-refresh {
+  flex: 0 0 auto;
+  min-height: 0;
+  height: auto;
+  padding: 2px 7px;
+  font-size: 0.82em;
+}
+
+.auto-illustrator-random-pool > input {
+  margin-top: 0.4rem;
+}
+
+.auto-illustrator-random-pool-list {
+  max-height: 240px;
+  overflow-y: auto;
+  margin-top: 0.35rem;
+  padding-right: 4px;
+}
+
+.auto-illustrator-random-pool-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 3px 0;
+}
+
+.auto-illustrator-random-pool-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.auto-illustrator-random-pool-item small {
+  margin-left: auto;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.auto-illustrator-random-pool-empty {
+  display: block;
+  opacity: 0.7;
+  padding: 0.3rem 0;
+}
+
+@media (max-width: 600px) {
+  .auto-illustrator-random-pool summary {
+    align-items: flex-start;
+  }
+
+  .auto-illustrator-random-pool-refresh span {
+    display: none;
+  }
+
+  .auto-illustrator-random-pool-item {
+    align-items: flex-start;
+  }
+
+  .auto-illustrator-random-pool-item small {
+    margin-left: 0;
+  }
 }
 /* ===== End Standalone Generation ===== */
 
@@ -2980,6 +3107,48 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   pointer-events: none;
 }
 
+.ai-img-gallery-randomization-meta {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.ai-img-gallery-randomization-meta span,
+.ai-img-modal-randomization-meta span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.72);
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.25;
+}
+
+.ai-img-gallery-randomization-meta span {
+  padding: 2px 5px;
+  font-size: 0.64rem;
+  backdrop-filter: blur(4px);
+}
+
+.ai-img-modal-randomization-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.ai-img-modal-randomization-meta span {
+  padding: 2px 7px;
+  font-size: 0.78rem;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .ai-img-gallery-widget-global {
@@ -3491,11 +3660,19 @@ img[data-failed-placeholder='true']:hover {
   opacity: 1;
 }
 
+.auto-illustrator-vibe-transfer-upload.drag-over,
+.auto-illustrator-vibe-manager-actions .menu_button.drag-over {
+  border-color: rgba(96, 165, 250, 0.75) !important;
+  background: rgba(96, 165, 250, 0.12) !important;
+  opacity: 1;
+}
+
 .auto-illustrator-vibe-transfer-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .auto-illustrator-vibe-transfer-actions input {
@@ -3675,6 +3852,315 @@ img[data-failed-placeholder='true']:hover {
 .auto-illustrator-vibe-transfer-tag-input {
   width: 100%;
   min-width: 0;
+}
+
+.auto-illustrator-vibe-transfer-manager-open {
+  width: 100%;
+  justify-content: center;
+}
+
+.auto-illustrator-vibe-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 0;
+}
+
+.auto-illustrator-vibe-manager-help {
+  border: 1px solid rgba(128, 128, 128, 0.24);
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.auto-illustrator-vibe-manager-help summary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.auto-illustrator-vibe-manager-help-content {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0 0.75rem 0.75rem;
+  color: var(--ai-panel-text-2, inherit);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.auto-illustrator-vibe-manager-help-content p {
+  margin: 0;
+}
+
+.auto-illustrator-vibe-manager-help-content section {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.auto-illustrator-vibe-manager-help-content strong {
+  color: var(--ai-panel-text, inherit);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.auto-illustrator-vibe-manager-toolbar,
+.auto-illustrator-vibe-manager-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.auto-illustrator-vibe-manager-toolbar input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.auto-illustrator-vibe-manager-toolbar select {
+  flex: 0 0 150px;
+  min-width: 0;
+}
+
+.auto-illustrator-vibe-manager-actions button {
+  flex: 0 0 auto;
+}
+
+.auto-illustrator-vibe-manager .auto-illustrator-action-btn {
+  min-width: 0 !important;
+  min-height: 2.05rem !important;
+  padding: 0.28rem 0.6rem !important;
+  border-radius: 8px !important;
+  font-size: 0.88rem;
+}
+
+.auto-illustrator-vibe-manager .menu_button_icon {
+  min-width: 2.05rem !important;
+  min-height: 2.05rem !important;
+}
+
+.auto-illustrator-vibe-manager-status {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.auto-illustrator-vibe-manager-list {
+  display: grid;
+  gap: 0.45rem;
+  max-height: min(54dvh, 520px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.auto-illustrator-vibe-manager-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.auto-illustrator-vibe-manager-item img,
+.auto-illustrator-vibe-manager-item-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 7px;
+  flex: 0 0 auto;
+}
+
+.auto-illustrator-vibe-manager-item img {
+  object-fit: cover;
+}
+
+.auto-illustrator-vibe-manager-item-placeholder {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  background: rgba(128, 128, 128, 0.12);
+  opacity: 0.82;
+}
+
+.auto-illustrator-vibe-manager-item-main {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.auto-illustrator-vibe-manager-item-status {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.auto-illustrator-vibe-manager-item-status span {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(128, 128, 128, 0.24);
+  background: rgba(128, 128, 128, 0.1);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auto-illustrator-vibe-manager-params {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.auto-illustrator-vibe-manager-params label {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.auto-illustrator-vibe-manager-param-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.auto-illustrator-vibe-manager-param-summary span {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.18rem 0.45rem;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.22);
+  background: rgba(128, 128, 128, 0.08);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.auto-illustrator-vibe-manager-cache-details {
+  margin-top: 0.25rem;
+  border: 1px solid rgba(128, 128, 128, 0.22);
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.06);
+}
+
+.auto-illustrator-vibe-manager-cache-details summary {
+  padding: 0.32rem 0.48rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.auto-illustrator-vibe-manager-cache-details ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0 0.48rem 0.48rem;
+  list-style: none;
+}
+
+.auto-illustrator-vibe-manager-cache-details li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(4rem, 0.7fr) minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.auto-illustrator-vibe-manager-cache-details li span,
+.auto-illustrator-vibe-manager-cache-details li small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auto-illustrator-vibe-manager-cache-empty {
+  margin-top: 0.2rem;
+  opacity: 0.72;
+}
+
+.auto-illustrator-vibe-manager-readonly-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-height: 1.65rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid rgba(128, 128, 128, 0.22);
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.auto-illustrator-vibe-manager-readonly-value span {
+  font-variant-numeric: tabular-nums;
+}
+
+.auto-illustrator-vibe-manager-readonly-value small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.72;
+}
+
+@media (max-width: 720px) {
+  .auto-illustrator-vibe-manager-toolbar,
+  .auto-illustrator-vibe-manager-actions,
+  .auto-illustrator-vibe-transfer-actions,
+  .auto-illustrator-vibe-transfer-preset-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .auto-illustrator-vibe-manager-toolbar input,
+  .auto-illustrator-vibe-manager-toolbar select,
+  .auto-illustrator-vibe-manager-actions button,
+  .auto-illustrator-vibe-transfer-actions button,
+  .auto-illustrator-vibe-transfer-preset-row select,
+  .auto-illustrator-vibe-transfer-preset-row button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .auto-illustrator-vibe-manager-toolbar input,
+  .auto-illustrator-vibe-transfer-actions input,
+  .auto-illustrator-vibe-transfer-preset-row select {
+    grid-column: 1 / -1;
+  }
+
+  .auto-illustrator-vibe-manager-item {
+    display: grid;
+    grid-template-columns: auto 56px minmax(0, 1fr);
+    align-items: flex-start;
+  }
+
+  .auto-illustrator-vibe-manager-item-main {
+    grid-column: 1 / -1;
+  }
+
+  .auto-illustrator-vibe-manager-params {
+    grid-template-columns: 1fr;
+  }
+
+  .auto-illustrator-vibe-manager-cache-details li {
+    grid-template-columns: minmax(0, 1fr) minmax(3.5rem, auto);
+  }
+
+  .auto-illustrator-vibe-manager-cache-details li small {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ===== Prompt Library ===== */

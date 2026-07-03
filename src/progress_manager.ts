@@ -11,6 +11,7 @@
  */
 
 import {createLogger} from './logger';
+import type {GenerationRandomizationMetadata} from './types';
 
 const logger = createLogger('ProgressManager');
 
@@ -76,6 +77,7 @@ export interface ProgressImageCompletedEventDetail {
   imageUrl: string;
   promptText: string;
   promptPreview: string;
+  randomization?: GenerationRandomizationMetadata;
   completedAt: number;
 }
 
@@ -581,13 +583,15 @@ export class ProgressManager extends EventTarget {
     messageId: number,
     imageUrl: string,
     promptText: string,
-    promptPreview: string
+    promptPreview: string,
+    randomization?: GenerationRandomizationMetadata
   ): void {
     const detail: ProgressImageCompletedEventDetail = {
       messageId,
       imageUrl,
       promptText,
       promptPreview,
+      randomization,
       completedAt: Date.now(),
     };
     this.dispatchEvent(

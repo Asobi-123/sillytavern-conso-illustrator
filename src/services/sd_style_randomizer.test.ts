@@ -340,6 +340,7 @@ describe('withRandomSdStyle', () => {
   it('enabled with styles: snapshot → apply → generate → restore', async () => {
     const {sd, ctx} = setupCtx();
     const observed: SdStyleSnapshot[] = [];
+    const onPicked = vi.fn();
     const gen = vi.fn().mockImplementation(async () => {
       observed.push({
         promptPrefix: sd.prompt_prefix,
@@ -348,9 +349,10 @@ describe('withRandomSdStyle', () => {
       return 'image-url';
     });
 
-    await withRandomSdStyle(ctx, baseConfig, gen);
+    await withRandomSdStyle(ctx, baseConfig, gen, onPicked);
 
     expect(observed[0]).toEqual({promptPrefix: 'p1', negativePrompt: 'n1'});
+    expect(onPicked).toHaveBeenCalledWith('s1');
     // restored after
     expect(sd.prompt_prefix).toBe('orig-p');
     expect(sd.negative_prompt).toBe('orig-n');
@@ -525,5 +527,56 @@ describe('buildSdStyleConfigFromSettings', () => {
     const cfg = buildSdStyleConfigFromSettings(settings);
     cfg.whitelist.push('y');
     expect(settings.sdStylePoolWhitelist).toEqual(['x']);
+  });
+
+  it('uses fixed SD Style when generation style mode is fixed', () => {
+    const cfg = buildSdStyleConfigFromSettings({
+      generationStyleMode: 'fixed',
+      fixedSdStyleName: 'Oil Style',
+      randomizeSdStylePerGeneration: true,
+      sdStylePoolWhitelist: ['Random Style'],
+      restoreSdStyleAfter: true,
+    } as unknown as AutoIllustratorSettings);
+    expect(cfg).toEqual({
+      enabled: true,
+      whitelist: ['Oil Style'],
+      restoreAfter: true,
+    });
+  });
+
+  it('uses selected saved generation style preset before fixed fallback', () => {
+    const cfg = buildSdStyleConfigFromSettings({
+      generationStyleMode: 'fixed',
+      generationStylePresets: [
+        {
+          id: 'preset-1',
+          name: 'Oil + aaa',
+          sdStyleName: 'Preset Oil',
+          vibeCombinationId: 'combo1',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ],
+      currentGenerationStylePresetId: 'preset-1',
+      fixedSdStyleName: 'Fallback Oil',
+      restoreSdStyleAfter: true,
+    } as unknown as AutoIllustratorSettings);
+    expect(cfg).toEqual({
+      enabled: true,
+      whitelist: ['Preset Oil'],
+      restoreAfter: true,
+    });
+  });
+
+  it('disables SD Style mutation when generation style mode is off', () => {
+    const cfg = buildSdStyleConfigFromSettings({
+      generationStyleMode: 'off',
+      fixedSdStyleName: 'Oil Style',
+      randomizeSdStylePerGeneration: true,
+      sdStylePoolWhitelist: ['Random Style'],
+      restoreSdStyleAfter: true,
+    } as unknown as AutoIllustratorSettings);
+    expect(cfg.enabled).toBe(false);
+    expect(cfg.whitelist).toEqual([]);
   });
 });

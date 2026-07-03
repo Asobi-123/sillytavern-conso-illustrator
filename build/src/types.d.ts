@@ -55,6 +55,8 @@ export interface DeferredImage {
     promptId: string;
     /** Prompt text preview (truncated for display) */
     promptPreview?: string;
+    /** Random SD Style / Vibe picks used for this generation */
+    randomization?: GenerationRandomizationMetadata;
     /** Timestamp when image was generated */
     completedAt: number;
     /** When true, imageUrl contains placeholder HTML instead of a URL (generation failed) */
@@ -87,6 +89,8 @@ export type StyleTagPosition = 'prefix' | 'suffix';
 export interface AutoIllustratorChatMetadata {
     /** Prompt registry (from prompt_manager.ts) - primary storage for all prompt data */
     promptRegistry?: import('./prompt_manager').PromptRegistry;
+    /** Random SD Style / Vibe picks used by generated images, keyed by normalized image URL */
+    imageRandomizations?: Record<string, GenerationRandomizationMetadata>;
     /** Gallery widget state (per-chat) */
     galleryWidget?: GalleryWidgetState;
     /** Custom subfolder label for image storage (per-chat) */
@@ -323,6 +327,82 @@ export interface VibeTransferEncodedCache {
     /** Timestamp when the cache was created */
     createdAt: number;
 }
+export interface VibeBundleEncodingVariant {
+    /** Encoded vibe string returned by NovelAI or imported from a bundle */
+    encoding: string;
+    /** Parameters associated with the imported or generated encoding */
+    params?: {
+        information_extracted?: number;
+    };
+    /** Timestamp when this local encoding cache was created, when known */
+    createdAt?: number;
+}
+export type VibeBundleEncodings = Record<string, Record<string, VibeBundleEncodingVariant>>;
+export interface VibeLibrarySource {
+    /** Browser data URL kept locally for preview and optional re-encoding */
+    dataUrl?: string;
+    /** Fingerprint of the source image data */
+    fingerprint?: string;
+    /** Source MIME type when known */
+    mimeType?: string;
+}
+export interface VibeLibraryImportInfo {
+    /** Model name from a standard bundle import */
+    model?: string;
+    /** Bundle information_extracted metadata */
+    information_extracted?: number;
+    /** Bundle strength metadata */
+    strength?: number;
+    /** Original external Vibe ID when a local collision required remapping */
+    externalId?: string;
+    /** File name or source label of the imported bundle */
+    sourceName?: string;
+    /** Import timestamp */
+    importedAt?: number;
+}
+export interface VibeLibraryGenerationSettings {
+    /** Legacy migration flag; current UI always uses the per-vibe strength value. */
+    inheritGlobalStrength?: boolean;
+    /** Per-vibe strength sent to NovelAI */
+    strength?: number;
+    /** Legacy migration flag; current UI always uses the per-vibe information value. */
+    inheritGlobalInformationExtracted?: boolean;
+    /** Per-vibe information_extracted used when selecting or creating encodings */
+    information_extracted?: number;
+}
+export interface VibeLibraryItem {
+    /** Stable local identifier */
+    id: string;
+    /** Preserved bundle/source identifier, if different from the local ID */
+    externalId?: string;
+    /** User-facing display name */
+    name: string;
+    /** Whether this vibe participates in generation */
+    enabled: boolean;
+    /** User-defined tags for search and grouping */
+    tags: string[];
+    /** Timestamp when the local item was created */
+    createdAt: number;
+    /** Timestamp when the local item was last modified */
+    updatedAt: number;
+    /** Optional local source image metadata */
+    source?: VibeLibrarySource;
+    /** Optional local preview image data URL */
+    previewImage?: string;
+    /** Bundle-compatible encoded vibe storage keyed by model and slot */
+    encodings: VibeBundleEncodings;
+    /** Metadata from a standard bundle import */
+    importInfo?: VibeLibraryImportInfo;
+    /** Per-vibe generation settings */
+    generation?: VibeLibraryGenerationSettings;
+    /** Legacy reference image ID used during migration and preset mapping */
+    legacyReferenceId?: string;
+}
+export interface VibeTransferBundleImportSummary {
+    imported: number;
+    skipped: number;
+    errors: string[];
+}
 /** Reference image saved for NovelAI Vibe Transfer. */
 export interface VibeTransferReferenceImage {
     /** Stable local identifier */
@@ -353,10 +433,58 @@ export interface VibeTransferPreset {
     /** Timestamp when the preset was last modified */
     updatedAt: number;
 }
+/** Named Vibe item combination. */
+export interface VibeTransferCombination {
+    /** Stable local identifier */
+    id: string;
+    /** User-facing display name */
+    name: string;
+    /** Vibe library item IDs enabled by this combination */
+    itemIds: string[];
+    /** Legacy global strength saved by older versions */
+    referenceStrength?: number;
+    /** Legacy global information_extracted saved by older versions */
+    informationExtracted?: number;
+    /** Per-vibe generation settings saved with this combination */
+    itemGenerations?: Record<string, VibeLibraryGenerationSettings>;
+    /** Timestamp when the combination was created */
+    createdAt: number;
+    /** Timestamp when the combination was last modified */
+    updatedAt: number;
+    /** Legacy preset ID used during migration */
+    legacyPresetId?: string;
+}
+/** Named fixed SD Style + Vibe combination used before generation. */
+export interface GenerationStylePreset {
+    /** Stable local identifier */
+    id: string;
+    /** User-facing display name */
+    name: string;
+    /** SD Style name from SillyTavern's SD extension */
+    sdStyleName: string;
+    /** Saved Vibe combination ID from Vibe Manager */
+    vibeCombinationId: string;
+    /** Timestamp when the preset was created */
+    createdAt: number;
+    /** Timestamp when the preset was last modified */
+    updatedAt: number;
+}
 /** Runtime config derived from AutoIllustratorSettings. */
 export interface VibeTransferGenerationConfig {
     enabled: boolean;
     referenceImages: VibeTransferReferenceImage[];
+    libraryItems: VibeLibraryItem[];
     referenceStrength: number;
     informationExtracted: number;
+}
+/** Details about random picks used by one image generation. */
+export interface GenerationRandomizationMetadata {
+    sdStyleName?: string;
+    vibeCombinationId?: string;
+    vibeCombinationName?: string;
+}
+/** Image generation result with optional randomization metadata. */
+export interface ImageGenerationResult {
+    imageUrl: string | null;
+    randomization: GenerationRandomizationMetadata;
 }

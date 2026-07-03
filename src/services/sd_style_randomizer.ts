@@ -218,7 +218,8 @@ let mutationChain: Promise<unknown> = Promise.resolve();
 export function withRandomSdStyle<T>(
   context: SillyTavernContext,
   config: SdStyleRandomConfig,
-  generateFn: () => Promise<T>
+  generateFn: () => Promise<T>,
+  onPicked?: (styleName: string) => void
 ): Promise<T> {
   if (!config.enabled) {
     return generateFn();
@@ -240,6 +241,7 @@ export function withRandomSdStyle<T>(
     logger.debug(
       `Applying random SD style "${picked.name}" (snapshot retained for restore=${config.restoreAfter})`
     );
+    onPicked?.(picked.name);
     applySdStyle(context, picked);
 
     try {
@@ -274,6 +276,33 @@ export function _resetMutationChainForTests(): void {
 export function buildSdStyleConfigFromSettings(
   s: AutoIllustratorSettings
 ): SdStyleRandomConfig {
+  if (s.generationStyleMode === 'fixed') {
+    const preset = Array.isArray(s.generationStylePresets)
+      ? s.generationStylePresets.find(
+          entry => entry.id === s.currentGenerationStylePresetId
+        )
+      : undefined;
+    const fixedStyle =
+      typeof preset?.sdStyleName === 'string'
+        ? preset.sdStyleName.trim()
+        : typeof s.fixedSdStyleName === 'string'
+          ? s.fixedSdStyleName.trim()
+          : '';
+    return {
+      enabled: !!fixedStyle,
+      whitelist: fixedStyle ? [fixedStyle] : [],
+      restoreAfter: s.restoreSdStyleAfter !== false,
+    };
+  }
+
+  if (s.generationStyleMode === 'off') {
+    return {
+      enabled: false,
+      whitelist: [],
+      restoreAfter: s.restoreSdStyleAfter !== false,
+    };
+  }
+
   return {
     enabled: !!s.randomizeSdStylePerGeneration,
     whitelist: Array.isArray(s.sdStylePoolWhitelist)

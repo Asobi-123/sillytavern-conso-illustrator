@@ -75,7 +75,7 @@ export declare function listAvailableStyleNames(context: SillyTavernContext): st
  * - All four steps are serialized via the module-level chain so concurrent
  *   image generations don't trample each other's prefix mutations.
  */
-export declare function withRandomSdStyle<T>(context: SillyTavernContext, config: SdStyleRandomConfig, generateFn: () => Promise<T>): Promise<T>;
+export declare function withRandomSdStyle<T>(context: SillyTavernContext, config: SdStyleRandomConfig, generateFn: () => Promise<T>, onPicked?: (styleName: string) => void): Promise<T>;
 /**
  * Test-only helper: reset the serialization chain between tests.
  * @internal

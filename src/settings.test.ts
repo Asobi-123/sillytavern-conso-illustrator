@@ -18,12 +18,18 @@ describe('settings', () => {
       expect(html).toContain(UI_SECTION_IDS.MAIN_ENABLED);
       expect(html).toContain(UI_SECTION_IDS.PROMPT_MODE_SELECTOR);
       expect(html).toContain(UI_SECTION_IDS.MAIN_REGEX);
+      expect(html).toContain(UI_SECTION_IDS.MAIN_VIBE_TRANSFER);
+      expect(html).toContain(UI_SECTION_IDS.VIBE_MANAGER);
       expect(html).toContain(UI_SECTION_IDS.SHARED_META_DISPLAY);
       expect(html).toContain(UI_SECTION_IDS.STANDALONE);
       expect(html).toContain(UI_ELEMENT_IDS.ENABLED);
       expect(html).toContain(UI_ELEMENT_IDS.REGEX_MASTER);
       expect(html).toContain(UI_ELEMENT_IDS.REGEX_SYNC);
       expect(html).toContain(UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL);
+      expect(html).toContain(UI_ELEMENT_IDS.GENERATION_STYLE_PRESET_SELECT);
+      expect(html).toContain(UI_ELEMENT_IDS.GENERATION_STYLE_PRESET_SAVE);
+      expect(html).toContain('settings.vibeTransferHelpTitle');
+      expect(html).toContain('settings.vibeTransferDeleteSelected');
     });
   });
 
@@ -65,6 +71,21 @@ describe('settings', () => {
       expect(defaultsA.contentFilterTags).not.toBe(defaultsB.contentFilterTags);
       expect(defaultsA.promptLibraryEntries).not.toBe(
         defaultsB.promptLibraryEntries
+      );
+      expect(defaultsA.generationStylePresets).not.toBe(
+        defaultsB.generationStylePresets
+      );
+      expect(defaultsA.sdStylePoolWhitelist).not.toBe(
+        defaultsB.sdStylePoolWhitelist
+      );
+      expect(defaultsA.vibeCombinationPoolWhitelist).not.toBe(
+        defaultsB.vibeCombinationPoolWhitelist
+      );
+      expect(defaultsA.vibeTransferLibraryItems).not.toBe(
+        defaultsB.vibeTransferLibraryItems
+      );
+      expect(defaultsA.vibeTransferCombinations).not.toBe(
+        defaultsB.vibeTransferCombinations
       );
       expect(defaultsA.vibeTransferReferenceImages).not.toBe(
         defaultsB.vibeTransferReferenceImages
@@ -194,8 +215,15 @@ describe('settings', () => {
       });
       const loaded = loadSettings(mockContext);
       expect(loaded.randomizeSdStylePerGeneration).toBe(false);
+      expect(loaded.generationStyleMode).toBe('off');
+      expect(loaded.generationStylePresets).toEqual([]);
+      expect(loaded.currentGenerationStylePresetId).toBe('');
+      expect(loaded.fixedSdStyleName).toBe('');
+      expect(loaded.fixedVibeCombinationId).toBe('');
       expect(loaded.sdStylePoolWhitelist).toEqual([]);
       expect(loaded.restoreSdStyleAfter).toBe(true);
+      expect(loaded.randomizeVibeCombinationPerGeneration).toBe(false);
+      expect(loaded.vibeCombinationPoolWhitelist).toEqual([]);
     });
 
     it('should round-trip random SD style settings', () => {
@@ -210,8 +238,126 @@ describe('settings', () => {
       });
       const loaded = loadSettings(mockContext);
       expect(loaded.randomizeSdStylePerGeneration).toBe(true);
+      expect(loaded.generationStyleMode).toBe('random');
       expect(loaded.sdStylePoolWhitelist).toEqual(['Style A', 'Style B']);
       expect(loaded.restoreSdStyleAfter).toBe(false);
+    });
+
+    it('should round-trip fixed generation style settings', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            generationStyleMode: 'fixed',
+            fixedSdStyleName: 'Style A',
+            fixedVibeCombinationId: 'combo1',
+            vibeTransferLibraryItems: [
+              {
+                id: 'item1',
+                name: 'Item 1',
+                enabled: true,
+                tags: [],
+                createdAt: 1,
+                updatedAt: 1,
+                encodings: {},
+              },
+            ],
+            vibeTransferCombinations: [
+              {
+                id: 'combo1',
+                name: 'Combo 1',
+                itemIds: ['item1'],
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            ],
+          },
+        },
+      });
+      const loaded = loadSettings(mockContext);
+      expect(loaded.generationStyleMode).toBe('fixed');
+      expect(loaded.fixedSdStyleName).toBe('Style A');
+      expect(loaded.fixedVibeCombinationId).toBe('combo1');
+      expect(loaded.generationStylePresets).toHaveLength(1);
+      expect(loaded.generationStylePresets[0]).toMatchObject({
+        name: 'Fixed combination',
+        sdStyleName: 'Style A',
+        vibeCombinationId: 'combo1',
+      });
+      expect(loaded.currentGenerationStylePresetId).toBe(
+        loaded.generationStylePresets[0].id
+      );
+    });
+
+    it('round-trips saved generation style presets', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            generationStyleMode: 'fixed',
+            generationStylePresets: [
+              {
+                id: 'style-combo-1',
+                name: 'Oil + aaa',
+                sdStyleName: 'Oil Style',
+                vibeCombinationId: 'combo1',
+                createdAt: 1,
+                updatedAt: 2,
+              },
+            ],
+            currentGenerationStylePresetId: 'style-combo-1',
+            fixedSdStyleName: '',
+            fixedVibeCombinationId: '',
+          },
+        },
+      });
+      const loaded = loadSettings(mockContext);
+      expect(loaded.generationStylePresets).toEqual([
+        {
+          id: 'style-combo-1',
+          name: 'Oil + aaa',
+          sdStyleName: 'Oil Style',
+          vibeCombinationId: 'combo1',
+          createdAt: 1,
+          updatedAt: 2,
+        },
+      ]);
+      expect(loaded.currentGenerationStylePresetId).toBe('style-combo-1');
+    });
+
+    it('should round-trip random Vibe combination settings and drop deleted IDs', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            randomizeVibeCombinationPerGeneration: true,
+            vibeCombinationPoolWhitelist: ['combo1', 'deleted'],
+            vibeTransferLibraryItems: [
+              {
+                id: 'item1',
+                name: 'Item 1',
+                enabled: true,
+                tags: [],
+                createdAt: 1,
+                updatedAt: 1,
+                encodings: {},
+              },
+            ],
+            vibeTransferCombinations: [
+              {
+                id: 'combo1',
+                name: 'Combo 1',
+                itemIds: ['item1'],
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            ],
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.randomizeVibeCombinationPerGeneration).toBe(true);
+      expect(loaded.generationStyleMode).toBe('random');
+      expect(loaded.vibeCombinationPoolWhitelist).toEqual(['combo1']);
     });
 
     it('should sanitize custom tag bridge trigger overrides on load', () => {
@@ -289,8 +435,188 @@ describe('settings', () => {
       expect(loaded.vibeTransferPresets).toHaveLength(1);
       expect(loaded.vibeTransferPresets[0].referenceIds).toEqual(['ref1']);
       expect(loaded.currentVibeTransferPresetId).toBe('preset1');
+      expect(loaded.vibeTransferLibraryItems).toHaveLength(1);
+      expect(loaded.vibeTransferLibraryItems[0]).toMatchObject({
+        id: 'ref1',
+        legacyReferenceId: 'ref1',
+        encodings: {
+          'v4-5full': {
+            unknown: {
+              encoding: 'ENCODED',
+              params: {information_extracted: 1},
+            },
+          },
+        },
+        generation: {
+          inheritGlobalStrength: false,
+          strength: 1,
+          inheritGlobalInformationExtracted: false,
+          information_extracted: 0,
+        },
+      });
+      expect(loaded.vibeTransferCombinations).toHaveLength(1);
+      expect(loaded.vibeTransferCombinations[0]).toMatchObject({
+        id: 'preset1',
+        itemIds: ['ref1'],
+        legacyPresetId: 'preset1',
+      });
+      expect(loaded.currentVibeTransferCombinationId).toBe('preset1');
       expect(loaded.vibeTransferReferenceStrength).toBe(1);
       expect(loaded.vibeTransferInformationExtracted).toBe(0);
+    });
+
+    it('should sanitize bundle-compatible Vibe library fields on load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            ...getDefaultSettings(),
+            vibeTransferManagerEditMode: true,
+            vibeTransferManagerFilter: 'pending',
+            vibeTransferLibraryItems: [
+              {
+                id: 'item1',
+                externalId: 'external1',
+                name: 'Bundle Item',
+                enabled: 'bad',
+                tags: [' oil ', 'oil', 123],
+                createdAt: 1,
+                updatedAt: 2,
+                source: {
+                  dataUrl: 'data:image/jpeg;base64,AAAA',
+                  fingerprint: 'abc',
+                  mimeType: 'image/jpeg',
+                },
+                previewImage: 'data:image/jpeg;base64,AAAA',
+                encodings: {
+                  'v4-5full': {
+                    unknown: {
+                      encoding: 'ENCODED',
+                      params: {information_extracted: 3},
+                    },
+                  },
+                },
+                importInfo: {
+                  model: 'nai-diffusion-4-5-full',
+                  information_extracted: -1,
+                  strength: 2,
+                  externalId: 'external1',
+                  sourceName: 'bundle.json',
+                  importedAt: 3,
+                },
+                generation: {
+                  inheritGlobalStrength: false,
+                  strength: 2,
+                  inheritGlobalInformationExtracted: false,
+                  information_extracted: -1,
+                },
+              },
+              {id: 'bad'},
+            ],
+            vibeTransferCombinations: [
+              {
+                id: 'combo1',
+                name: 'Combo',
+                itemIds: ['item1', 'missing'],
+                referenceStrength: 2,
+                informationExtracted: -1,
+                itemGenerations: {
+                  item1: {
+                    inheritGlobalStrength: false,
+                    strength: 0.4,
+                    inheritGlobalInformationExtracted: false,
+                    information_extracted: 0.8,
+                  },
+                  missing: {
+                    strength: 0.2,
+                  },
+                },
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            ],
+            currentVibeTransferCombinationId: 'combo1',
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.vibeTransferManagerEditMode).toBe(true);
+      expect(loaded.vibeTransferManagerView).toBe('pending');
+      expect(loaded.vibeTransferManagerFilter).toBeUndefined();
+      expect(loaded.vibeTransferLibraryItems).toHaveLength(1);
+      expect(loaded.vibeTransferLibraryItems[0]).toMatchObject({
+        id: 'item1',
+        enabled: true,
+        tags: ['oil'],
+        encodings: {
+          'v4-5full': {
+            unknown: {
+              encoding: 'ENCODED',
+              params: {information_extracted: 1},
+            },
+          },
+        },
+        importInfo: {
+          information_extracted: 0,
+          strength: 1,
+        },
+        generation: {
+          inheritGlobalStrength: false,
+          strength: 1,
+          inheritGlobalInformationExtracted: false,
+          information_extracted: 0,
+        },
+      });
+      expect(loaded.vibeTransferCombinations[0].itemIds).toEqual(['item1']);
+      expect(loaded.vibeTransferCombinations[0]).toMatchObject({
+        referenceStrength: 1,
+        informationExtracted: 0,
+        itemGenerations: {
+          item1: {
+            inheritGlobalStrength: false,
+            strength: 0.4,
+            inheritGlobalInformationExtracted: false,
+            information_extracted: 0.8,
+          },
+        },
+      });
+      expect(loaded.currentVibeTransferCombinationId).toBe('combo1');
+    });
+
+    it('should migrate missing per-vibe parameters from legacy global values', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            ...getDefaultSettings(),
+            vibeTransferReferenceStrength: 0.35,
+            vibeTransferInformationExtracted: 0.65,
+            vibeTransferLibraryItems: [
+              {
+                id: 'item1',
+                name: 'Legacy Item',
+                enabled: true,
+                tags: [],
+                createdAt: 1,
+                updatedAt: 1,
+                source: {
+                  dataUrl: 'data:image/jpeg;base64,AAAA',
+                },
+                encodings: {},
+              },
+            ],
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.vibeTransferLibraryItems[0].generation).toMatchObject({
+        inheritGlobalStrength: false,
+        strength: 0.35,
+        inheritGlobalInformationExtracted: false,
+        information_extracted: 0.65,
+      });
     });
 
     it('should cap persisted Vibe Transfer references on load', () => {
@@ -314,6 +640,9 @@ describe('settings', () => {
       const loaded = loadSettings(mockContext);
 
       expect(loaded.vibeTransferReferenceImages).toHaveLength(
+        VIBE_TRANSFER.MAX_REFERENCES
+      );
+      expect(loaded.vibeTransferLibraryItems).toHaveLength(
         VIBE_TRANSFER.MAX_REFERENCES
       );
     });

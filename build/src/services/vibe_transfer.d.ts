@@ -4,7 +4,7 @@
  * This service keeps the normal `/sd` route untouched unless Vibe Transfer is
  * enabled and at least one valid reference image exists.
  */
-import type { VibeTransferGenerationConfig, VibeTransferReferenceImage } from '../types';
+import type { VibeLibraryItem, VibeTransferGenerationConfig, VibeTransferReferenceImage } from '../types';
 export interface NovelAiAdvancedPayload {
     prompt: string;
     model: string;
@@ -31,6 +31,19 @@ export interface NovelAiAdvancedPayload {
 }
 export declare function buildVibeTransferConfigFromSettings(settings: AutoIllustratorSettings): VibeTransferGenerationConfig;
 export declare function shouldUseVibeTransfer(config?: VibeTransferGenerationConfig): config is VibeTransferGenerationConfig;
+export interface VibeCombinationRandomConfig {
+    enabled: boolean;
+    /** Whitelist of combination IDs eligible for random pick. Empty = all. */
+    whitelist: string[];
+}
+export interface PickedVibeCombination {
+    id: string;
+    name: string;
+    config: VibeTransferGenerationConfig;
+}
+export declare function pickRandomVibeCombinationConfig(settings: AutoIllustratorSettings, config: VibeCombinationRandomConfig): PickedVibeCombination | null;
+export declare function buildVibeCombinationRandomConfigFromSettings(settings: AutoIllustratorSettings): VibeCombinationRandomConfig;
 export declare function buildNovelAiAdvancedPayload(prompt: string, context: SillyTavernContext, config: VibeTransferGenerationConfig): NovelAiAdvancedPayload;
 export declare function mergeVibeTransferReferenceUpdates(existingReferences: VibeTransferReferenceImage[], updatedReferences: VibeTransferReferenceImage[]): VibeTransferReferenceImage[];
+export declare function mergeVibeTransferLibraryItemUpdates(existingItems: VibeLibraryItem[], updatedReferences: VibeTransferReferenceImage[]): VibeLibraryItem[];
 export declare function generateNovelAiVibeTransferImage(prompt: string, context: SillyTavernContext, config: VibeTransferGenerationConfig, onReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void, signal?: AbortSignal): Promise<string>;

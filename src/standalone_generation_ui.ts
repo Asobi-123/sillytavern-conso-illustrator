@@ -7,14 +7,20 @@ import {UI_ELEMENT_IDS, STANDALONE_PROMPT_COUNT} from './constants';
 import {t} from './i18n';
 import {createLogger} from './logger';
 import {generateStandalonePrompts} from './services/prompt_generation_service';
-import {generateImage, setImageSubfolderLabel} from './image_generator';
+import {
+  generateImageWithMetadata,
+  setImageSubfolderLabel,
+} from './image_generator';
 import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
 import {normalizePromptTagsWithCatalog} from './services/tag_catalog_prompt';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
+  buildVibeCombinationRandomConfigFromSettings,
   buildVibeTransferConfigFromSettings,
+  mergeVibeTransferLibraryItemUpdates,
   mergeVibeTransferReferenceUpdates,
 } from './services/vibe_transfer';
+import {htmlEncode} from './utils/dom_utils';
 import {openInpaintingEditor} from './inpainting_editor';
 import {saveSettings} from './settings';
 import {
@@ -23,6 +29,8 @@ import {
 } from './utils/error_utils';
 import type {
   AutoIllustratorChatMetadata,
+  ImageGenerationResult,
+  GenerationRandomizationMetadata,
   StandalonePromptResult,
 } from './types';
 
@@ -57,6 +65,7 @@ function renderStandaloneImageResult(
   messageText: string,
   context: SillyTavernContext,
   settings: AutoIllustratorSettings,
+  randomization?: GenerationRandomizationMetadata,
   mode: 'replace-container' | 'append-after-block' = 'replace-container',
   targetBlock?: HTMLElement
 ): void {
@@ -96,6 +105,7 @@ function renderStandaloneImageResult(
           messageText,
           context,
           settings,
+          undefined,
           result.insertionMode === 'replace-image'
             ? 'replace-container'
             : 'append-after-block',
@@ -121,6 +131,26 @@ function renderStandaloneImageResult(
   });
 
   actions.appendChild(editButton);
+  const chips = [
+    randomization?.sdStyleName
+      ? t('standalone.randomSdStyleLabel', {
+          name: randomization.sdStyleName,
+        })
+      : '',
+    randomization?.vibeCombinationName
+      ? t('standalone.randomVibeCombinationLabel', {
+          name: randomization.vibeCombinationName,
+        })
+      : '',
+  ].filter(Boolean);
+  if (chips.length > 0) {
+    const meta = document.createElement('div');
+    meta.className = 'standalone-randomization-meta';
+    meta.innerHTML = chips
+      .map(chip => `<span>${htmlEncode(chip)}</span>`)
+      .join('');
+    block.append(meta);
+  }
   block.append(image, actions);
 
   if (mode === 'append-after-block' && targetBlock?.parentElement) {
@@ -242,7 +272,7 @@ async function generateImageWithStandaloneFolder(
   prompt: string,
   context: SillyTavernContext,
   settings: AutoIllustratorSettings
-): Promise<string | null> {
+): Promise<ImageGenerationResult> {
   const folderName = getStandaloneFolderName();
 
   // Save original label from metadata if available
@@ -259,7 +289,7 @@ async function generateImageWithStandaloneFolder(
   setImageSubfolderLabel(folderName, true);
 
   try {
-    return await generateImage(
+    return await generateImageWithMetadata(
       prompt,
       context,
       settings.commonStyleTags,
@@ -273,8 +303,14 @@ async function generateImageWithStandaloneFolder(
             settings.vibeTransferReferenceImages,
             references
           );
+        settings.vibeTransferLibraryItems = mergeVibeTransferLibraryItemUpdates(
+          settings.vibeTransferLibraryItems,
+          references
+        );
         saveSettings(settings, context);
-      }
+      },
+      buildVibeCombinationRandomConfigFromSettings(settings),
+      settings
     );
   } finally {
     // Restore original label (normal mode, no full override)
@@ -381,19 +417,20 @@ async function generateForCard(
   imageContainer.innerHTML = `<div class="standalone-generating-spinner">${t('standalone.generatingImage')}</div>`;
 
   try {
-    const imageUrl = await generateImageWithStandaloneFolder(
+    const result = await generateImageWithStandaloneFolder(
       prompt,
       context,
       settings
     );
-    if (imageUrl) {
+    if (result.imageUrl) {
       renderStandaloneImageResult(
         imageContainer,
-        imageUrl,
+        result.imageUrl,
         rawPrompt,
         sceneDescription,
         context,
-        settings
+        settings,
+        result.randomization
       );
     } else {
       const error = new AutoIllustratorError(
@@ -711,19 +748,20 @@ export function initializeStandaloneGeneration(
     imageContainer.innerHTML = `<div class="standalone-generating-spinner">${t('standalone.generatingImage')}</div>`;
 
     try {
-      const imageUrl = await generateImageWithStandaloneFolder(
+      const result = await generateImageWithStandaloneFolder(
         prompt,
         context,
         settings
       );
-      if (imageUrl) {
+      if (result.imageUrl) {
         renderStandaloneImageResult(
           imageContainer,
-          imageUrl,
+          result.imageUrl,
           rawPrompt,
           rawPrompt,
           context,
-          settings
+          settings,
+          result.randomization
         );
       } else {
         const error = new AutoIllustratorError(

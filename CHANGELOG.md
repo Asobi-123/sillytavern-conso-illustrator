@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-07-03
+
+### Added
+
+- **Vibe Manager tab** - Added a dedicated floating-panel tab for managing NovelAI Vibe items, saved Vibe sets, bundle import/export, per-card parameters, search, display/edit modes, pending source images, and cache visibility.
+- **Vibe bundle interoperability** - Added `.naiv4vibebundle.json` import/export for encoded Vibes. Imported encoded-only Vibes can be used without source images, and export includes only the currently enabled encoded Vibes instead of the whole local library.
+- **Per-generation style presets** - Added a unified control for choosing fixed or random SD Style and Vibe combinations before each generation, with searchable selection pools and saved SD Style + Vibe pairing presets.
+- **Generation metadata display** - Generated images can now retain and display the SD Style and Vibe combination selected for that image in gallery/modal surfaces.
+
+### Changed
+
+- **Vibe Transfer workflow** - Saved Vibe sets apply immediately when selected, and selecting no set clears the active Vibe selection. Each Vibe card is now the source of truth for Strength and Information Extracted; source-image Vibes create or reuse encodings by model and Information value.
+- **Vibe safety and mobile layout** - Newly uploaded source images go to the built-in Pending encoding view without being auto-enabled. Vibe Manager cards use a mobile-friendly layout with clearer delete actions and no global parameter controls that can silently overwrite a set.
+- **Backend plugin compatibility** - Updated the companion server plugin protocol for mixed source-image and encoded-only Vibe generation. Users only need to replace the backend plugin folder when the panel reports an outdated backend plugin or this changelog says the backend changed.
+- **Tag Catalog data** - Refreshed the bundled offline tag catalog to the 2026-07 snapshot and added Chinese bridge triggers for newly included Vibe-relevant tags.
+
 ## [1.12.0] - 2026-06-15
 
 ### Added

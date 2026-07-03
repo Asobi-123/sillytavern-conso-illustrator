@@ -16,9 +16,12 @@ import type {
   ProgressManager,
   ProgressImageCompletedEventDetail,
 } from './progress_manager';
-import {extractImagesFromMessage} from './image_utils';
+import {extractImagesFromMessage, normalizeImageUrl} from './image_utils';
 import {getMetadata, saveMetadata} from './metadata';
-import type {GalleryWidgetState} from './types';
+import type {
+  GalleryWidgetState,
+  GenerationRandomizationMetadata,
+} from './types';
 
 const logger = createLogger('GalleryWidget');
 
@@ -44,6 +47,8 @@ export class GalleryWidgetView {
   private hostContainer: HTMLElement | null = null;
   private messageOrder: 'newest-first' | 'oldest-first' = 'newest-first';
   private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+  private imageRandomizations: Map<string, GenerationRandomizationMetadata> =
+    new Map();
   private readonly REFRESH_DEBOUNCE_MS = 500; // Debounce gallery refreshes by 500ms
 
   constructor(manager: ProgressManager) {
@@ -164,6 +169,14 @@ export class GalleryWidgetView {
     this.progressManager.addEventListener('progress:image-completed', event => {
       const detail = (event as CustomEvent<ProgressImageCompletedEventDetail>)
         .detail;
+      if (
+        detail.randomization?.sdStyleName ||
+        detail.randomization?.vibeCombinationName
+      ) {
+        this.imageRandomizations.set(normalizeImageUrl(detail.imageUrl), {
+          ...detail.randomization,
+        });
+      }
       logger.debug(
         `Gallery notified of new image for message ${detail.messageId}`
       );
@@ -311,7 +324,9 @@ export class GalleryWidgetView {
     }
 
     const messageText = message.mes || '';
-    const images = extractImagesFromMessage(messageText, messageId);
+    const images = this.enrichImagesWithRandomization(
+      extractImagesFromMessage(messageText, messageId)
+    );
 
     logger.debug(`Updated message ${messageId}: found ${images.length} images`);
 
@@ -378,7 +393,9 @@ export class GalleryWidgetView {
       }
 
       const messageText = message.mes || '';
-      const images = extractImagesFromMessage(messageText, messageId);
+      const images = this.enrichImagesWithRandomization(
+        extractImagesFromMessage(messageText, messageId)
+      );
 
       logger.trace(`Message ${messageId}: found ${images.length} images`);
 
@@ -421,6 +438,33 @@ export class GalleryWidgetView {
     const groups = Array.from(this.messageGroups.values());
     // Newest first is the reverse of natural order (lower message IDs are older)
     return this.messageOrder === 'newest-first' ? groups.reverse() : groups;
+  }
+
+  private enrichImagesWithRandomization(images: ModalImage[]): ModalImage[] {
+    return images.map(image => {
+      if (image.randomization) return image;
+      const randomization = this.imageRandomizations.get(
+        normalizeImageUrl(image.imageUrl)
+      );
+      return randomization ? {...image, randomization} : image;
+    });
+  }
+
+  private createRandomizationLabels(
+    randomization?: GenerationRandomizationMetadata
+  ): string[] {
+    return [
+      randomization?.sdStyleName
+        ? t('standalone.randomSdStyleLabel', {
+            name: randomization.sdStyleName,
+          })
+        : '',
+      randomization?.vibeCombinationName
+        ? t('standalone.randomVibeCombinationLabel', {
+            name: randomization.vibeCombinationName,
+          })
+        : '',
+    ].filter(Boolean);
   }
 
   /**
@@ -816,6 +860,21 @@ export class GalleryWidgetView {
       img.loading = 'lazy';
       thumbnail.appendChild(img);
 
+      const randomizationLabels = this.createRandomizationLabels(
+        image.randomization
+      );
+      if (randomizationLabels.length > 0) {
+        const meta = document.createElement('div');
+        meta.className = 'ai-img-gallery-randomization-meta';
+        for (const label of randomizationLabels) {
+          const chip = document.createElement('span');
+          chip.textContent = label;
+          meta.appendChild(chip);
+        }
+        thumbnail.appendChild(meta);
+        thumbnail.title = `${image.promptText}\n${randomizationLabels.join('\n')}`;
+      }
+
       // Add click handler to open modal
       thumbnail.addEventListener('click', () => {
         this.showImageModal(group, i);
@@ -857,6 +916,7 @@ export class GalleryWidgetView {
           imageUrl: img.imageUrl,
           promptText: img.promptText,
           promptPreview: img.promptPreview,
+          randomization: img.randomization,
           messageId: img.messageId,
           imageIndex: img.imageIndex,
         });
@@ -909,6 +969,7 @@ export class GalleryWidgetView {
           imageUrl: img.imageUrl,
           promptText: img.promptText,
           promptPreview: img.promptPreview,
+          randomization: img.randomization,
           messageId: img.messageId,
           imageIndex: img.imageIndex,
         });

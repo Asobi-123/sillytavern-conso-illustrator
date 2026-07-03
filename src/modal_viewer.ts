@@ -5,6 +5,8 @@
 
 import {createLogger} from './logger';
 import {t} from './i18n';
+import {htmlEncode} from './utils/dom_utils';
+import type {GenerationRandomizationMetadata} from './types';
 
 const logger = createLogger('ModalViewer');
 
@@ -15,6 +17,7 @@ export interface ModalImage {
   imageUrl: string;
   promptText: string;
   promptPreview: string;
+  randomization?: GenerationRandomizationMetadata;
   messageId?: number;
   imageIndex?: number;
 }
@@ -660,6 +663,24 @@ export class ImageModalViewer {
     if (!this.img || !this.meta || !this.promptDiv) return;
 
     const currentImage = this.images[this.currentIndex];
+    const randomizationChips = [
+      currentImage.randomization?.sdStyleName
+        ? t('standalone.randomSdStyleLabel', {
+            name: currentImage.randomization.sdStyleName,
+          })
+        : '',
+      currentImage.randomization?.vibeCombinationName
+        ? t('standalone.randomVibeCombinationLabel', {
+            name: currentImage.randomization.vibeCombinationName,
+          })
+        : '',
+    ].filter(Boolean);
+    const randomizationHtml =
+      randomizationChips.length > 0
+        ? `<div class="ai-img-modal-randomization-meta">${randomizationChips
+            .map(chip => `<span>${htmlEncode(chip)}</span>`)
+            .join('')}</div>`
+        : '';
 
     if (changeImage) {
       // Apply rotation class immediately before loading image
@@ -685,6 +706,7 @@ export class ImageModalViewer {
           })}
         </span>
       </div>
+      ${randomizationHtml}
       <div class="ai-img-modal-actions">
         <button class="ai-img-modal-action-btn reset-zoom-btn" title="${t('modal.resetZoom')}" style="display: none;">
           <i class="fa fa-undo"></i> ${t('modal.resetZoom')}

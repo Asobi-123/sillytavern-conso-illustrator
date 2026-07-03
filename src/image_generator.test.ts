@@ -60,6 +60,23 @@ vi.mock('./manual_generation', () => ({
   attachRegenerationHandlers: vi.fn(),
 }));
 
+vi.mock('./i18n', () => ({
+  t: (key: string, replacements?: Record<string, string | number>) => {
+    const templates: Record<string, string> = {
+      'standalone.randomSdStyleLabel': 'SD Style: {name}',
+      'standalone.randomVibeCombinationLabel': 'Vibe: {name}',
+    };
+    let text = templates[key] ?? key;
+    for (const [placeholder, value] of Object.entries(replacements ?? {})) {
+      text = text.replace(
+        new RegExp(`\\{${placeholder}\\}`, 'g'),
+        String(value)
+      );
+    }
+    return text;
+  },
+}));
+
 describe('Image Generator V2', () => {
   describe('initializeConcurrencyLimiter', () => {
     it('should initialize limiter with correct settings', () => {
@@ -239,6 +256,10 @@ describe('Image Generator V2', () => {
           imageUrl: 'http://example.com/cat.jpg',
           promptId: 'prompt1',
           promptPreview: 'a cat',
+          randomization: {
+            sdStyleName: 'Oil Style',
+            vibeCombinationName: 'Oil Vibe',
+          },
           completedAt: Date.now(),
         },
       ];
@@ -254,6 +275,15 @@ describe('Image Generator V2', () => {
       expect(count).toBe(1);
       expect(mockContext.chat[1].mes).toContain('<img src=');
       expect(mockContext.chat[1].mes).toContain('http://example.com/cat.jpg');
+      expect(mockContext.chat[1].mes).not.toContain(
+        'auto-illustrator-randomization-meta'
+      );
+      expect(mockMetadata.imageRandomizations).toEqual({
+        '/cat.jpg': {
+          sdStyleName: 'Oil Style',
+          vibeCombinationName: 'Oil Vibe',
+        },
+      });
       // saveChat is now handled by renderMessageUpdate
       expect(messageRenderer.renderMessageUpdate).toHaveBeenCalledWith(1);
     });

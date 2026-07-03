@@ -37,7 +37,7 @@ vi.mock('./services/prompt_generation_service', () => ({
 }));
 
 vi.mock('./image_generator', () => ({
-  generateImage: generateImageMock,
+  generateImageWithMetadata: generateImageMock,
   setImageSubfolderLabel: setImageSubfolderLabelMock,
 }));
 
@@ -189,7 +189,13 @@ describe('standalone_generation_ui', () => {
   });
 
   it('should allow editing a generated standalone image with Inpaint', async () => {
-    generateImageMock.mockResolvedValue('/user/images/standalone/base.png');
+    generateImageMock.mockResolvedValue({
+      imageUrl: '/user/images/standalone/base.png',
+      randomization: {
+        sdStyleName: 'Oil Style',
+        vibeCombinationName: 'Oil Vibe',
+      },
+    });
     openInpaintingEditorMock.mockResolvedValue({
       imageUrl: '/user/images/standalone/edited.png',
       promptText: 'edited prompt',
@@ -225,6 +231,14 @@ describe('standalone_generation_ui', () => {
         '/user/images/standalone/base.png'
       );
     });
+    expect(imageContainer.textContent).toContain(
+      'standalone.randomSdStyleLabel'
+    );
+    expect(imageContainer.textContent).toContain('Oil Style');
+    expect(imageContainer.textContent).toContain(
+      'standalone.randomVibeCombinationLabel'
+    );
+    expect(imageContainer.textContent).toContain('Oil Vibe');
 
     const editButton = imageContainer.querySelector(
       '.standalone-image-edit-btn'

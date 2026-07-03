@@ -2,7 +2,28 @@
  * Unit tests for image_utils module
  */
 
-import {normalizeImageUrl} from './image_utils';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {extractImagesFromMessage, normalizeImageUrl} from './image_utils';
+
+const getMetadataMock = vi.hoisted(() => vi.fn());
+
+vi.mock('./metadata', () => ({
+  getMetadata: getMetadataMock,
+}));
+
+vi.mock('./logger', () => ({
+  createLogger: () => ({
+    trace: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
+}));
+
+beforeEach(() => {
+  getMetadataMock.mockReset();
+});
 
 describe('normalizeImageUrl', () => {
   describe('data URIs', () => {
@@ -61,6 +82,35 @@ describe('normalizeImageUrl', () => {
     it('should preserve undecodable relative paths instead of throwing', () => {
       const path = '/user/images/%E0%A4%A/test.png';
       expect(normalizeImageUrl(path)).toBe('/user/images/%E0%A4%A/test.png');
+    });
+  });
+});
+
+describe('extractImagesFromMessage', () => {
+  it('should attach randomization metadata from normalized image URL', () => {
+    getMetadataMock.mockReturnValue({
+      promptRegistry: {
+        nodes: {},
+        imageToPromptId: {},
+        rootPromptIds: [],
+      },
+      imageRandomizations: {
+        '/user/images/test.png': {
+          sdStyleName: 'Oil Style',
+          vibeCombinationName: 'Oil Vibe',
+        },
+      },
+    });
+
+    const images = extractImagesFromMessage(
+      '<img src="https://example.com/user/images/test.png" title="AI generated image: 1girl" alt="1girl">',
+      3
+    );
+
+    expect(images).toHaveLength(1);
+    expect(images[0].randomization).toEqual({
+      sdStyleName: 'Oil Style',
+      vibeCombinationName: 'Oil Vibe',
     });
   });
 });

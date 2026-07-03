@@ -692,7 +692,11 @@ describe('ProgressManager', () => {
         1,
         'https://example.com/image.png',
         '1girl, long hair, blue eyes',
-        '1girl, long hair, blue...'
+        '1girl, long hair, blue...',
+        {
+          sdStyleName: 'Oil Style',
+          vibeCombinationName: 'Oil Vibe',
+        }
       );
 
       expect(imageCompletedEvents).toHaveLength(1);
@@ -701,6 +705,10 @@ describe('ProgressManager', () => {
         imageUrl: 'https://example.com/image.png',
         promptText: '1girl, long hair, blue eyes',
         promptPreview: '1girl, long hair, blue...',
+        randomization: {
+          sdStyleName: 'Oil Style',
+          vibeCombinationName: 'Oil Vibe',
+        },
       });
       expect(imageCompletedEvents[0].completedAt).toBeTypeOf('number');
       expect(imageCompletedEvents[0].completedAt).toBeLessThanOrEqual(

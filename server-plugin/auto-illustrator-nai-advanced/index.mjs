@@ -12,7 +12,7 @@ const SIGMA_MAGIC_NUMBER = 19;
 const SIGMA_MAGIC_NUMBER_V4_5 = 58;
 const MAX_ENCODED_CACHE_PER_REFERENCE = 8;
 const INPAINT_TIMEOUT_MS = 120000;
-const SERVER_PLUGIN_VERSION = '2026-06-03-inpaint-v3';
+const SERVER_PLUGIN_VERSION = '2026-07-03-vibe-bundle-v2';
 
 export const info = {
   id: 'auto-illustrator-nai-advanced',
@@ -257,6 +257,7 @@ function buildNovelAiInpaintRequestBody(requestBody) {
 
 function validateRequestBody(body) {
   const references = body.reference_image_multiple;
+  const encodedVibes = body.reference_encoded_vibe_multiple;
   const information = body.reference_information_extracted_multiple;
   const strengths = body.reference_strength_multiple;
 
@@ -265,7 +266,11 @@ function validateRequestBody(body) {
   }
 
   if (!Array.isArray(references) || references.length === 0) {
-    return 'reference_image_multiple must contain at least one image';
+    return 'reference arrays must contain at least one reference';
+  }
+
+  if (encodedVibes !== undefined && !Array.isArray(encodedVibes)) {
+    return 'reference_encoded_vibe_multiple must be an array when provided';
   }
 
   if (!Array.isArray(information) || !Array.isArray(strengths)) {
@@ -274,15 +279,21 @@ function validateRequestBody(body) {
 
   if (
     references.length !== information.length ||
-    references.length !== strengths.length
+    references.length !== strengths.length ||
+    (Array.isArray(encodedVibes) && references.length !== encodedVibes.length)
   ) {
     return 'reference parameter arrays must have the same length';
   }
 
-  if (
-    !references.every(value => typeof value === 'string' && value.length > 0)
-  ) {
-    return 'reference images must be non-empty base64 strings';
+  const hasUsableReference = references.some((value, index) => {
+    const hasImage = typeof value === 'string' && value.trim().length > 0;
+    const encoded = Array.isArray(encodedVibes) ? encodedVibes[index] : null;
+    const hasEncoded = typeof encoded === 'string' && encoded.trim().length > 0;
+    return hasImage || hasEncoded;
+  });
+
+  if (!hasUsableReference) {
+    return 'at least one reference image or encoded vibe is required';
   }
 
   return null;
@@ -376,7 +387,9 @@ async function encodeVibeReferences(requestBody, key) {
 
   if (!isV4Model(model)) {
     return {
-      references: references.map(normalizeBase64Image),
+      references: references
+        .map(normalizeBase64Image)
+        .filter(image => image.length > 0),
       encodedRecords: [],
       updatedReferences: null,
     };
@@ -392,6 +405,11 @@ async function encodeVibeReferences(requestBody, key) {
     }
 
     const image = normalizeBase64Image(references[index]);
+    if (!image) {
+      throw new Error(
+        `Vibe reference ${index + 1} has no source image or encoded vibe`
+      );
+    }
     const informationExtracted =
       typeof information[index] === 'number' ? information[index] : 1;
     const encodeResult = await fetch(`${IMAGE_NOVELAI}/ai/encode-vibe`, {

@@ -74,8 +74,8 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **AI 候选 Tag** | 独立提示词生成时只发送当前文本命中的少量候选 tag；候选数量可编辑，最近一次候选可查看 |
 | **内置正则过滤** | 保留正文里的插画元数据，只从发送给模型的 prompt 中过滤插画标签 |
 | **预设适配** | 上传 JSON / 文本或输入需求，生成 Conso 原生共享 API 元提示或独立 API 指南草稿 |
-| **随机 SD Style** | 每次生图前从酒馆 SD 扩展保存的 Style 列表中随机抽一条临时套用，可用白名单限定参与抽签的范围 |
-| **NovelAI Vibe Transfer** | 可选参考图生图增强；支持文生图和独立生图，V4/V4.5 会缓存 vibe 编码以减少重复 Anlas 消耗 |
+| **生图 SD Style 和 Vibe 组合** | 可选择关闭、固定或每次生图随机抽取 SD Style / Vibe 组合，并可保存常用搭配 |
+| **NovelAI Vibe Transfer** | 可选参考图和编码 Vibe 生图增强；支持文生图和独立生图、Vibe 管理、`.naiv4vibebundle.json` 导入/导出、V4/V4.5 编码缓存 |
 | **NovelAI 局部重绘** | 在已有图片上绘制遮罩，预览重绘结果后再选择追加或替换原图；支持缩放画布、边缘羽化、遮罩外扩和边界保护 |
 | **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
 | **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
@@ -118,7 +118,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 ## Tag 超市和候选 Tag
 
-插件内置离线 tag catalog，运行时不联网。当前 catalog 版本为 `2026-06`，共 7928 个 tag。
+插件内置离线 tag catalog，运行时不联网。当前 catalog 版本为 `2026-07`，共 7928 个 tag。
 
 要点：
 
@@ -149,9 +149,9 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 部分 NovelAI 高级功能需要配套后端插件：Vibe Transfer、局部重绘。只安装前端扩展时，普通 `/sd` 生图可以运行，但这些功能不可用。
 
-后端插件路径：`server-plugin/auto-illustrator-nai-advanced`。安装后端、启用 `enableServerPlugins`、重启 SillyTavern 后才能使用。
+后端插件路径：`server-plugin/auto-illustrator-nai-advanced`。安装后端、启用 `enableServerPlugins`、重启 SillyTavern 后才能使用。只有面板提示后端插件版本过旧，或更新说明明确提到后端插件有变更时，才需要手动覆盖 SillyTavern `plugins/` 里的同名后端插件文件夹。
 
-- **Vibe Transfer**：给 NovelAI 生图加入参考图条件，支持聊天生图和独立生图。
+- **Vibe Transfer**：给 NovelAI 生图加入参考图或已编码 Vibe 条件，支持聊天生图、独立生图、bundle 导入/导出。
 - **局部重绘**：在已有图片上绘制遮罩，预览编辑结果后再追加或替换。
 
 完整安装和使用见：[NovelAI 高级后端功能](docs/QUICKSTART_CN.md#novelai-高级后端功能可选进阶)。
@@ -166,6 +166,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 |------|----------|
 | **主控台** | 启用自动插画、切换提示词生成模式、修改当前聊天图片文件夹标签、切主题 |
 | **提示词设置** | 配置共享 API / 独立 API 模式下的提示词生成规则 |
+| **Vibe 管理** | 管理 Vibe 库、导入/导出 `.naiv4vibebundle.json`、保存和应用 Vibe 组合 |
 | **画廊** | 在面板里查看当前聊天生成过的图片 |
 | **独立生图** | 直接输入场景描述或 Prompt，不发聊天消息也能测试出图 |
 | **提示词仓库** | 上传 NovelAI PNG → 提取正面/负面/角色提示词 → 搜索、编辑、复制、分类 |

@@ -2,6 +2,7 @@
  * Shared Modal Viewer Module
  * Provides a reusable image modal viewer for both progress widget and gallery widget
  */
+import type { GenerationRandomizationMetadata } from './types';
 /**
  * Image data for modal viewer
  */
@@ -9,6 +10,7 @@ export interface ModalImage {
     imageUrl: string;
     promptText: string;
     promptPreview: string;
+    randomization?: GenerationRandomizationMetadata;
     messageId?: number;
     imageIndex?: number;
 }

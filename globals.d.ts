@@ -226,14 +226,42 @@ declare global {
     characterFixedTagInjectionMode: import('./src/types').CharacterFixedTagInjectionMode;
     /** Default prompt count for standalone generation */
     standalonePromptCount?: number;
+    /** How generation decides SD Style and Vibe combination before each image */
+    generationStyleMode: 'off' | 'fixed' | 'random';
+    /** Saved fixed SD Style + Vibe generation presets */
+    generationStylePresets: import('./src/types').GenerationStylePreset[];
+    /** Currently selected fixed generation style preset ID */
+    currentGenerationStylePresetId: string;
+    /** Fixed SD Style name used when generationStyleMode is fixed */
+    fixedSdStyleName: string;
+    /** Fixed Vibe combination ID used when generationStyleMode is fixed */
+    fixedVibeCombinationId: string;
     /** Whether to randomly pick one SD style from extension_settings.sd.styles[] before each /sd call */
     randomizeSdStylePerGeneration: boolean;
     /** Whitelist of SD style names eligible for random pick (empty = all styles) */
     sdStylePoolWhitelist: string[];
     /** Whether to restore the original sd.prompt_prefix / sd.negative_prompt after generation */
     restoreSdStyleAfter: boolean;
+    /** Whether to randomly pick one saved Vibe combination before each generation */
+    randomizeVibeCombinationPerGeneration: boolean;
+    /** Whitelist of Vibe combination IDs eligible for random pick (empty = all saved combinations) */
+    vibeCombinationPoolWhitelist: string[];
     /** Whether NovelAI Vibe Transfer is used for image generation */
     vibeTransferEnabled: boolean;
+    /** Bundle-compatible Vibe library items */
+    vibeTransferLibraryItems: import('./src/types').VibeLibraryItem[];
+    /** Named Vibe item combinations */
+    vibeTransferCombinations: import('./src/types').VibeTransferCombination[];
+    /** Currently selected Vibe Transfer combination ID */
+    currentVibeTransferCombinationId: string;
+    /** Whether Vibe Manager cards expose editable per-vibe parameters */
+    vibeTransferManagerEditMode: boolean;
+    /** Built-in Vibe Manager view; saved Vibe sets remain separate */
+    vibeTransferManagerView: 'all' | 'pending';
+    /** Legacy Vibe Manager filter kept only for old saved settings migration */
+    vibeTransferManagerFilter?: 'all' | 'enabled' | 'pending';
+    /** Legacy mode field kept only for old saved settings migration */
+    vibeTransferParameterMode?: 'beginner' | 'advanced';
     /** Reference images used for NovelAI Vibe Transfer */
     vibeTransferReferenceImages: import('./src/types').VibeTransferReferenceImage[];
     /** Named Vibe Transfer reference selections */

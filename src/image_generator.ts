@@ -4,7 +4,12 @@
  */
 
 import Bottleneck from 'bottleneck';
-import type {DeferredImage, VibeTransferReferenceImage} from './types';
+import type {
+  DeferredImage,
+  GenerationRandomizationMetadata,
+  ImageGenerationResult,
+  VibeTransferReferenceImage,
+} from './types';
 import {createLogger} from './logger';
 import {attachRegenerationHandlers} from './manual_generation';
 import {renderMessageUpdate} from './utils/message_renderer';
@@ -17,6 +22,7 @@ import {
   type ReconciliationConfig,
 } from './reconciliation';
 import {htmlEncode} from './utils/dom_utils';
+import {normalizeImageUrl} from './image_utils';
 import {AutoIllustratorError, extractErrorMessage} from './utils/error_utils';
 import {
   withRandomSdStyle,
@@ -24,7 +30,9 @@ import {
 } from './services/sd_style_randomizer';
 import {
   generateNovelAiVibeTransferImage,
+  pickRandomVibeCombinationConfig,
   shouldUseVibeTransfer,
+  type VibeCombinationRandomConfig,
 } from './services/vibe_transfer';
 import type {VibeTransferGenerationConfig} from './types';
 import {applyCommonTags} from './services/prompt_tags';
@@ -42,6 +50,21 @@ const logger = createLogger('Generator');
 let reconciliationConfig: ReconciliationConfig = {
   ...DEFAULT_RECONCILIATION_CONFIG,
 };
+
+function rememberImageRandomization(
+  metadata: import('./types').AutoIllustratorChatMetadata,
+  imageUrl: string,
+  randomization?: import('./types').GenerationRandomizationMetadata
+): void {
+  if (!randomization?.sdStyleName && !randomization?.vibeCombinationName) {
+    return;
+  }
+
+  metadata.imageRandomizations = metadata.imageRandomizations ?? {};
+  metadata.imageRandomizations[normalizeImageUrl(imageUrl)] = {
+    ...randomization,
+  };
+}
 
 /**
  * Updates reconciliation configuration
@@ -232,8 +255,37 @@ export async function generateImage(
   signal?: AbortSignal,
   sdStyleConfig?: SdStyleRandomConfig,
   vibeTransferConfig?: VibeTransferGenerationConfig,
-  onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void
+  onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void,
+  vibeCombinationRandomConfig?: VibeCombinationRandomConfig,
+  settingsForVibeCombinationRandom?: AutoIllustratorSettings
 ): Promise<string | null> {
+  const result = await generateImageWithMetadata(
+    prompt,
+    context,
+    commonTags,
+    tagsPosition,
+    signal,
+    sdStyleConfig,
+    vibeTransferConfig,
+    onVibeReferencesUpdated,
+    vibeCombinationRandomConfig,
+    settingsForVibeCombinationRandom
+  );
+  return result.imageUrl;
+}
+
+export async function generateImageWithMetadata(
+  prompt: string,
+  context: SillyTavernContext,
+  commonTags?: string,
+  tagsPosition?: 'prefix' | 'suffix',
+  signal?: AbortSignal,
+  sdStyleConfig?: SdStyleRandomConfig,
+  vibeTransferConfig?: VibeTransferGenerationConfig,
+  onVibeReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void,
+  vibeCombinationRandomConfig?: VibeCombinationRandomConfig,
+  settingsForVibeCombinationRandom?: AutoIllustratorSettings
+): Promise<ImageGenerationResult> {
   // If limiter not initialized, create with default values
   if (!imageLimiter) {
     logger.warn('Image limiter not initialized, using defaults (1, 0ms)');
@@ -247,16 +299,17 @@ export async function generateImage(
   // Check if aborted before even scheduling
   if (signal?.aborted) {
     logger.info('Generation aborted before scheduling:', prompt);
-    return null;
+    return {imageUrl: null, randomization: {}};
   }
 
   // Schedule through Bottleneck (use unique ID to avoid collisions)
   const jobId = `${prompt}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   return imageLimiter.schedule({id: jobId}, async () => {
+    const randomization: GenerationRandomizationMetadata = {};
     // Check again after acquiring slot
     if (signal?.aborted) {
       logger.debug('Generation aborted after scheduling:', prompt);
-      return null;
+      return {imageUrl: null, randomization};
     }
 
     // Apply common tags if provided
@@ -282,20 +335,42 @@ export async function generateImage(
         whitelist: [],
         restoreAfter: true,
       };
-      const imageUrl = shouldUseVibeTransfer(vibeTransferConfig)
-        ? await withRandomSdStyle(context, effectiveSdStyleConfig, () =>
-            generateNovelAiVibeTransferImage(
-              enhancedPrompt,
-              context,
-              vibeTransferConfig,
-              onVibeReferencesUpdated,
-              signal
+      const pickedVibeCombination =
+        settingsForVibeCombinationRandom && vibeCombinationRandomConfig
+          ? pickRandomVibeCombinationConfig(
+              settingsForVibeCombinationRandom,
+              vibeCombinationRandomConfig
             )
+          : null;
+      if (pickedVibeCombination) {
+        randomization.vibeCombinationId = pickedVibeCombination.id;
+        randomization.vibeCombinationName = pickedVibeCombination.name;
+      }
+      const effectiveVibeTransferConfig =
+        pickedVibeCombination?.config ?? vibeTransferConfig;
+      const imageUrl = shouldUseVibeTransfer(effectiveVibeTransferConfig)
+        ? await withRandomSdStyle(
+            context,
+            effectiveSdStyleConfig,
+            () =>
+              generateNovelAiVibeTransferImage(
+                enhancedPrompt,
+                context,
+                effectiveVibeTransferConfig,
+                onVibeReferencesUpdated,
+                signal
+              ),
+            styleName => {
+              randomization.sdStyleName = styleName;
+            }
           )
         : await generateImageViaSdCommand(
             enhancedPrompt,
             context,
-            effectiveSdStyleConfig
+            effectiveSdStyleConfig,
+            styleName => {
+              randomization.sdStyleName = styleName;
+            }
           );
 
       if (!imageUrl) {
@@ -310,7 +385,7 @@ export async function generateImage(
         `Generated image URL: ${imageUrl} (took ${duration.toFixed(0)}ms)`
       );
 
-      return imageUrl;
+      return {imageUrl, randomization};
     } catch (error) {
       const duration = performance.now() - startTime;
       logger.error(
@@ -336,7 +411,8 @@ export async function generateImage(
 async function generateImageViaSdCommand(
   prompt: string,
   context: SillyTavernContext,
-  sdStyleConfig: SdStyleRandomConfig
+  sdStyleConfig: SdStyleRandomConfig,
+  onSdStylePicked?: (styleName: string) => void
 ): Promise<string> {
   const sdCommand = context.SlashCommandParser?.commands?.['sd'];
   if (!sdCommand || !sdCommand.callback) {
@@ -353,8 +429,11 @@ async function generateImageViaSdCommand(
 
   logger.debug('Calling SD command...');
   const sdCallback = sdCommand.callback;
-  return withRandomSdStyle(context, sdStyleConfig, () =>
-    sdCallback({quiet: 'true'}, prompt)
+  return withRandomSdStyle(
+    context,
+    sdStyleConfig,
+    () => sdCallback({quiet: 'true'}, prompt),
+    onSdStylePicked
   );
 }
 
@@ -510,6 +589,11 @@ export async function insertDeferredImages(
 
         // Link new image to prompt (updates or replaces old association)
         if (queuedPrompt.targetPromptId) {
+          rememberImageRandomization(
+            metadata,
+            deferred.imageUrl,
+            deferred.randomization
+          );
           logger.info('=== DEBUG: Linking regenerated image ===');
           logger.info(`Image URL (raw): ${deferred.imageUrl}`);
           logger.info(`Prompt ID: ${queuedPrompt.targetPromptId}`);
@@ -601,6 +685,11 @@ export async function insertDeferredImages(
           logger.info(`Image URL: ${deferred.imageUrl}`);
           logger.info(`Prompt ID: ${deferred.promptId}`);
 
+          rememberImageRandomization(
+            metadata,
+            deferred.imageUrl,
+            deferred.randomization
+          );
           await linkImageToPrompt(
             deferred.promptId,
             deferred.imageUrl,

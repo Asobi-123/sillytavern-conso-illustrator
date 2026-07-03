@@ -74,8 +74,8 @@ Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 | **AI Candidate Tags** | Independent prompt generation sends only a small text-matched candidate subset; limits are editable and the latest candidate snapshot is inspectable |
 | **Built-in Regex Filtering** | Keeps illustration metadata in chat text and filters illustration tags only from prompts sent to the model |
 | **Preset Adapter** | Upload JSON/text or write requirements to draft Conso-native Shared API meta prompts or Independent API guidelines |
-| **Random SD Style** | Randomly pick one Style from the stable-diffusion extension before each generation, apply its prefix/negative, then restore. Optional whitelist limits the eligible pool |
-| **NovelAI Vibe Transfer** | Optional reference-image conditioning for chat and standalone generation. V4/V4.5 encoded vibes are cached to reduce repeated Anlas usage |
+| **Generation SD Style and Vibe Combination** | Choose off, fixed, or per-generation random SD Style / Vibe combination picks, and save reusable pairings |
+| **NovelAI Vibe Transfer** | Optional reference-image and encoded-Vibe conditioning for chat and standalone generation, with Vibe Manager, `.naiv4vibebundle.json` import/export, and V4/V4.5 encoding cache |
 | **NovelAI Inpaint** | Paint a mask on an existing image, preview the edit, then append or replace the original; supports canvas zoom, edge feather, mask padding, and edge guard |
 | **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
 | **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
@@ -118,7 +118,7 @@ Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 
 ## Tag Catalog and AI Candidate Tags
 
-The extension ships with an offline tag catalog. Runtime use does not fetch network resources. The current bundled catalog version is `2026-06` with 7928 tags.
+The extension ships with an offline tag catalog. Runtime use does not fetch network resources. The current bundled catalog version is `2026-07` with 7928 tags.
 
 Key points:
 
@@ -149,9 +149,9 @@ Shared API and Independent API targets are generated separately, and drafts requ
 
 Some NovelAI advanced features require the companion server plugin: Vibe Transfer and Inpaint. Normal `/sd` generation works with only the frontend extension, but these advanced features need the backend folder.
 
-Backend folder: `server-plugin/auto-illustrator-nai-advanced`. Install it, enable `enableServerPlugins`, and restart SillyTavern before using advanced features.
+Backend folder: `server-plugin/auto-illustrator-nai-advanced`. Install it, enable `enableServerPlugins`, and restart SillyTavern before using advanced features. Replace the folder under SillyTavern `plugins/` only when the panel reports an outdated backend plugin or release notes explicitly mention backend changes.
 
-- **Vibe Transfer**: adds NovelAI reference-image conditioning for chat and standalone generation.
+- **Vibe Transfer**: adds NovelAI reference-image or encoded-Vibe conditioning for chat generation, standalone generation, and bundle import/export.
 - **Inpaint**: paint a mask on an existing image, preview the edit, then append or replace.
 
 Full installation and usage: [NovelAI advanced backend tutorial](docs/QUICKSTART_CN.md#novelai-高级后端功能可选进阶).
@@ -166,6 +166,7 @@ The floating panel gathers high-frequency actions in one workbench. Low-frequenc
 |------|---------|
 | **Main** | Enable/disable auto illustration, switch prompt generation mode, edit the current chat's image folder label, and switch themes |
 | **Prompt Settings** | Configure shared API mode or independent API mode prompt generation behavior |
+| **Vibe Manager** | Manage the Vibe library, import/export `.naiv4vibebundle.json`, and save or apply Vibe sets |
 | **Gallery** | View generated images from the current chat inside the panel |
 | **Standalone** | Test prompt generation and image output without sending chat messages |
 | **Prompt Library** | Upload NovelAI PNGs → extract positive/negative/character prompts → search, edit, copy, organize |
