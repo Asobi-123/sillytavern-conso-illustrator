@@ -16,7 +16,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.13.0";
+export declare const EXTENSION_VERSION = "1.14.0";
 /**
  * GitHub repository for update checks
  */
@@ -240,8 +240,23 @@ export declare const TAG_CATALOG_PAGE_SIZE: {
  */
 export declare const SERVER_PLUGIN: {
     readonly ID: "auto-illustrator-nai-advanced";
-    readonly VERSION: "2026-07-03-vibe-bundle-v2";
+    readonly VERSION: "2026-07-08-vibe-source-store-v2";
     readonly STATUS_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/status";
+};
+/**
+ * Backend routes for the content-addressed Vibe source image store. Source
+ * images live on disk under the user's data directory, keyed by content hash,
+ * instead of inline base64 in settings.json.
+ */
+export declare const VIBE_SOURCE_ROUTES: {
+    /** POST { images: string[] } -> { hashes: string[] } */
+    readonly STORE: "/api/plugins/auto-illustrator-nai-advanced/vibe-source";
+    /** GET :hash -> raw image bytes */
+    readonly FETCH_BASE: "/api/plugins/auto-illustrator-nai-advanced/vibe-source";
+    /** POST { hashes: string[] } -> { present: string[] } */
+    readonly CHECK: "/api/plugins/auto-illustrator-nai-advanced/vibe-source/check";
+    /** POST { keep: string[] } -> { removed, remaining } */
+    readonly PRUNE: "/api/plugins/auto-illustrator-nai-advanced/vibe-source/prune";
 };
 /**
  * NovelAI Vibe Transfer configuration.

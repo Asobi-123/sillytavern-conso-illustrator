@@ -188,6 +188,109 @@ describe('standalone_generation_ui', () => {
     );
   });
 
+  it('should notify the Vibe manager when standalone generation stores Vibe cache', async () => {
+    generateImageMock.mockImplementation(
+      async (
+        _prompt: string,
+        _context: SillyTavernContext,
+        _commonTags: string,
+        _position: unknown,
+        _metadata: unknown,
+        _sdStyle: unknown,
+        _vibeConfig: unknown,
+        onReferencesUpdated?: (references: unknown[]) => void
+      ) => {
+        onReferencesUpdated?.([
+          {
+            id: 'ref1',
+            name: 'ref.png',
+            dataUrl: '',
+            tags: [],
+            enabled: true,
+            addedAt: 1,
+            encodedVibes: [
+              {
+                model: 'nai-diffusion-4-5-full',
+                informationExtracted: 1,
+                sourceFingerprint: 'source-fp',
+                encoded: 'ENCODED',
+                createdAt: 2,
+              },
+            ],
+          },
+        ]);
+        return {imageUrl: '/user/images/standalone/base.png'};
+      }
+    );
+
+    const listener = vi.fn();
+    document.addEventListener('auto-illustrator:vibe-cache-updated', listener);
+
+    try {
+      const standaloneUi = await import('./standalone_generation_ui');
+      document.body.innerHTML =
+        standaloneUi.createStandaloneGenerationContent();
+      const context = {
+        generateRaw: vi.fn(),
+        extensionSettings: {},
+        saveSettingsDebounced: vi.fn(),
+      } as unknown as SillyTavernContext;
+      const settings = {
+        characterFixedTags: {},
+        vibeTransferReferenceImages: [
+          {
+            id: 'ref1',
+            name: 'ref.png',
+            dataUrl: '',
+            tags: [],
+            enabled: true,
+            addedAt: 1,
+          },
+        ],
+        vibeTransferLibraryItems: [
+          {
+            id: 'ref1',
+            name: 'ref.png',
+            enabled: true,
+            tags: [],
+            createdAt: 1,
+            updatedAt: 1,
+            encodings: {},
+            legacyReferenceId: 'ref1',
+          },
+        ],
+      } as unknown as AutoIllustratorSettings;
+      standaloneUi.initializeStandaloneGeneration(context, settings, undefined);
+
+      const manualRadio = document.getElementById(
+        'auto_illustrator_conso_standalone_mode_manual'
+      ) as HTMLInputElement;
+      const promptInput = document.getElementById(
+        'auto_illustrator_conso_standalone_manual_prompt'
+      ) as HTMLTextAreaElement;
+      const generateButton = document.getElementById(
+        'auto_illustrator_conso_standalone_manual_generate'
+      ) as HTMLButtonElement;
+
+      manualRadio.checked = true;
+      manualRadio.dispatchEvent(new Event('change', {bubbles: true}));
+      promptInput.value = '1girl, moonlight';
+      generateButton.click();
+
+      await vi.waitFor(() => {
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
+      expect(settings.vibeTransferLibraryItems[0].encodings).toHaveProperty(
+        'v4-5full.information_1_000'
+      );
+    } finally {
+      document.removeEventListener(
+        'auto-illustrator:vibe-cache-updated',
+        listener
+      );
+    }
+  });
+
   it('should allow editing a generated standalone image with Inpaint', async () => {
     generateImageMock.mockResolvedValue({
       imageUrl: '/user/images/standalone/base.png',

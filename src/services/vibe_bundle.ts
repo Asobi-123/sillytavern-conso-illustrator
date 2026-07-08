@@ -493,13 +493,16 @@ export function legacyReferenceToVibeLibraryItem(
     createdAt: reference.addedAt,
     updatedAt: now,
     source: {
-      dataUrl: reference.dataUrl,
+      ...(reference.dataUrl ? {dataUrl: reference.dataUrl} : {}),
+      ...(reference.sourceHash ? {hash: reference.sourceHash} : {}),
       ...(normalizedSource
         ? {fingerprint: fingerprintString(normalizedSource)}
         : {}),
-      mimeType: reference.dataUrl.match(/^data:([^;,]+)/)?.[1],
+      mimeType:
+        reference.sourceMimeType ??
+        reference.dataUrl.match(/^data:([^;,]+)/)?.[1],
     },
-    previewImage: reference.dataUrl,
+    ...(reference.dataUrl ? {previewImage: reference.dataUrl} : {}),
     encodings,
     generation: {
       inheritGlobalStrength: false,

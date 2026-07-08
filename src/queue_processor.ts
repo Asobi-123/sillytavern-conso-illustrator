@@ -19,6 +19,7 @@ import type {QueuedPrompt, DeferredImage} from './types';
 import {createLogger} from './logger';
 import {progressManager} from './progress_manager';
 import {saveSettings} from './settings';
+import {notifyVibeCacheUpdated} from './services/vibe_cache_events';
 
 const logger = createLogger('Processor');
 
@@ -203,6 +204,7 @@ export class QueueProcessor {
               references
             );
           saveSettings(this.settings, context);
+          notifyVibeCacheUpdated();
         },
         buildVibeCombinationRandomConfigFromSettings(this.settings),
         this.settings

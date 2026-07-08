@@ -842,6 +842,7 @@ Users should be able to edit an existing generated image by painting a mask, the
 
 **VIBE-003**: When enabled and at least one valid reference image exists, generation MUST use the NovelAI advanced backend route and send:
 - `reference_image_multiple`
+- `reference_source_hash_multiple`
 - `reference_information_extracted_multiple`
 - `reference_strength_multiple`
 
@@ -859,7 +860,7 @@ Users should be able to edit an existing generated image by painting a mask, the
 
 **VIBE-010**: Vibe presets MUST store the enabled Vibe IDs and their per-card Strength / Information Extracted values. They MUST NOT pin one specific encoded cache entry.
 
-**VIBE-011**: Uploaded Vibe source images MUST be compressed before being persisted in extension settings. The extension MUST NOT store large original PNG files when compression succeeds.
+**VIBE-011**: Uploaded Vibe source images MUST be compressed before persistence and stored through the companion backend source-image store. Extension settings MUST retain source hashes and encoded Vibe cache data, not inline source-image base64, after backend storage succeeds.
 
 **VIBE-012**: Reference image tags are user labels for organization and search only. They MUST NOT be sent to NovelAI or injected into prompts.
 
@@ -874,6 +875,8 @@ Users should be able to edit an existing generated image by painting a mask, the
 **VIBE-017**: Adding source images MUST show them in a pending-encoding view and MUST NOT enable them automatically. A source-image Vibe only creates a new encoding cache when the user enables it and runs generation with a model / Information Extracted value that has no matching cache.
 
 **VIBE-018**: Vibe Manager cards MUST expose encoding-cache visibility: current model cache status and the number of cached encodings, with expandable model / Information Extracted / creation-time details when known.
+
+**VIBE-019**: When a generation creates or updates V4/V4.5 Vibe encoding cache data, the Vibe Manager MUST refresh its pending-encoding and cache-detail views immediately without requiring users to switch Vibe groups or reload the page.
 
 **Anti-pattern**: do not add a NovelAI token field to Auto Illustrator settings. The companion route reuses the NovelAI key already stored in SillyTavern secrets.
 
@@ -1556,6 +1559,7 @@ Result: Widget state correctly tied to current chat
 | 1.3 | 2025-10-18 | Added streaming preview widget section with inline image display and user control features |
 | 1.4 | 2026-06-06 | Added prompt personalization suite requirements for Tag Catalog, Preset Adapter, Character Fixed Tags injection modes, and related UI constraints |
 | 1.5 | 2026-07-03 | Added Vibe Manager, encoded bundle import/export, per-card Vibe parameters, fixed/random SD Style + Vibe combination selection, and backend plugin version policy requirements |
+| 1.6 | 2026-07-09 | Added backend Vibe source-image storage by hash and immediate Vibe cache status refresh requirements |
 
 ---
 

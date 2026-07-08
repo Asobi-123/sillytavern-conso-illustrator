@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-07-09
+
+### Changed
+
+- **Vibe source storage** - Vibe Transfer source images now migrate out of `settings.json` into the companion backend plugin's per-user disk store, with settings retaining only content hashes. Encoded Vibe cache data and `.naiv4vibebundle.json` import/export remain unchanged.
+- **Backend plugin protocol** - Updated the companion server plugin to store, fetch, check, prune, and re-read Vibe source images by hash. Users with source-image Vibes need the matching backend plugin for this version.
+
+### Fixed
+
+- **Vibe source encoding** - Migrated source-image Vibes that only have a backend `sourceHash` are now accepted by both the frontend generator and backend validation before first encoding.
+- **Vibe cache status refresh** - After generation stores a new Vibe encoding cache, the Vibe Manager refreshes immediately so pending items and cache details reflect the new state without switching views.
+
 ## [1.13.0] - 2026-07-03
 
 ### Added

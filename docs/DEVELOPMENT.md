@@ -77,6 +77,9 @@ sillytavern-conso-illustrator/
 │   │   ├── independent_llm.ts
 │   │   ├── inpainting.ts
 │   │   ├── vibe_transfer.ts
+│   │   ├── vibe_source_client.ts   # Frontend client for backend Vibe source-image storage
+│   │   ├── vibe_source_migration.ts # Moves legacy inline Vibe sources to backend hashes
+│   │   ├── vibe_cache_events.ts    # UI refresh event after encoded Vibe cache writes
 │   │   └── ...
 │   ├── data/
 │   │   ├── tag_catalog.json        # Bundled offline catalog
@@ -125,6 +128,14 @@ sillytavern-conso-illustrator/
 - Rules are written to `context.extensionSettings.regex` with stable IDs and should preserve the user's enabled/disabled state when template fields are refreshed.
 - Default runtime fields are `promptOnly: true`, `placement: [1, 2]`, `runOnEdit: true`, and `minDepth: 0`.
 - The native SillyTavern Regex list redraws after page refresh. Do not depend on private Regex UI loaders from the SillyTavern extension.
+
+### Vibe Source Storage
+
+- Source-image Vibes use the companion backend plugin for content-addressed source-image storage.
+- Frontend settings keep the source hash plus encoded Vibe cache data. They should not keep inline source-image base64 after backend storage succeeds.
+- Legacy inline sources are migrated through `src/services/vibe_source_migration.ts`; failed migration must preserve inline data so generation can still work.
+- Backend files live under the SillyTavern user's files directory in `auto-illustrator-vibe-source/` and are keyed by source-image content hash.
+- Generation payloads may carry `reference_source_hash_multiple`; the backend reads the source bytes before calling NovelAI encode-vibe.
 
 ### Coding Standards
 

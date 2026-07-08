@@ -203,6 +203,45 @@ describe('vibe_transfer service', () => {
     expect(payload.reference_encoded_vibe_multiple).toEqual(['ENCODED']);
   });
 
+  it('sends source hashes for migrated image-backed library items', () => {
+    const context = createContext();
+    const config = buildVibeTransferConfigFromSettings(
+      createSettings({
+        vibeTransferEnabled: true,
+        vibeTransferLibraryItems: [
+          createLibraryItem({
+            id: 'image1',
+            name: 'Migrated Image Vibe',
+            source: {
+              hash: 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+              fingerprint: 'source-fp',
+              mimeType: 'image/jpeg',
+            },
+            generation: {
+              inheritGlobalInformationExtracted: false,
+              information_extracted: 0.9,
+            },
+          }),
+        ],
+        vibeTransferReferenceStrength: 0.75,
+        vibeTransferInformationExtracted: 0.35,
+      })
+    );
+
+    const payload = buildNovelAiAdvancedPayload('1girl', context, config);
+
+    expect(payload.reference_image_ids).toEqual(['image1']);
+    expect(payload.reference_image_multiple).toEqual(['']);
+    expect(payload.reference_source_hash_multiple).toEqual([
+      'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+    ]);
+    expect(payload.reference_source_fingerprint_multiple).toEqual([
+      'source-fp',
+    ]);
+    expect(payload.reference_encoded_vibe_multiple).toEqual([null]);
+    expect(payload.reference_information_extracted_multiple).toEqual([0.9]);
+  });
+
   it('uses encoded-only Vibe library items without source images', () => {
     const context = createContext();
     const config = buildVibeTransferConfigFromSettings(
@@ -709,5 +748,58 @@ describe('vibe_transfer service', () => {
       '/api/plugins/auto-illustrator-nai-advanced/generate-image'
     );
     expect(fetchMock.mock.calls[2][0]).toBe('/api/images/upload');
+  });
+
+  it('accepts migrated source-hash-only Vibe references during generation', async () => {
+    const context = createContext();
+    const sourceHash =
+      'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+    const config = buildVibeTransferConfigFromSettings(
+      createSettings({
+        vibeTransferEnabled: true,
+        vibeTransferLibraryItems: [
+          createLibraryItem({
+            id: 'image1',
+            name: 'Migrated Image Vibe',
+            source: {
+              hash: sourceHash,
+              fingerprint: 'source-fp',
+              mimeType: 'image/jpeg',
+            },
+          }),
+        ],
+        vibeTransferReferenceStrength: 0.6,
+        vibeTransferInformationExtracted: 1,
+      })
+    );
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({token: 'csrf'}),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({format: 'png', data: 'IMAGEBASE64'}),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({path: '/user/images/Alice/test.png'}),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const path = await generateNovelAiVibeTransferImage(
+      '1girl',
+      context,
+      config
+    );
+
+    const requestBody = JSON.parse(fetchMock.mock.calls[1][1].body as string);
+    expect(path).toBe('/user/images/Alice/test.png');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(requestBody.reference_image_multiple).toEqual(['']);
+    expect(requestBody.reference_source_hash_multiple).toEqual([sourceHash]);
+    expect(requestBody.reference_encoded_vibe_multiple).toEqual([null]);
   });
 });

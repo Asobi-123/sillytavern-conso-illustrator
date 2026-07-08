@@ -343,10 +343,12 @@ Before starting manual testing:
 14. **Verify**: overwrite requires confirmation and updates only the selected set
 15. Generate with one source-image Vibe and one encoded-only Vibe enabled
 16. **Verify**: the advanced backend route accepts the mixed payload
-17. Export a bundle
-18. **Verify**: the exported `.naiv4vibebundle.json` contains encoded Vibes only and does not include local source/preview images or local search tags
-19. Use a narrow viewport or mobile browser
-20. **Verify**: Vibe cards use a single-column readable layout, action buttons wrap horizontally, slider rows stay full-width, and the list scrolls inside the panel
+17. Generate with one enabled pending source-image Vibe
+18. **Verify**: after generation stores the encoding cache, the Pending encoding view and cache details refresh without switching Vibe groups
+19. Export a bundle
+20. **Verify**: the exported `.naiv4vibebundle.json` contains encoded Vibes only and does not include local source/preview images or local search tags
+21. Use a narrow viewport or mobile browser
+22. **Verify**: Vibe cards use a single-column readable layout, action buttons wrap horizontally, slider rows stay full-width, and the list scrolls inside the panel
 
 **Expected Behavior**:
 - Imported bundle items work without source images
@@ -354,6 +356,7 @@ Before starting manual testing:
 - Import creates new local items instead of overwriting existing library entries
 - Export is interoperable encoded data, not a Conso-private backup of local previews
 - Mobile layout does not overlap content or create vertical button text
+- Cache status updates immediately after a source-image Vibe is encoded
 
 ---
 

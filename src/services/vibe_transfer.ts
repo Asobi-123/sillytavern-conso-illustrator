@@ -53,6 +53,12 @@ export interface NovelAiAdvancedPayload {
   reference_image_ids: string[];
   reference_encoded_vibe_multiple: (string | null)[];
   reference_source_fingerprint_multiple: string[];
+  /**
+   * Content hash of each reference's source image in the backend store, or ''
+   * when the source is still inline / unavailable. Lets the backend read the
+   * source bytes from disk when an encoding cache miss forces a re-encode.
+   */
+  reference_source_hash_multiple: string[];
   reference_information_extracted_multiple: number[];
   reference_strength_multiple: number[];
 }
@@ -85,6 +91,7 @@ function findEncodedVibeCache(
 function referenceToLibraryItem(
   image: VibeTransferReferenceImage
 ): VibeLibraryItem {
+  const normalizedSource = normalizeBase64Image(image.dataUrl);
   return {
     id: image.id,
     name: image.name,
@@ -92,8 +99,15 @@ function referenceToLibraryItem(
     tags: image.tags,
     createdAt: image.addedAt,
     updatedAt: image.addedAt,
-    source: {dataUrl: image.dataUrl},
-    previewImage: image.dataUrl,
+    source: {
+      ...(image.dataUrl ? {dataUrl: image.dataUrl} : {}),
+      ...(image.sourceHash ? {hash: image.sourceHash} : {}),
+      ...(normalizedSource
+        ? {fingerprint: fingerprintString(normalizedSource)}
+        : {}),
+      ...(image.sourceMimeType ? {mimeType: image.sourceMimeType} : {}),
+    },
+    ...(image.dataUrl ? {previewImage: image.dataUrl} : {}),
     encodings: {},
     legacyReferenceId: image.id,
   };
@@ -106,6 +120,8 @@ function referenceToLegacyReference(
     id: item.legacyReferenceId ?? item.id,
     name: item.name,
     dataUrl: item.source?.dataUrl ?? item.previewImage ?? '',
+    ...(item.source?.hash ? {sourceHash: item.source.hash} : {}),
+    ...(item.source?.mimeType ? {sourceMimeType: item.source.mimeType} : {}),
     tags: item.tags,
     enabled: item.enabled,
     addedAt: item.createdAt,
@@ -372,7 +388,17 @@ export function buildNovelAiAdvancedPayload(
       const normalized = sourceDataUrl
         ? normalizeBase64Image(sourceDataUrl)
         : null;
-      const sourceFingerprint = normalized ? fingerprintString(normalized) : '';
+      // After migration the inline base64 is gone; the bytes live on the
+      // backend keyed by `source.hash`. Treat a stored hash as "has a source"
+      // so encode-cache lookup and re-encode still work.
+      const sourceHash = item.source?.hash ?? '';
+      const hasSource = !!normalized || !!sourceHash;
+      // Fingerprint drives encode-cache matching. Prefer recomputing it from
+      // inline bytes; fall back to the preserved fingerprint saved before the
+      // bytes were moved off to the backend store.
+      const sourceFingerprint = normalized
+        ? fingerprintString(normalized)
+        : item.source?.fingerprint ?? '';
       const legacyReference =
         legacyById.get(item.legacyReferenceId ?? item.id) ??
         (item.source?.dataUrl
@@ -387,7 +413,7 @@ export function buildNovelAiAdvancedPayload(
           : null);
       const informationExtracted = resolvePerVibeInformation(item, config);
       const cache =
-        legacyReference && normalized
+        legacyReference && sourceFingerprint
           ? findEncodedVibeCache(
               legacyReference,
               model,
@@ -395,14 +421,14 @@ export function buildNovelAiAdvancedPayload(
               sourceFingerprint
             )
           : null;
-      const sourceItemEncoding = normalized
+      const sourceItemEncoding = hasSource
         ? findVibeEncodingForModelAndInformation(
             item,
             model,
             informationExtracted
           )
         : null;
-      const bundleEncoding = normalized
+      const bundleEncoding = hasSource
         ? null
         : findVibeEncodingForModel(item, model);
       const encoded =
@@ -410,11 +436,12 @@ export function buildNovelAiAdvancedPayload(
         sourceItemEncoding?.encoding ??
         bundleEncoding?.encoding ??
         null;
-      if (!normalized && !encoded) return null;
+      if (!hasSource && !encoded) return null;
       return {
         image: legacyReference,
         item,
         normalized: normalized ?? '',
+        sourceHash,
         sourceFingerprint,
         encoded,
         informationExtracted,
@@ -435,6 +462,9 @@ export function buildNovelAiAdvancedPayload(
     ),
     reference_source_fingerprint_multiple: referenceEntries.map(
       entry => entry.sourceFingerprint
+    ),
+    reference_source_hash_multiple: referenceEntries.map(
+      entry => entry.sourceHash
     ),
     reference_information_extracted_multiple: referenceEntries.map(
       entry => entry.informationExtracted
@@ -516,6 +546,7 @@ export async function generateNovelAiVibeTransferImage(
 
   const hasUsableReference =
     payload.reference_image_multiple.some(value => value.length > 0) ||
+    payload.reference_source_hash_multiple.some(value => value.length > 0) ||
     payload.reference_encoded_vibe_multiple.some(
       value => typeof value === 'string' && value.length > 0
     );

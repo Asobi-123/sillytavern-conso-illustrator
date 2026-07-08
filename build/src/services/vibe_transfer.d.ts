@@ -26,6 +26,12 @@ export interface NovelAiAdvancedPayload {
     reference_image_ids: string[];
     reference_encoded_vibe_multiple: (string | null)[];
     reference_source_fingerprint_multiple: string[];
+    /**
+     * Content hash of each reference's source image in the backend store, or ''
+     * when the source is still inline / unavailable. Lets the backend read the
+     * source bytes from disk when an encoding cache miss forces a re-encode.
+     */
+    reference_source_hash_multiple: string[];
     reference_information_extracted_multiple: number[];
     reference_strength_multiple: number[];
 }

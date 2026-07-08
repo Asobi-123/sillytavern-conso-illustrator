@@ -301,4 +301,31 @@ describe('vibe_bundle service', () => {
       createdAt: 2,
     });
   });
+
+  it('maps migrated legacy references without restoring inline source data', () => {
+    const reference: VibeTransferReferenceImage = {
+      id: 'ref1',
+      name: 'ref.png',
+      dataUrl: '',
+      sourceHash:
+        'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      sourceMimeType: 'image/jpeg',
+      tags: [],
+      enabled: true,
+      addedAt: 1,
+    };
+
+    const item = legacyReferenceToVibeLibraryItem(reference, {
+      now: 3,
+      defaultStrength: 0.4,
+      defaultInformationExtracted: 0.7,
+    });
+
+    expect(item.source).toMatchObject({
+      hash: 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      mimeType: 'image/jpeg',
+    });
+    expect(item.source?.dataUrl).toBeUndefined();
+    expect(item.previewImage).toBeUndefined();
+  });
 });

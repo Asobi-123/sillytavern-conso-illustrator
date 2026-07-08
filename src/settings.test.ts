@@ -483,6 +483,7 @@ describe('settings', () => {
                 updatedAt: 2,
                 source: {
                   dataUrl: 'data:image/jpeg;base64,AAAA',
+                  hash: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                   fingerprint: 'abc',
                   mimeType: 'image/jpeg',
                 },
@@ -549,6 +550,12 @@ describe('settings', () => {
         id: 'item1',
         enabled: true,
         tags: ['oil'],
+        source: {
+          dataUrl: 'data:image/jpeg;base64,AAAA',
+          hash: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          fingerprint: 'abc',
+          mimeType: 'image/jpeg',
+        },
         encodings: {
           'v4-5full': {
             unknown: {
@@ -582,6 +589,60 @@ describe('settings', () => {
         },
       });
       expect(loaded.currentVibeTransferCombinationId).toBe('combo1');
+    });
+
+    it('preserves migrated Vibe source hash references on load', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            ...getDefaultSettings(),
+            vibeTransferReferenceImages: [
+              {
+                id: 'ref1',
+                name: 'ref.png',
+                dataUrl: '',
+                sourceHash:
+                  'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+                sourceMimeType: 'image/jpeg',
+                tags: ['vibe'],
+                enabled: true,
+                addedAt: 1,
+              },
+            ],
+            vibeTransferLibraryItems: [
+              {
+                id: 'item1',
+                name: 'Migrated Item',
+                enabled: true,
+                tags: [],
+                createdAt: 1,
+                updatedAt: 2,
+                source: {
+                  hash: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+                  fingerprint: 'source-fp',
+                  mimeType: 'image/jpeg',
+                },
+                encodings: {},
+                legacyReferenceId: 'ref1',
+              },
+            ],
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.vibeTransferReferenceImages[0]).toMatchObject({
+        dataUrl: '',
+        sourceHash:
+          'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        sourceMimeType: 'image/jpeg',
+      });
+      expect(loaded.vibeTransferLibraryItems[0].source).toMatchObject({
+        hash: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        fingerprint: 'source-fp',
+        mimeType: 'image/jpeg',
+      });
     });
 
     it('should migrate missing per-vibe parameters from legacy global values', () => {

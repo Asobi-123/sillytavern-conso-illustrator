@@ -5,6 +5,16 @@ import {pathToFileURL} from 'node:url';
 import express from 'express';
 import fetch from 'node-fetch';
 
+import {
+  hasVibeSource,
+  listVibeSourceHashes,
+  pruneVibeSources,
+  readVibeSource,
+  readVibeSourceBase64,
+  storeVibeSource,
+} from './vibe_source_store.mjs';
+import {validateRequestBody} from './request_validation.mjs';
+
 const IMAGE_NOVELAI = 'https://image.novelai.net';
 const API_NOVELAI = 'https://api.novelai.net';
 const REFERENCE_PIXEL_COUNT = 1011712;
@@ -12,7 +22,7 @@ const SIGMA_MAGIC_NUMBER = 19;
 const SIGMA_MAGIC_NUMBER_V4_5 = 58;
 const MAX_ENCODED_CACHE_PER_REFERENCE = 8;
 const INPAINT_TIMEOUT_MS = 120000;
-const SERVER_PLUGIN_VERSION = '2026-07-03-vibe-bundle-v2';
+const SERVER_PLUGIN_VERSION = '2026-07-08-vibe-source-store-v2';
 
 export const info = {
   id: 'auto-illustrator-nai-advanced',
@@ -255,50 +265,6 @@ function buildNovelAiInpaintRequestBody(requestBody) {
   };
 }
 
-function validateRequestBody(body) {
-  const references = body.reference_image_multiple;
-  const encodedVibes = body.reference_encoded_vibe_multiple;
-  const information = body.reference_information_extracted_multiple;
-  const strengths = body.reference_strength_multiple;
-
-  if (typeof body.prompt !== 'string' || body.prompt.trim() === '') {
-    return 'prompt is required';
-  }
-
-  if (!Array.isArray(references) || references.length === 0) {
-    return 'reference arrays must contain at least one reference';
-  }
-
-  if (encodedVibes !== undefined && !Array.isArray(encodedVibes)) {
-    return 'reference_encoded_vibe_multiple must be an array when provided';
-  }
-
-  if (!Array.isArray(information) || !Array.isArray(strengths)) {
-    return 'reference parameter arrays are required';
-  }
-
-  if (
-    references.length !== information.length ||
-    references.length !== strengths.length ||
-    (Array.isArray(encodedVibes) && references.length !== encodedVibes.length)
-  ) {
-    return 'reference parameter arrays must have the same length';
-  }
-
-  const hasUsableReference = references.some((value, index) => {
-    const hasImage = typeof value === 'string' && value.trim().length > 0;
-    const encoded = Array.isArray(encodedVibes) ? encodedVibes[index] : null;
-    const hasEncoded = typeof encoded === 'string' && encoded.trim().length > 0;
-    return hasImage || hasEncoded;
-  });
-
-  if (!hasUsableReference) {
-    return 'at least one reference image or encoded vibe is required';
-  }
-
-  return null;
-}
-
 function validateInpaintRequestBody(body) {
   if (typeof body.prompt !== 'string' || body.prompt.trim() === '') {
     return 'prompt is required';
@@ -378,9 +344,30 @@ function buildUpdatedReferences(requestBody, encodedRecords) {
   });
 }
 
-async function encodeVibeReferences(requestBody, key) {
+/**
+ * Resolves the base64 source image for a reference, preferring the inline
+ * payload but falling back to the content-addressed on-disk store when the
+ * frontend only sent a source hash (the new slim settings format).
+ * @param {{files?: string}} directories
+ * @param {unknown} inlineImage
+ * @param {unknown} sourceHash
+ * @returns {string} normalized base64, or '' when neither is usable
+ */
+function resolveReferenceSourceImage(directories, inlineImage, sourceHash) {
+  const inline = normalizeBase64Image(inlineImage);
+  if (inline) {
+    return inline;
+  }
+  if (directories && sourceHash) {
+    return readVibeSourceBase64(directories, sourceHash) ?? '';
+  }
+  return '';
+}
+
+async function encodeVibeReferences(requestBody, key, directories) {
   const references = requestBody.reference_image_multiple ?? [];
   const encodedVibes = requestBody.reference_encoded_vibe_multiple ?? [];
+  const sourceHashes = requestBody.reference_source_hash_multiple ?? [];
   const information =
     requestBody.reference_information_extracted_multiple ?? [];
   const model = requestBody.model ?? 'nai-diffusion';
@@ -388,7 +375,13 @@ async function encodeVibeReferences(requestBody, key) {
   if (!isV4Model(model)) {
     return {
       references: references
-        .map(normalizeBase64Image)
+        .map((image, index) =>
+          resolveReferenceSourceImage(
+            directories,
+            image,
+            sourceHashes[index]
+          )
+        )
         .filter(image => image.length > 0),
       encodedRecords: [],
       updatedReferences: null,
@@ -404,7 +397,11 @@ async function encodeVibeReferences(requestBody, key) {
       continue;
     }
 
-    const image = normalizeBase64Image(references[index]);
+    const image = resolveReferenceSourceImage(
+      directories,
+      references[index],
+      sourceHashes[index]
+    );
     if (!image) {
       throw new Error(
         `Vibe reference ${index + 1} has no source image or encoded vibe`
@@ -447,9 +444,9 @@ async function encodeVibeReferences(requestBody, key) {
   };
 }
 
-async function generateBase64Image(requestBody, key) {
+async function generateBase64Image(requestBody, key, directories) {
   const {extractFileFromZipBuffer} = await loadSillyTavernInternals();
-  const encodedResult = await encodeVibeReferences(requestBody, key);
+  const encodedResult = await encodeVibeReferences(requestBody, key, directories);
   const generateResult = await fetch(`${IMAGE_NOVELAI}/ai/generate-image`, {
     method: 'POST',
     headers: {
@@ -600,7 +597,11 @@ async function callNovelAi(request, response) {
     return;
   }
 
-  const generationResult = await generateBase64Image(request.body, key);
+  const generationResult = await generateBase64Image(
+    request.body,
+    key,
+    request.user?.directories
+  );
   const finalImage = await upscaleBase64Image(
     request.body,
     generationResult.image,
@@ -667,5 +668,101 @@ export async function init(router) {
         error: error instanceof Error ? error.message : String(error),
       });
     });
+  });
+
+  // Stores one or more Vibe Transfer source images on disk and returns their
+  // content hashes, so the frontend can drop the inline base64 from settings.
+  router.post('/vibe-source', (request, response) => {
+    try {
+      const directories = request.user?.directories;
+      if (!directories) {
+        response.status(401).json({error: 'user directories unavailable'});
+        return;
+      }
+      const images = Array.isArray(request.body?.images)
+        ? request.body.images
+        : [];
+      if (images.length === 0) {
+        response.status(400).json({error: 'images array is required'});
+        return;
+      }
+      const hashes = images.map(image => storeVibeSource(directories, image));
+      response.json({hashes});
+    } catch (error) {
+      response.status(500).json({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // Returns a stored source image as raw bytes for UI thumbnails and re-encode.
+  router.get('/vibe-source/:hash', (request, response) => {
+    try {
+      const directories = request.user?.directories;
+      if (!directories) {
+        response.status(401).json({error: 'user directories unavailable'});
+        return;
+      }
+      const source = readVibeSource(directories, request.params.hash);
+      if (!source) {
+        response.status(404).json({error: 'source not found'});
+        return;
+      }
+      response.setHeader('Content-Type', source.mimeType);
+      response.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+      response.send(source.buffer);
+    } catch (error) {
+      response.status(500).json({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // Reports which of the requested hashes exist on disk, so the frontend can
+  // decide whether it still needs to upload a source before dropping inline data.
+  router.post('/vibe-source/check', (request, response) => {
+    try {
+      const directories = request.user?.directories;
+      if (!directories) {
+        response.status(401).json({error: 'user directories unavailable'});
+        return;
+      }
+      const hashes = Array.isArray(request.body?.hashes)
+        ? request.body.hashes
+        : [];
+      const present = hashes.filter(hash => hasVibeSource(directories, hash));
+      response.json({present});
+    } catch (error) {
+      response.status(500).json({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // Deletes stored sources no longer referenced by any settings entry. The
+  // frontend sends the full set of hashes it still uses; everything else is
+  // removed. Passing an empty keep set is rejected to avoid accidental wipes.
+  router.post('/vibe-source/prune', (request, response) => {
+    try {
+      const directories = request.user?.directories;
+      if (!directories) {
+        response.status(401).json({error: 'user directories unavailable'});
+        return;
+      }
+      const keep = Array.isArray(request.body?.keep) ? request.body.keep : null;
+      if (!keep || keep.length === 0) {
+        response.status(400).json({error: 'non-empty keep array is required'});
+        return;
+      }
+      const removed = pruneVibeSources(directories, keep);
+      response.json({
+        removed,
+        remaining: listVibeSourceHashes(directories).length,
+      });
+    } catch (error) {
+      response.status(500).json({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   });
 }

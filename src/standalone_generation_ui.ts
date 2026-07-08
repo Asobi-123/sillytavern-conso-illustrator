@@ -23,6 +23,7 @@ import {
 import {htmlEncode} from './utils/dom_utils';
 import {openInpaintingEditor} from './inpainting_editor';
 import {saveSettings} from './settings';
+import {notifyVibeCacheUpdated} from './services/vibe_cache_events';
 import {
   AutoIllustratorError,
   getUserFacingErrorReason,
@@ -308,6 +309,7 @@ async function generateImageWithStandaloneFolder(
           references
         );
         saveSettings(settings, context);
+        notifyVibeCacheUpdated();
       },
       buildVibeCombinationRandomConfigFromSettings(settings),
       settings

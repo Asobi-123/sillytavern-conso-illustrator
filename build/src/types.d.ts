@@ -339,8 +339,18 @@ export interface VibeBundleEncodingVariant {
 }
 export type VibeBundleEncodings = Record<string, Record<string, VibeBundleEncodingVariant>>;
 export interface VibeLibrarySource {
-    /** Browser data URL kept locally for preview and optional re-encoding */
+    /**
+     * Browser data URL kept locally for preview and optional re-encoding.
+     * Omitted once the bytes are stored on the backend (see `hash`); the UI and
+     * re-encode path then load the image from the server by content hash.
+     */
     dataUrl?: string;
+    /**
+     * SHA-256 content hash of the raw source bytes, stored on the backend via the
+     * vibe-source route. When set, the inline `dataUrl` can be dropped to keep
+     * settings.json small.
+     */
+    hash?: string;
     /** Fingerprint of the source image data */
     fingerprint?: string;
     /** Source MIME type when known */
@@ -409,8 +419,19 @@ export interface VibeTransferReferenceImage {
     id: string;
     /** User-facing display name */
     name: string;
-    /** Browser data URL, e.g. data:image/png;base64,... */
+    /**
+     * Browser data URL, e.g. data:image/png;base64,... May be empty once the
+     * source bytes have been moved to the backend store; `sourceHash` then points
+     * at the on-disk copy used for thumbnails and re-encoding.
+     */
     dataUrl: string;
+    /**
+     * Content hash (SHA-256) of the source image bytes stored on the backend.
+     * Present after migration off inline base64.
+     */
+    sourceHash?: string;
+    /** Source MIME type, retained when the bytes move to the backend store. */
+    sourceMimeType?: string;
     /** User-defined tags for search and grouping */
     tags: string[];
     /** Whether this reference participates in generation */

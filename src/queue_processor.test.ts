@@ -33,6 +33,7 @@ describe('QueueProcessor', () => {
           negative_prompt: '',
         },
       },
+      saveSettingsDebounced: vi.fn(),
     });
     mockSettings = getDefaultSettings();
 
@@ -283,7 +284,29 @@ describe('QueueProcessor', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({format: 'png', data: 'AAAA'}),
+          json: async () => ({
+            format: 'png',
+            data: 'AAAA',
+            updatedReferences: [
+              {
+                id: 'item1',
+                name: 'Item 1',
+                dataUrl: '',
+                tags: [],
+                enabled: true,
+                addedAt: 1,
+                encodedVibes: [
+                  {
+                    model: 'nai-diffusion-4-curated-preview',
+                    informationExtracted: 0,
+                    sourceFingerprint: '',
+                    encoded: 'NEW-ENCODED',
+                    createdAt: 2,
+                  },
+                ],
+              },
+            ],
+          }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -344,7 +367,17 @@ describe('QueueProcessor', () => {
       );
 
       processor.start(0);
+
+      const listener = vi.fn();
+      document.addEventListener(
+        'auto-illustrator:vibe-cache-updated',
+        listener
+      );
       await processor.processRemaining();
+      document.removeEventListener(
+        'auto-illustrator:vibe-cache-updated',
+        listener
+      );
 
       const deferred = processor.getDeferredImages();
       expect(deferred).toHaveLength(1);
@@ -352,6 +385,11 @@ describe('QueueProcessor', () => {
         vibeCombinationId: 'combo1',
         vibeCombinationName: 'Oil Vibe',
       });
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(
+        mockSettings.vibeTransferLibraryItems[0].encodings.v4curated
+          .information_0_000.encoding
+      ).toBe('NEW-ENCODED');
     });
 
     it('should return early if no queued prompts', async () => {

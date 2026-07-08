@@ -110,6 +110,12 @@ import {initializePresetImport} from './preset_import_ui';
 import {initializeRegexSanitizerPanel} from './st_regex_sanitizer';
 import {listAvailableStyleNames} from './services/sd_style_randomizer';
 import {createVibeSourceDataUrl} from './services/vibe_source_image';
+import {getVibeSourceUrl} from './services/vibe_source_client';
+import {
+  migrateVibeSourcesToBackend,
+  needsVibeSourceMigration,
+} from './services/vibe_source_migration';
+import {VIBE_CACHE_UPDATED_EVENT} from './services/vibe_cache_events';
 import {htmlEncode} from './utils/dom_utils';
 import {readSdSettings, readString} from './services/novelai_common';
 import {
@@ -728,7 +734,14 @@ function renderVibeTransferReferenceList(): void {
     .map(ref => {
       const id = htmlEncode(ref.id);
       const name = htmlEncode(ref.name);
-      const dataUrl = htmlEncode(ref.dataUrl);
+      // After migration `dataUrl` is empty and the bytes live on the backend
+      // keyed by `sourceHash`; fall back to the backend route in that case.
+      const previewSrc = ref.dataUrl
+        ? ref.dataUrl
+        : ref.sourceHash
+          ? getVibeSourceUrl(ref.sourceHash)
+          : '';
+      const dataUrl = htmlEncode(previewSrc);
       const tags = Array.isArray(ref.tags) ? ref.tags : [];
       const checked = ref.enabled !== false ? ' checked' : '';
       const cacheCount = Array.isArray(ref.encodedVibes)
@@ -963,12 +976,40 @@ function getVibeItemCacheDetails(item: {
   );
 }
 
+/**
+ * True when a vibe entry still has a usable source image — either inline base64
+ * (pre-migration) or a backend content hash (post-migration). Used for status
+ * labels, encode-cache decisions and thumbnail rendering.
+ */
+function vibeItemHasSource(item: {
+  source?: {dataUrl?: string; hash?: string};
+  previewImage?: string;
+}): boolean {
+  return Boolean(
+    item.source?.dataUrl || item.previewImage || item.source?.hash
+  );
+}
+
+/**
+ * Resolves the thumbnail URL for a vibe entry: inline base64 when still present,
+ * otherwise the backend route for the stored source hash. Returns '' when the
+ * entry has no source image at all (encoding-only).
+ */
+function getVibeItemPreviewSrc(item: {
+  source?: {dataUrl?: string; hash?: string};
+  previewImage?: string;
+}): string {
+  const inline = item.previewImage || item.source?.dataUrl || '';
+  if (inline) return inline;
+  return item.source?.hash ? getVibeSourceUrl(item.source.hash) : '';
+}
+
 function getVibeItemStatusLabel(item: {
-  source?: {dataUrl?: string};
+  source?: {dataUrl?: string; hash?: string};
   previewImage?: string;
   encodings?: Record<string, Record<string, unknown>>;
 }): string {
-  const hasSource = Boolean(item.source?.dataUrl || item.previewImage);
+  const hasSource = vibeItemHasSource(item);
   const encodingCount = getVibeItemEncodingCount(item);
   if (hasSource && encodingCount > 0) {
     return t('settings.vibeTransferItemSourceAndEncoded');
@@ -1036,7 +1077,7 @@ function getVibeItemInformation(item: {
 }
 
 function doesVibeItemHaveCurrentEncoding(item: {
-  source?: {dataUrl?: string};
+  source?: {dataUrl?: string; hash?: string};
   previewImage?: string;
   encodings?: Record<string, Record<string, unknown>>;
   importInfo?: {model?: string; information_extracted?: number};
@@ -1044,7 +1085,7 @@ function doesVibeItemHaveCurrentEncoding(item: {
 }): boolean {
   const model = getCurrentVibeModel();
   if (!model) return getVibeItemEncodingCount(item) > 0;
-  const hasSource = Boolean(item.source?.dataUrl || item.previewImage);
+  const hasSource = vibeItemHasSource(item);
   if (!hasSource) {
     return Boolean(findVibeEncodingForModel(item as VibeLibraryItem, model));
   }
@@ -1058,13 +1099,13 @@ function doesVibeItemHaveCurrentEncoding(item: {
 }
 
 function isVibeItemPendingEncoding(item: {
-  source?: {dataUrl?: string};
+  source?: {dataUrl?: string; hash?: string};
   previewImage?: string;
   encodings?: Record<string, Record<string, unknown>>;
   importInfo?: {model?: string};
   generation?: VibeLibraryGenerationSettings;
 }): boolean {
-  const hasSource = Boolean(item.source?.dataUrl || item.previewImage);
+  const hasSource = vibeItemHasSource(item);
   return hasSource && !doesVibeItemHaveCurrentEncoding(item);
 }
 
@@ -1133,7 +1174,7 @@ function renderVibeTransferManagerList(): void {
     .map(item => {
       const id = htmlEncode(item.id);
       const name = htmlEncode(item.name);
-      const preview = item.previewImage || item.source?.dataUrl || '';
+      const preview = getVibeItemPreviewSrc(item);
       const checked = item.enabled !== false ? ' checked' : '';
       const strength = getVibeItemStrength(item);
       const information = getVibeItemInformation(item);
@@ -1151,7 +1192,7 @@ function renderVibeTransferManagerList(): void {
         })
         .join('');
       const statusLabel = htmlEncode(getVibeItemStatusLabel(item));
-      const hasSource = Boolean(item.source?.dataUrl || item.previewImage);
+      const hasSource = vibeItemHasSource(item);
       const cacheCount = getVibeItemEncodingCount(item);
       const pending = isVibeItemPendingEncoding(item);
       const currentCacheLabel = pending
@@ -1385,6 +1426,19 @@ async function handleVibeTransferFileSelection(
   setEnabledVibeItemIds([]);
   saveSettings(settings, context);
   updateUI();
+
+  // Move the freshly added inline base64 to the backend store right away, so a
+  // newly added reference never lingers as multi-megabyte base64 in settings.
+  // Reuses the same migration path (deduped, graceful when the plugin is old).
+  void migrateVibeSourcesToBackend(settings, context)
+    .then(result => {
+      if (result.migrated > 0) {
+        updateUI();
+      }
+    })
+    .catch(error => {
+      logger.warn('Vibe source migration after add failed:', error);
+    });
 
   if (imageFiles.length > selected.length) {
     toastr.warning(
@@ -5173,6 +5227,21 @@ function initialize(): void {
   settings = loadSettings(context);
   logger.info('Loaded settings:', settings);
 
+  // Move inline Vibe source base64 out of settings.json into the backend
+  // content-addressed store, in the background. Non-blocking: startup never
+  // waits on this, and it no-ops when the server plugin is too old.
+  if (needsVibeSourceMigration(settings)) {
+    void migrateVibeSourcesToBackend(settings, context)
+      .then(result => {
+        if (result.migrated > 0) {
+          updateUI();
+        }
+      })
+      .catch(error => {
+        logger.warn('Vibe source migration failed:', error);
+      });
+  }
+
   // Initialize previous image display width to track changes
   previousImageDisplayWidth = settings.imageDisplayWidth;
 
@@ -5846,6 +5915,11 @@ function initialize(): void {
     };
     bindVibeListEvents(vibeReferenceList);
     bindVibeListEvents(vibeManagerList);
+    document.addEventListener(VIBE_CACHE_UPDATED_EVENT, () => {
+      renderVibeTransferReferenceList();
+      renderVibeTransferManagerList();
+      renderVibeTransferPresetSelect();
+    });
 
     // Independent LLM API settings
     const useIndependentLlmApiCheckbox = document.getElementById(

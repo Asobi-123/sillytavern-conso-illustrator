@@ -253,6 +253,12 @@ function normalizeVibeReferenceImages(
         id: candidate.id,
         name: candidate.name,
         dataUrl: candidate.dataUrl,
+        ...(typeof candidate.sourceHash === 'string'
+          ? {sourceHash: candidate.sourceHash}
+          : {}),
+        ...(typeof candidate.sourceMimeType === 'string'
+          ? {sourceMimeType: candidate.sourceMimeType}
+          : {}),
         tags: normalizeVibeTags(candidate.tags),
         enabled:
           typeof candidate.enabled === 'boolean' ? candidate.enabled : true,
@@ -297,6 +303,9 @@ function normalizeVibeLibraryItems(
           ? {
               ...(typeof candidate.source.dataUrl === 'string'
                 ? {dataUrl: candidate.source.dataUrl}
+                : {}),
+              ...(typeof candidate.source.hash === 'string'
+                ? {hash: candidate.source.hash}
                 : {}),
               ...(typeof candidate.source.fingerprint === 'string'
                 ? {fingerprint: candidate.source.fingerprint}
