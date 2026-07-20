@@ -26,9 +26,13 @@ function loadImageElement(dataUrl: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function createVibeSourceDataUrl(file: File): Promise<string> {
-  const originalDataUrl = await readFileAsDataUrl(file);
-  const image = await loadImageElement(originalDataUrl);
+async function createScaledImageDataUrl(
+  dataUrl: string,
+  maxSize: number,
+  mimeType: string,
+  quality: number
+): Promise<string> {
+  const image = await loadImageElement(dataUrl);
   const sourceWidth = image.naturalWidth || image.width;
   const sourceHeight = image.naturalHeight || image.height;
 
@@ -36,10 +40,7 @@ export async function createVibeSourceDataUrl(file: File): Promise<string> {
     throw new Error('Invalid image dimensions');
   }
 
-  const scale = Math.min(
-    1,
-    VIBE_TRANSFER.MAX_SOURCE_IMAGE_SIZE / Math.max(sourceWidth, sourceHeight)
-  );
+  const scale = Math.min(1, maxSize / Math.max(sourceWidth, sourceHeight));
   const width = Math.max(1, Math.round(sourceWidth * scale));
   const height = Math.max(1, Math.round(sourceHeight * scale));
   const canvas = document.createElement('canvas');
@@ -51,8 +52,25 @@ export async function createVibeSourceDataUrl(file: File): Promise<string> {
   }
 
   ctx.drawImage(image, 0, 0, width, height);
-  return canvas.toDataURL(
+  return canvas.toDataURL(mimeType, quality);
+}
+
+export async function createVibeSourceDataUrl(file: File): Promise<string> {
+  return createScaledImageDataUrl(
+    await readFileAsDataUrl(file),
+    VIBE_TRANSFER.MAX_SOURCE_IMAGE_SIZE,
     VIBE_TRANSFER.SOURCE_IMAGE_MIME_TYPE,
     VIBE_TRANSFER.SOURCE_IMAGE_QUALITY
+  );
+}
+
+export async function createVibeThumbnailDataUrl(
+  sourceDataUrl: string
+): Promise<string> {
+  return createScaledImageDataUrl(
+    sourceDataUrl,
+    VIBE_TRANSFER.THUMBNAIL_MAX_SIZE,
+    VIBE_TRANSFER.THUMBNAIL_MIME_TYPE,
+    VIBE_TRANSFER.THUMBNAIL_QUALITY
   );
 }

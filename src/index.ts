@@ -56,14 +56,19 @@ import type {
   VibeTransferReferenceImage,
 } from './types';
 import {
-  exportVibeBundle,
+  exportVibeSelection,
   findVibeEncodingForModel,
   findVibeEncodingForModelAndInformation,
   getVibeBundleDisplayName,
   legacyReferenceToVibeLibraryItem,
   nameImportedVibeBundleItems,
-  parseVibeBundleJson,
+  parseVibeImportJson,
 } from './services/vibe_bundle';
+import {
+  createUniqueVibeGroupNames,
+  createVibeGenerationSettingsSnapshot,
+  renameVibeGroup,
+} from './services/vibe_groups';
 import {extractErrorMessage} from './utils/error_utils';
 import {
   getPresetById,
@@ -109,15 +114,22 @@ import {initializeTagCatalog} from './tag_catalog_ui';
 import {initializePresetImport} from './preset_import_ui';
 import {initializeRegexSanitizerPanel} from './st_regex_sanitizer';
 import {listAvailableStyleNames} from './services/sd_style_randomizer';
-import {createVibeSourceDataUrl} from './services/vibe_source_image';
-import {getVibeSourceUrl} from './services/vibe_source_client';
 import {
+  createVibeSourceDataUrl,
+  createVibeThumbnailDataUrl,
+} from './services/vibe_source_image';
+import {
+  fetchVibeSourceDataUrl,
+  getVibeSourceUrl,
+} from './services/vibe_source_client';
+import {
+  migrateVibeLibraryItemsToBackend,
   migrateVibeSourcesToBackend,
   needsVibeSourceMigration,
 } from './services/vibe_source_migration';
 import {VIBE_CACHE_UPDATED_EVENT} from './services/vibe_cache_events';
 import {htmlEncode} from './utils/dom_utils';
-import {readSdSettings, readString} from './services/novelai_common';
+import {clamp01, readSdSettings, readString} from './services/novelai_common';
 import {
   initializeFloatingPanel,
   openFloatingPanel,
@@ -274,20 +286,23 @@ function createGenerationStylePresetId(name: string): string {
     .slice(2, 8)}`;
 }
 
-function createUniqueGenerationStylePresetName(
+function createUniquePresetName(
   name: string,
-  presets: GenerationStylePreset[]
+  presets: Array<{name: string}>
 ): string {
-  const existingNames = new Set(presets.map(preset => preset.name));
-  if (!existingNames.has(name)) {
-    return name;
+  const trimmedName = name.trim();
+  const existingNames = new Set(
+    presets.map(preset => preset.name.trim().toLowerCase())
+  );
+  if (!existingNames.has(trimmedName.toLowerCase())) {
+    return trimmedName;
   }
 
   let index = 2;
-  let uniqueName = `${name} (${index})`;
-  while (existingNames.has(uniqueName)) {
+  let uniqueName = `${trimmedName} (${index})`;
+  while (existingNames.has(uniqueName.toLowerCase())) {
     index += 1;
-    uniqueName = `${name} (${index})`;
+    uniqueName = `${trimmedName} (${index})`;
   }
   return uniqueName;
 }
@@ -420,7 +435,7 @@ function saveCurrentGenerationStylePreset(): void {
 
   const now = Date.now();
   const presets = getGenerationStylePresets();
-  const uniqueName = createUniqueGenerationStylePresetName(name, presets);
+  const uniqueName = createUniquePresetName(name, presets);
   const preset: GenerationStylePreset = {
     id: createGenerationStylePresetId(uniqueName),
     name: uniqueName,
@@ -865,46 +880,17 @@ function cloneVibeGenerationSettings(
   return Object.keys(cloned).length > 0 ? cloned : undefined;
 }
 
-function createVibeGenerationSettingsSnapshot(
-  item: {
-    generation?: VibeLibraryGenerationSettings;
-    importInfo?: {strength?: number; information_extracted?: number};
-  },
-  overrides: {strength?: number; informationExtracted?: number} = {}
-): VibeLibraryGenerationSettings {
-  return {
-    inheritGlobalStrength: false,
-    strength: clampFloatValue(
-      item.generation?.strength ??
-        item.importInfo?.strength ??
-        overrides.strength ??
-        VIBE_TRANSFER.DEFAULT_REFERENCE_STRENGTH,
-      VIBE_TRANSFER.MIN,
-      VIBE_TRANSFER.MAX,
-      VIBE_TRANSFER.STEP,
-      VIBE_TRANSFER.DEFAULT_REFERENCE_STRENGTH
-    ),
-    inheritGlobalInformationExtracted: false,
-    information_extracted: clampFloatValue(
-      item.generation?.information_extracted ??
-        item.importInfo?.information_extracted ??
-        overrides.informationExtracted ??
-        VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED,
-      VIBE_TRANSFER.MIN,
-      VIBE_TRANSFER.MAX,
-      VIBE_TRANSFER.STEP,
-      VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED
-    ),
-  };
-}
-
 function createVibeCombinationSnapshot(
   id: string,
   name: string,
   itemIds: string[],
   now: number,
   createdAt: number = now,
-  legacyPresetId?: string
+  legacyPresetId?: string,
+  generationOverrides: Record<
+    string,
+    {strength?: number; informationExtracted?: number}
+  > = {}
 ): VibeTransferCombination {
   const enabledIds = new Set(itemIds);
   const itemGenerations = Object.fromEntries(
@@ -913,7 +899,13 @@ function createVibeCombinationSnapshot(
       : []
     )
       .filter(item => enabledIds.has(item.id))
-      .map(item => [item.id, createVibeGenerationSettingsSnapshot(item)])
+      .map(item => [
+        item.id,
+        createVibeGenerationSettingsSnapshot(
+          item,
+          generationOverrides[item.id]
+        ),
+      ])
       .filter((entry): entry is [string, VibeLibraryGenerationSettings] =>
         Boolean(entry[1])
       )
@@ -1028,20 +1020,14 @@ function getVibeItemStrength(item: {
   importInfo?: {strength?: number};
 }): number {
   if (item.generation?.strength !== undefined) {
-    return clampFloatValue(
-      Number(item.generation.strength),
-      VIBE_TRANSFER.MIN,
-      VIBE_TRANSFER.MAX,
-      VIBE_TRANSFER.STEP,
+    return clamp01(
+      item.generation.strength,
       VIBE_TRANSFER.DEFAULT_REFERENCE_STRENGTH
     );
   }
   if (typeof item.importInfo?.strength === 'number') {
-    return clampFloatValue(
+    return clamp01(
       item.importInfo.strength,
-      VIBE_TRANSFER.MIN,
-      VIBE_TRANSFER.MAX,
-      VIBE_TRANSFER.STEP,
       VIBE_TRANSFER.DEFAULT_REFERENCE_STRENGTH
     );
   }
@@ -1056,20 +1042,14 @@ function getVibeItemInformation(item: {
   importInfo?: {information_extracted?: number};
 }): number {
   if (item.generation?.information_extracted !== undefined) {
-    return clampFloatValue(
-      Number(item.generation.information_extracted),
-      VIBE_TRANSFER.MIN,
-      VIBE_TRANSFER.MAX,
-      VIBE_TRANSFER.STEP,
+    return clamp01(
+      item.generation.information_extracted,
       VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED
     );
   }
   if (typeof item.importInfo?.information_extracted === 'number') {
-    return clampFloatValue(
+    return clamp01(
       item.importInfo.information_extracted,
-      VIBE_TRANSFER.MIN,
-      VIBE_TRANSFER.MAX,
-      VIBE_TRANSFER.STEP,
       VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED
     );
   }
@@ -1133,6 +1113,7 @@ function renderVibeTransferManagerList(): void {
     statusElement.textContent = t('settings.vibeTransferManagerStatus', {
       count: String(items.length),
       enabled: String(enabledCount),
+      max: String(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES),
     });
   }
   if (!container) return;
@@ -1315,8 +1296,9 @@ function isSupportedVibeImage(file: File): boolean {
 
 function isSupportedVibeBundleFile(file: File): boolean {
   return (
-    /(?:\.naiv4vibebundle\.json|\.json)$/i.test(file.name) ||
-    file.type === 'application/json'
+    /(?:\.naiv4vibebundle(?:\.json)?|\.naiv4vibe(?:\.json)?|\.json)$/i.test(
+      file.name
+    ) || file.type === 'application/json'
   );
 }
 
@@ -1363,22 +1345,7 @@ async function handleVibeTransferFileSelection(
   const existing = Array.isArray(settings.vibeTransferReferenceImages)
     ? settings.vibeTransferReferenceImages
     : [];
-  const remainingSlots = Math.max(
-    0,
-    VIBE_TRANSFER.MAX_REFERENCES - existing.length
-  );
-
-  if (remainingSlots === 0) {
-    toastr.warning(
-      t('toast.vibeTransferMaxReferences', {
-        max: String(VIBE_TRANSFER.MAX_REFERENCES),
-      }),
-      t('extensionName')
-    );
-    return;
-  }
-
-  const selected = imageFiles.slice(0, remainingSlots);
+  const selected = imageFiles.slice(0, VIBE_TRANSFER.MAX_IMPORT_ITEMS);
   const entries: VibeTransferReferenceImage[] = [];
 
   for (const file of selected) {
@@ -1419,7 +1386,7 @@ async function handleVibeTransferFileSelection(
           VIBE_TRANSFER.DEFAULT_INFORMATION_EXTRACTED,
       })
     ),
-  ].slice(0, VIBE_TRANSFER.MAX_REFERENCES);
+  ];
   settings.currentVibeTransferPresetId = '';
   settings.currentVibeTransferCombinationId = '';
   settings.vibeTransferManagerView = 'pending';
@@ -1442,8 +1409,8 @@ async function handleVibeTransferFileSelection(
 
   if (imageFiles.length > selected.length) {
     toastr.warning(
-      t('toast.vibeTransferMaxReferences', {
-        max: String(VIBE_TRANSFER.MAX_REFERENCES),
+      t('toast.vibeTransferImportItemLimit', {
+        max: String(VIBE_TRANSFER.MAX_IMPORT_ITEMS),
       }),
       t('extensionName')
     );
@@ -1472,15 +1439,20 @@ function readTextFile(file: File): Promise<string> {
 
 function createVibeTransferPresetFromItems(
   name: string,
-  itemIds: string[]
-): void {
-  if (itemIds.length === 0) return;
+  itemIds: string[],
+  generationOverrides: Record<
+    string,
+    {strength?: number; informationExtracted?: number}
+  > = {}
+): string | undefined {
+  const limitedItemIds = itemIds.slice(0, VIBE_TRANSFER.MAX_ACTIVE_REFERENCES);
+  if (limitedItemIds.length === 0) return undefined;
   const now = Date.now();
   const presetId = createVibePresetId(name);
   const preset: VibeTransferPreset = {
     id: presetId,
     name,
-    referenceIds: itemIds,
+    referenceIds: limitedItemIds,
     createdAt: now,
     updatedAt: now,
   };
@@ -1491,16 +1463,52 @@ function createVibeTransferPresetFromItems(
       : []),
   ].slice(0, VIBE_TRANSFER.MAX_PRESETS);
   settings.vibeTransferCombinations = [
-    createVibeCombinationSnapshot(presetId, name, itemIds, now, now, presetId),
+    createVibeCombinationSnapshot(
+      presetId,
+      name,
+      limitedItemIds,
+      now,
+      now,
+      presetId,
+      generationOverrides
+    ),
     ...(Array.isArray(settings.vibeTransferCombinations)
       ? settings.vibeTransferCombinations
       : []),
   ].slice(0, VIBE_TRANSFER.MAX_PRESETS);
   settings.currentVibeTransferPresetId = presetId;
   settings.currentVibeTransferCombinationId = presetId;
+  return presetId;
+}
+
+function getVibeImportErrorMessage(errorCode?: string): string {
+  if (errorCode === 'bundle.invalidJson') {
+    return t('settings.vibeTransferImportErrorInvalidJson');
+  }
+  if (errorCode === 'import.tooManyItems') {
+    return t('settings.vibeTransferImportErrorTooManyItems', {
+      max: String(VIBE_TRANSFER.MAX_IMPORT_ITEMS),
+    });
+  }
+  if (errorCode?.endsWith('.missingEncoding')) {
+    return t('settings.vibeTransferImportErrorMissingEncoding');
+  }
+  if (errorCode?.endsWith('.missingImage')) {
+    return t('settings.vibeTransferImportErrorMissingImage');
+  }
+  return t('settings.vibeTransferImportErrorInvalidFormat');
 }
 
 async function handleVibeBundleImport(file: File): Promise<void> {
+  if (file.size > VIBE_TRANSFER.MAX_IMPORT_FILE_SIZE_BYTES) {
+    throw new Error(
+      t('settings.vibeTransferImportErrorFileTooLarge', {
+        max: String(
+          Math.floor(VIBE_TRANSFER.MAX_IMPORT_FILE_SIZE_BYTES / 1024 / 1024)
+        ),
+      })
+    );
+  }
   const text = await readTextFile(file);
   const bundleName = getVibeBundleDisplayName(file.name);
   const existingIds = new Set(
@@ -1509,65 +1517,206 @@ async function handleVibeBundleImport(file: File): Promise<void> {
       : []
     ).map(item => item.id)
   );
-  const result = parseVibeBundleJson(text, {
+  const result = parseVibeImportJson(text, {
     existingIds,
     sourceName: file.name,
+    maxItems: VIBE_TRANSFER.MAX_IMPORT_ITEMS,
   });
 
   if (result.items.length === 0) {
-    const detail = result.errors.slice(0, 3).join(', ');
-    throw new Error(detail || 'No importable vibes');
+    throw new Error(getVibeImportErrorMessage(result.errors[0]));
   }
 
   const existingItems = Array.isArray(settings.vibeTransferLibraryItems)
     ? settings.vibeTransferLibraryItems
     : [];
-  const remainingSlots = Math.max(
-    0,
-    VIBE_TRANSFER.MAX_REFERENCES - existingItems.length
-  );
-  const importedItems = result.items.slice(0, remainingSlots);
-  if (importedItems.length === 0) {
-    throw new Error('No import slots available');
-  }
+  const namingBase =
+    result.groups?.length === 1 ? result.groups[0].name : bundleName;
   const namedImportedItems = nameImportedVibeBundleItems(
-    importedItems,
-    bundleName
+    result.items,
+    namingBase
   );
-  settings.vibeTransferLibraryItems = [...existingItems, ...namedImportedItems];
-  setEnabledVibeItemIds(namedImportedItems.map(item => item.id));
-  createVibeTransferPresetFromItems(
-    bundleName,
-    namedImportedItems.map(item => item.id)
+  const sourceMigration =
+    await migrateVibeLibraryItemsToBackend(namedImportedItems);
+  settings.vibeTransferLibraryItems = [
+    ...existingItems,
+    ...sourceMigration.items,
+  ];
+
+  const importGroups: Array<{
+    name: string;
+    items: Array<{id: string; strength?: number}>;
+  }> =
+    result.groups && result.groups.length > 0
+      ? result.groups
+      : [
+          {
+            name: bundleName,
+            items: sourceMigration.items.map(item => ({id: item.id})),
+          },
+        ];
+  const existingGroupNames = (
+    Array.isArray(settings.vibeTransferPresets)
+      ? settings.vibeTransferPresets
+      : []
+  ).map(preset => preset.name);
+  const groupSpecs: Array<{
+    name: string;
+    itemIds: string[];
+    generationOverrides: Record<string, {strength?: number}>;
+  }> = [];
+  for (const importGroup of importGroups) {
+    const itemChunks = Array.from(
+      {
+        length: Math.ceil(
+          importGroup.items.length / VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+        ),
+      },
+      (_, index) =>
+        importGroup.items.slice(
+          index * VIBE_TRANSFER.MAX_ACTIVE_REFERENCES,
+          (index + 1) * VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+        )
+    );
+    const names = createUniqueVibeGroupNames(
+      importGroup.name,
+      itemChunks.length,
+      existingGroupNames,
+      VIBE_TRANSFER.MAX_GROUP_NAME_LENGTH,
+      t('settings.vibeTransferUnnamedGroup')
+    );
+    names.forEach(name => existingGroupNames.push(name));
+    itemChunks.forEach((members, index) => {
+      groupSpecs.push({
+        name: names[index],
+        itemIds: members.map(member => member.id),
+        generationOverrides: Object.fromEntries(
+          members
+            .filter(member => typeof member.strength === 'number')
+            .map(member => [member.id, {strength: member.strength}])
+        ),
+      });
+    });
+  }
+  const groupIds = groupSpecs
+    .map(spec =>
+      createVibeTransferPresetFromItems(
+        spec.name,
+        spec.itemIds,
+        spec.generationOverrides
+      )
+    )
+    .filter((id): id is string => Boolean(id));
+  const firstGroupId = groupIds[0] ?? '';
+  setEnabledVibeItemIds(groupSpecs[0]?.itemIds ?? []);
+  applyVibeCombinationParameters(
+    (Array.isArray(settings.vibeTransferCombinations)
+      ? settings.vibeTransferCombinations
+      : []
+    ).find(combination => combination.id === firstGroupId)
   );
+  settings.currentVibeTransferPresetId = firstGroupId;
+  settings.currentVibeTransferCombinationId = firstGroupId;
+  settings.vibeTransferManagerView = 'all';
   saveSettings(settings, context);
   updateUI();
 
-  const skippedCount =
-    result.errors.length +
-    Math.max(0, result.items.length - importedItems.length);
+  const skippedCount = result.errors.length;
   const message =
     skippedCount > 0
       ? t('settings.vibeTransferImportResultWithSkipped', {
           count: String(namedImportedItems.length),
           skipped: String(skippedCount),
+          groups: String(groupIds.length),
         })
       : t('settings.vibeTransferImportResult', {
           count: String(namedImportedItems.length),
+          groups: String(groupIds.length),
         });
   updateVibeTransferStatusText(message);
-  toastr.success(t('toast.vibeTransferBundleImported'), t('extensionName'));
+  toastr.success(t('toast.vibeTransferImportSucceeded'), t('extensionName'));
 }
 
-function handleVibeBundleExport(): void {
+async function hydrateVibeSourcesForExport(
+  items: VibeLibraryItem[]
+): Promise<VibeLibraryItem[]> {
+  return Promise.all(
+    items.map(async item => {
+      let sourceDataUrl = item.source?.dataUrl;
+      if (!sourceDataUrl && !item.source?.hash) return item;
+
+      if (!sourceDataUrl && item.source?.hash) {
+        try {
+          sourceDataUrl = await fetchVibeSourceDataUrl(item.source.hash);
+        } catch (error) {
+          logger.warn(
+            `Failed to load Vibe source for export: ${item.id}`,
+            error
+          );
+          return item;
+        }
+      }
+      if (!sourceDataUrl) return item;
+
+      const hydratedItem: VibeLibraryItem = {
+        ...item,
+        source: {...item.source, dataUrl: sourceDataUrl},
+      };
+      if (hydratedItem.previewImage) return hydratedItem;
+
+      try {
+        return {
+          ...hydratedItem,
+          previewImage: await createVibeThumbnailDataUrl(sourceDataUrl),
+        };
+      } catch (error) {
+        logger.warn(
+          `Failed to create Vibe export thumbnail: ${item.id}`,
+          error
+        );
+        return hydratedItem;
+      }
+    })
+  );
+}
+
+function getVibeSelectionExportGroupName(items: VibeLibraryItem[]): string {
+  const selectedIds = new Set(items.map(item => item.id));
+  const combinations = getSavedVibeCombinations();
+  const current = combinations.find(
+    combination => combination.id === settings.currentVibeTransferCombinationId
+  );
+  const exactMatch = [current, ...combinations].find(
+    (combination): combination is VibeTransferCombination => {
+      if (!combination) return false;
+      return (
+        combination.itemIds.length === selectedIds.size &&
+        combination.itemIds.every(id => selectedIds.has(id))
+      );
+    }
+  );
+  return exactMatch?.name || t('settings.vibeTransferExportGroupName');
+}
+
+async function handleVibeSelectionExport(): Promise<void> {
   const selectedItems = (
     Array.isArray(settings.vibeTransferLibraryItems)
       ? settings.vibeTransferLibraryItems
       : []
   ).filter(item => item.enabled !== false);
-  const {bundle, skipped} = exportVibeBundle(selectedItems);
+  const includeSourceImages = settings.vibeTransferExportIncludeSourceImages;
+  const exportItems = includeSourceImages
+    ? await hydrateVibeSourcesForExport(selectedItems)
+    : selectedItems;
+  const exportedAt = Date.now();
+  const groupName = getVibeSelectionExportGroupName(exportItems);
+  const result = exportVibeSelection(exportItems, {
+    includeSourceImages,
+    groupName,
+    now: exportedAt,
+  });
 
-  if (bundle.vibes.length === 0) {
+  if (result.format === 'empty') {
     toastr.warning(
       t('toast.vibeTransferBundleExportEmpty'),
       t('extensionName')
@@ -1575,30 +1724,98 @@ function handleVibeBundleExport(): void {
     return;
   }
 
-  const blob = new Blob([JSON.stringify(bundle, null, 2)], {
-    type: 'application/json',
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'conso-vibe-bundle.naiv4vibebundle.json';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const fileName =
+    result.format === 'single'
+      ? getVibeItemExportFileName(
+          result.data.name,
+          result.data.type === 'image'
+        )
+      : getVibeGroupExportFileName(groupName, exportedAt);
+  downloadVibeJson(result.data, fileName);
 
-  if (skipped.length > 0) {
+  if (result.skipped.length > 0) {
     toastr.info(
       t('settings.vibeTransferExportSkipped', {
-        count: String(bundle.vibes.length),
-        skipped: String(skipped.length),
+        count: String(
+          result.format === 'single'
+            ? 1
+            : Object.keys(result.data.vibeData).length
+        ),
+        skipped: String(result.skipped.length),
       }),
       t('extensionName')
     );
   }
 }
 
+function downloadVibeJson(value: unknown, fileName: string): void {
+  const blob = new Blob([JSON.stringify(value, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function getVibeItemExportFileName(
+  name: string,
+  includesImage = false
+): string {
+  const safeName = sanitizeVibeExportName(name);
+  return `${safeName || 'conso-vibe'}${
+    includesImage ? '.naiv4vibe' : '.naiv4vibe.json'
+  }`;
+}
+
+function getVibeGroupExportFileName(name: string, timestamp: number): string {
+  const safeName = sanitizeVibeExportName(name) || 'selected-vibes';
+  return `vibe-group-${safeName}-${timestamp}.json`;
+}
+
+function sanitizeVibeExportName(name: string): string {
+  const withoutControlCharacters = Array.from(name.trim(), character =>
+    character.charCodeAt(0) < 32 ? '_' : character
+  ).join('');
+  return withoutControlCharacters
+    .replace(/[<>:"/\\|?*]/g, '_')
+    .replace(/[.\s]+$/g, '')
+    .slice(0, VIBE_TRANSFER.MAX_GROUP_NAME_LENGTH);
+}
+
 function toggleVibeTransferReference(id: string, enabled: boolean): void {
+  const libraryItems = Array.isArray(settings.vibeTransferLibraryItems)
+    ? settings.vibeTransferLibraryItems
+    : [];
+  const targetItem = libraryItems.find(
+    item => item.id === id || item.legacyReferenceId === id
+  );
+  const targetAlreadyEnabled = targetItem
+    ? targetItem.enabled !== false
+    : (Array.isArray(settings.vibeTransferReferenceImages)
+        ? settings.vibeTransferReferenceImages
+        : []
+      ).some(ref => ref.id === id && ref.enabled !== false);
+  if (
+    enabled &&
+    !targetAlreadyEnabled &&
+    getEnabledVibeReferenceIds().length >= VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+  ) {
+    toastr.warning(
+      t('toast.vibeTransferActiveLimit', {
+        max: String(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES),
+      }),
+      t('extensionName')
+    );
+    renderVibeTransferReferenceList();
+    renderVibeTransferManagerList();
+    return;
+  }
+
   const refs = Array.isArray(settings.vibeTransferReferenceImages)
     ? settings.vibeTransferReferenceImages
     : [];
@@ -1920,24 +2137,38 @@ function getVibePresetCount(preset: VibeTransferPreset): number {
     : preset.referenceIds.length;
 }
 
-function setEnabledVibeItemIds(itemIds: string[]): void {
-  const enabledIds = new Set(itemIds);
+function setEnabledVibeItemIds(itemIds: string[]): {
+  enabledCount: number;
+  skippedCount: number;
+} {
+  const limitedIds = itemIds.slice(0, VIBE_TRANSFER.MAX_ACTIVE_REFERENCES);
+  const enabledIds = new Set(limitedIds);
+  const enabledLegacyIds = new Set<string>();
   settings.vibeTransferLibraryItems = (
     Array.isArray(settings.vibeTransferLibraryItems)
       ? settings.vibeTransferLibraryItems
       : []
-  ).map(item => ({
-    ...item,
-    enabled: enabledIds.has(item.id),
-  }));
+  ).map(item => {
+    const enabled =
+      enabledIds.has(item.id) ||
+      Boolean(item.legacyReferenceId && enabledIds.has(item.legacyReferenceId));
+    if (enabled && item.legacyReferenceId) {
+      enabledLegacyIds.add(item.legacyReferenceId);
+    }
+    return {...item, enabled};
+  });
   settings.vibeTransferReferenceImages = (
     Array.isArray(settings.vibeTransferReferenceImages)
       ? settings.vibeTransferReferenceImages
       : []
   ).map(ref => ({
     ...ref,
-    enabled: enabledIds.has(ref.id),
+    enabled: enabledIds.has(ref.id) || enabledLegacyIds.has(ref.id),
   }));
+  return {
+    enabledCount: limitedIds.length,
+    skippedCount: Math.max(0, itemIds.length - limitedIds.length),
+  };
 }
 
 function applyVibeCombinationParameters(
@@ -1998,7 +2229,11 @@ function saveCurrentVibeTransferPreset(): void {
     UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_NAME
   ) as HTMLInputElement | null;
   const name = input?.value.trim() || '';
-  const referenceIds = getEnabledVibeReferenceIds();
+  const enabledReferenceIds = getEnabledVibeReferenceIds();
+  const referenceIds = enabledReferenceIds.slice(
+    0,
+    VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+  );
   if (!name) {
     toastr.warning(
       t('toast.vibeTransferPresetNameRequired'),
@@ -2009,6 +2244,23 @@ function saveCurrentVibeTransferPreset(): void {
   if (referenceIds.length === 0) {
     toastr.warning(t('toast.vibeTransferPresetEmpty'), t('extensionName'));
     return;
+  }
+  if (name.length > VIBE_TRANSFER.MAX_GROUP_NAME_LENGTH) {
+    toastr.warning(
+      t('toast.vibeTransferGroupNameTooLong', {
+        max: String(VIBE_TRANSFER.MAX_GROUP_NAME_LENGTH),
+      }),
+      t('extensionName')
+    );
+    return;
+  }
+  if (enabledReferenceIds.length > referenceIds.length) {
+    toastr.warning(
+      t('toast.vibeTransferActiveLimit', {
+        max: String(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES),
+      }),
+      t('extensionName')
+    );
   }
 
   const now = Date.now();
@@ -2052,7 +2304,11 @@ function overwriteSelectedVibeTransferPreset(): void {
     UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_SELECT
   ) as HTMLSelectElement | null;
   const presetId = select?.value || '';
-  const referenceIds = getEnabledVibeReferenceIds();
+  const enabledReferenceIds = getEnabledVibeReferenceIds();
+  const referenceIds = enabledReferenceIds.slice(
+    0,
+    VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+  );
   const presets = Array.isArray(settings.vibeTransferPresets)
     ? settings.vibeTransferPresets
     : [];
@@ -2067,6 +2323,14 @@ function overwriteSelectedVibeTransferPreset(): void {
   if (referenceIds.length === 0) {
     toastr.warning(t('toast.vibeTransferPresetEmpty'), t('extensionName'));
     return;
+  }
+  if (enabledReferenceIds.length > referenceIds.length) {
+    toastr.warning(
+      t('toast.vibeTransferActiveLimit', {
+        max: String(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES),
+      }),
+      t('extensionName')
+    );
   }
   if (!confirm(t('prompt.overwritePreset', {name: existing.name}))) {
     return;
@@ -2124,7 +2388,18 @@ function applyVibeTransferPresetById(presetId: string): boolean {
       ? settings.vibeTransferCombinations
       : []
   ).find(entry => entry.id === presetId);
-  setEnabledVibeItemIds(combination?.itemIds ?? preset.referenceIds);
+  const applyResult = setEnabledVibeItemIds(
+    combination?.itemIds ?? preset.referenceIds
+  );
+  if (applyResult.skippedCount > 0) {
+    toastr.warning(
+      t('toast.vibeTransferGroupActiveLimit', {
+        max: String(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES),
+        skipped: String(applyResult.skippedCount),
+      }),
+      t('extensionName')
+    );
+  }
   applyVibeCombinationParameters(combination);
   settings.currentVibeTransferPresetId = preset.id;
   settings.currentVibeTransferCombinationId = preset.id;
@@ -2184,6 +2459,63 @@ function deleteSelectedVibeTransferPreset(): void {
   }
   saveSettings(settings, context);
   updateUI();
+}
+
+function renameSelectedVibeTransferPreset(): void {
+  const select = document.getElementById(
+    UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_SELECT
+  ) as HTMLSelectElement | null;
+  const presetId = select?.value || '';
+  const presets = Array.isArray(settings.vibeTransferPresets)
+    ? settings.vibeTransferPresets
+    : [];
+  const selectedPreset = presets.find(preset => preset.id === presetId);
+  if (!selectedPreset) {
+    toastr.warning(
+      t('toast.vibeTransferGroupRenameSelect'),
+      t('extensionName')
+    );
+    return;
+  }
+
+  const enteredName = prompt(
+    t('prompt.renameVibeTransferGroup'),
+    selectedPreset.name
+  );
+  if (enteredName === null) return;
+  const result = renameVibeGroup(
+    presets,
+    Array.isArray(settings.vibeTransferCombinations)
+      ? settings.vibeTransferCombinations
+      : [],
+    selectedPreset.id,
+    enteredName,
+    VIBE_TRANSFER.MAX_GROUP_NAME_LENGTH
+  );
+  if (!result.ok) {
+    const messageKey =
+      result.reason === 'empty'
+        ? 'toast.vibeTransferGroupNameRequired'
+        : result.reason === 'tooLong'
+          ? 'toast.vibeTransferGroupNameTooLong'
+          : result.reason === 'duplicate'
+            ? 'toast.vibeTransferGroupNameDuplicate'
+            : 'toast.vibeTransferGroupRenameSelect';
+    toastr.warning(
+      t(messageKey, {max: String(VIBE_TRANSFER.MAX_GROUP_NAME_LENGTH)}),
+      t('extensionName')
+    );
+    return;
+  }
+
+  settings.vibeTransferPresets = result.presets;
+  settings.vibeTransferCombinations = result.combinations;
+  saveSettings(settings, context);
+  updateUI();
+  toastr.success(
+    t('toast.vibeTransferGroupRenamed', {name: result.name}),
+    t('extensionName')
+  );
 }
 
 function updateUI(): void {
@@ -2612,6 +2944,13 @@ function updateUI(): void {
   ) as HTMLInputElement | null;
   if (vibeTransferEnabledCheckbox) {
     vibeTransferEnabledCheckbox.checked = !!settings.vibeTransferEnabled;
+  }
+  const vibeExportSourceImagesCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES
+  ) as HTMLInputElement | null;
+  if (vibeExportSourceImagesCheckbox) {
+    vibeExportSourceImagesCheckbox.checked =
+      !!settings.vibeTransferExportIncludeSourceImages;
   }
 
   const vibeManagerEditButton = document.getElementById(
@@ -3380,6 +3719,13 @@ function handleSettingsChange(): void {
   ) as HTMLInputElement | null;
   if (vibeTransferEnabledCheckbox) {
     settings.vibeTransferEnabled = vibeTransferEnabledCheckbox.checked;
+  }
+  const vibeExportSourceImagesCheckbox = document.getElementById(
+    UI_ELEMENT_IDS.VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES
+  ) as HTMLInputElement | null;
+  if (vibeExportSourceImagesCheckbox) {
+    settings.vibeTransferExportIncludeSourceImages =
+      vibeExportSourceImagesCheckbox.checked;
   }
 
   updateVibeTransferStatusText();
@@ -5647,6 +5993,13 @@ function initialize(): void {
       'change',
       handleSettingsChange
     );
+    const vibeExportSourceImagesCheckbox = document.getElementById(
+      UI_ELEMENT_IDS.VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES
+    );
+    vibeExportSourceImagesCheckbox?.addEventListener(
+      'change',
+      handleSettingsChange
+    );
 
     const vibeManagerOpenButton = document.getElementById(
       UI_ELEMENT_IDS.VIBE_TRANSFER_MANAGER_OPEN
@@ -5746,7 +6099,17 @@ function initialize(): void {
     const vibeBundleExportButton = document.getElementById(
       UI_ELEMENT_IDS.VIBE_TRANSFER_BUNDLE_EXPORT
     );
-    vibeBundleExportButton?.addEventListener('click', handleVibeBundleExport);
+    vibeBundleExportButton?.addEventListener('click', () => {
+      void handleVibeSelectionExport().catch(error => {
+        logger.warn('Failed to export selected Vibes:', error);
+        toastr.error(
+          `${t('toast.vibeTransferBundleExportFailed')}: ${extractErrorMessage(
+            error
+          )}`,
+          t('extensionName')
+        );
+      });
+    });
 
     const vibeClearButton = document.getElementById(
       UI_ELEMENT_IDS.VIBE_TRANSFER_CLEAR
@@ -5775,6 +6138,14 @@ function initialize(): void {
     vibePresetApplyButton?.addEventListener(
       'click',
       applySelectedVibeTransferPreset
+    );
+
+    const vibePresetRenameButton = document.getElementById(
+      UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_RENAME
+    );
+    vibePresetRenameButton?.addEventListener(
+      'click',
+      renameSelectedVibeTransferPreset
     );
 
     const vibePresetDeleteButton = document.getElementById(

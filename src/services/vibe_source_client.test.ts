@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
   checkVibeSources,
+  fetchVibeSourceDataUrl,
   getVibeSourceUrl,
   pruneVibeSources,
   storeVibeSource,
@@ -150,6 +151,22 @@ describe('vibe_source_client', () => {
   it('getVibeSourceUrl builds an encoded backend URL', () => {
     expect(getVibeSourceUrl('abc123')).toBe(
       `${VIBE_SOURCE_ROUTES.FETCH_BASE}/abc123`
+    );
+  });
+
+  it('loads a stored source as a data URL for export', async () => {
+    mockFetch(url => {
+      if (url === '/csrf-token') return jsonResponse({token: 'test-csrf'});
+      if (url === `${VIBE_SOURCE_ROUTES.FETCH_BASE}/abc123`) {
+        return new Response(new Uint8Array([1, 2, 3]), {
+          headers: {'Content-Type': 'image/png'},
+        });
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    await expect(fetchVibeSourceDataUrl('abc123')).resolves.toBe(
+      'data:image/png;base64,AQID'
     );
   });
 });

@@ -51,11 +51,7 @@ function collectInlineImages(settings: AutoIllustratorSettings): string[] {
   const items = Array.isArray(settings.vibeTransferLibraryItems)
     ? settings.vibeTransferLibraryItems
     : [];
-  for (const item of items) {
-    if (item.source?.hash) continue; // already migrated
-    push(item.source?.dataUrl);
-    push(item.previewImage);
-  }
+  collectInlineLibraryImages(items).forEach(push);
 
   const refs = Array.isArray(settings.vibeTransferReferenceImages)
     ? settings.vibeTransferReferenceImages
@@ -66,6 +62,20 @@ function collectInlineImages(settings: AutoIllustratorSettings): string[] {
   }
 
   return [...seen];
+}
+
+function collectInlineLibraryImages(items: VibeLibraryItem[]): string[] {
+  const images = new Set<string>();
+  for (const item of items) {
+    if (item.source?.hash) continue;
+    const inline = isInlineImage(item.source?.dataUrl)
+      ? item.source.dataUrl
+      : isInlineImage(item.previewImage)
+        ? item.previewImage
+        : undefined;
+    if (inline) images.add(inline);
+  }
+  return [...images];
 }
 
 /** Whether any entry still carries inline base64 that could be migrated. */
@@ -104,8 +114,52 @@ function migrateLibraryItem(
     ...item,
     source: nextSource,
   };
-  delete next.previewImage;
+  if (next.previewImage === inline) {
+    delete next.previewImage;
+  }
   return {item: next, changed: true};
+}
+
+/**
+ * Moves newly imported library-item sources to the backend before settings are
+ * saved. On failure, returns the original inline items so source data is never
+ * discarded merely because the companion plugin is absent or unavailable.
+ */
+export async function migrateVibeLibraryItemsToBackend(
+  items: VibeLibraryItem[]
+): Promise<{
+  items: VibeLibraryItem[];
+  migrated: number;
+  skipped: boolean;
+}> {
+  const images = collectInlineLibraryImages(items);
+  if (images.length === 0) {
+    return {items, migrated: 0, skipped: false};
+  }
+
+  let hashes: string[];
+  try {
+    hashes = await storeVibeSources(images);
+  } catch (error) {
+    logger.warn('Imported Vibe source upload failed; keeping inline:', error);
+    return {items, migrated: 0, skipped: true};
+  }
+  if (hashes.length !== images.length) {
+    logger.warn(
+      'Imported Vibe source upload returned a mismatched hash count.'
+    );
+    return {items, migrated: 0, skipped: true};
+  }
+
+  const hashByImage = new Map<string, string>();
+  images.forEach((image, index) => hashByImage.set(image, hashes[index]));
+  let migrated = 0;
+  const migratedItems = items.map(item => {
+    const result = migrateLibraryItem(item, hashByImage);
+    if (result.changed) migrated += 1;
+    return result.item;
+  });
+  return {items: migratedItems, migrated, skipped: false};
 }
 
 function migrateLegacyReference(

@@ -268,12 +268,18 @@ export declare const VIBE_TRANSFER: {
     readonly MIN: 0;
     readonly MAX: 1;
     readonly STEP: 0.05;
-    readonly MAX_REFERENCES: 16;
+    readonly MAX_ACTIVE_REFERENCES: 16;
+    readonly MAX_IMPORT_ITEMS: 256;
+    readonly MAX_IMPORT_FILE_SIZE_BYTES: number;
+    readonly MAX_GROUP_NAME_LENGTH: 80;
     readonly MAX_ENCODED_CACHE_PER_REFERENCE: 8;
     readonly MAX_PRESETS: 30;
     readonly MAX_SOURCE_IMAGE_SIZE: 768;
     readonly SOURCE_IMAGE_MIME_TYPE: "image/jpeg";
     readonly SOURCE_IMAGE_QUALITY: 0.86;
+    readonly THUMBNAIL_MAX_SIZE: 256;
+    readonly THUMBNAIL_MIME_TYPE: "image/jpeg";
+    readonly THUMBNAIL_QUALITY: 0.7;
     readonly ADVANCED_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/generate-image";
     readonly STATUS_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/status";
 };
@@ -372,6 +378,7 @@ export declare const DEFAULT_SETTINGS: {
     randomizeVibeCombinationPerGeneration: boolean;
     vibeCombinationPoolWhitelist: string[];
     vibeTransferEnabled: false;
+    vibeTransferExportIncludeSourceImages: boolean;
     vibeTransferLibraryItems: VibeLibraryItem[];
     vibeTransferCombinations: VibeTransferCombination[];
     currentVibeTransferCombinationId: string;
@@ -578,7 +585,9 @@ export declare const UI_ELEMENT_IDS: {
     readonly VIBE_TRANSFER_BUNDLE_IMPORT: "auto_illustrator_conso_vibe_transfer_bundle_import";
     readonly VIBE_TRANSFER_BUNDLE_IMPORT_INPUT: "auto_illustrator_conso_vibe_transfer_bundle_import_input";
     readonly VIBE_TRANSFER_BUNDLE_EXPORT: "auto_illustrator_conso_vibe_transfer_bundle_export";
+    readonly VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES: "auto_illustrator_conso_vibe_transfer_export_include_source_images";
     readonly VIBE_TRANSFER_PRESET_OVERWRITE: "auto_illustrator_conso_vibe_transfer_preset_overwrite";
+    readonly VIBE_TRANSFER_PRESET_RENAME: "auto_illustrator_conso_vibe_transfer_preset_rename";
     readonly VIBE_TRANSFER_REFERENCE_LIST: "auto_illustrator_conso_vibe_transfer_reference_list";
     readonly VIBE_TRANSFER_REFERENCE_SEARCH: "auto_illustrator_conso_vibe_transfer_reference_search";
     readonly VIBE_TRANSFER_CLEAR: "auto_illustrator_conso_vibe_transfer_clear";

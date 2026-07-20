@@ -270,8 +270,7 @@ function normalizeVibeReferenceImages(
       (
         entry: VibeTransferReferenceImage | null
       ): entry is VibeTransferReferenceImage => !!entry
-    )
-    .slice(0, VIBE_TRANSFER.MAX_REFERENCES);
+    );
 }
 
 function normalizeVibeLibraryItems(
@@ -394,8 +393,7 @@ function normalizeVibeLibraryItems(
     })
     .filter((entry: VibeLibraryItem | null): entry is VibeLibraryItem =>
       Boolean(entry)
-    )
-    .slice(0, VIBE_TRANSFER.MAX_REFERENCES);
+    );
 }
 
 function normalizeVibeCombinations(
@@ -416,7 +414,9 @@ function normalizeVibeCombinations(
         typeof (combination as VibeTransferCombination).updatedAt === 'number'
     )
     .map((combination: VibeTransferCombination): VibeTransferCombination => {
-      const itemIds = combination.itemIds.filter(id => validItemIds.has(id));
+      const itemIds = combination.itemIds
+        .filter(id => validItemIds.has(id))
+        .slice(0, VIBE_TRANSFER.MAX_ACTIVE_REFERENCES);
       const referenceStrength =
         typeof combination.referenceStrength === 'number'
           ? clampFloatSettingValue(
@@ -739,6 +739,9 @@ export function loadSettings(
   if (typeof merged.vibeTransferEnabled !== 'boolean') {
     merged.vibeTransferEnabled = false;
   }
+  if (typeof merged.vibeTransferExportIncludeSourceImages !== 'boolean') {
+    merged.vibeTransferExportIncludeSourceImages = false;
+  }
   if (typeof merged.vibeTransferManagerEditMode !== 'boolean') {
     merged.vibeTransferManagerEditMode = false;
   }
@@ -790,17 +793,43 @@ export function loadSettings(
     );
   }
 
+  let enabledVibeCount = 0;
+  merged.vibeTransferLibraryItems = merged.vibeTransferLibraryItems.map(
+    (item: VibeLibraryItem): VibeLibraryItem => {
+      if (item.enabled === false) return item;
+      enabledVibeCount += 1;
+      return enabledVibeCount <= VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+        ? item
+        : {...item, enabled: false};
+    }
+  );
+  const enabledVibeIds = new Set(
+    merged.vibeTransferLibraryItems
+      .filter((item: VibeLibraryItem) => item.enabled !== false)
+      .flatMap((item: VibeLibraryItem) => [
+        item.id,
+        ...(item.legacyReferenceId ? [item.legacyReferenceId] : []),
+      ])
+  );
+  merged.vibeTransferReferenceImages = merged.vibeTransferReferenceImages.map(
+    (reference: VibeTransferReferenceImage): VibeTransferReferenceImage => ({
+      ...reference,
+      enabled: enabledVibeIds.has(reference.id),
+    })
+  );
+
   const validVibeItemIds: Set<string> = new Set(
     merged.vibeTransferLibraryItems.map((item: VibeLibraryItem) => item.id)
   );
   if (!Array.isArray(merged.vibeTransferPresets)) {
     merged.vibeTransferPresets = [];
   } else {
-    const validReferenceIds = new Set(
-      merged.vibeTransferReferenceImages.map(
+    const validReferenceIds = new Set([
+      ...validVibeItemIds,
+      ...merged.vibeTransferReferenceImages.map(
         (ref: VibeTransferReferenceImage) => ref.id
-      )
-    );
+      ),
+    ]);
     merged.vibeTransferPresets = merged.vibeTransferPresets
       .filter(
         (preset: unknown): preset is VibeTransferPreset =>
@@ -1489,10 +1518,14 @@ export function createSettingsUI(): string {
         <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_BUNDLE_IMPORT}" class="menu_button auto-illustrator-action-btn" type="button">
           <i class="fa-solid fa-file-import"></i> ${t('settings.vibeTransferBundleImport')}
         </button>
-        <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_BUNDLE_IMPORT_INPUT}" type="file" accept=".naiv4vibebundle.json,application/json" style="display:none;" />
+        <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_BUNDLE_IMPORT_INPUT}" type="file" accept=".naiv4vibebundle.json,.naiv4vibebundle,.naiv4vibe.json,.naiv4vibe,application/json" style="display:none;" />
         <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_BUNDLE_EXPORT}" class="menu_button auto-illustrator-action-btn" type="button">
           <i class="fa-solid fa-file-export"></i> ${t('settings.vibeTransferBundleExport')}
         </button>
+        <label class="checkbox_label auto-illustrator-vibe-export-source-toggle" for="${UI_ELEMENT_IDS.VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES}">
+          <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES}" type="checkbox" />
+          <span>${t('settings.vibeTransferExportIncludeSourceImages')}</span>
+        </label>
       </div>
       <div class="auto-illustrator-vibe-transfer-actions">
         <input id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_NAME}" class="text_pole" type="text"
@@ -1508,6 +1541,9 @@ export function createSettingsUI(): string {
         <select id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_SELECT}" class="text_pole"></select>
         <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_APPLY}" class="menu_button auto-illustrator-action-btn" type="button">
           <i class="fa-solid fa-check"></i> ${t('settings.vibeTransferPresetApply')}
+        </button>
+        <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_RENAME}" class="menu_button auto-illustrator-action-btn" type="button">
+          <i class="fa-solid fa-i-cursor"></i> ${t('settings.vibeTransferPresetRename')}
         </button>
         <button id="${UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_DELETE}" class="menu_button auto-illustrator-action-btn" type="button">
           <i class="fa-solid fa-trash"></i> ${t('settings.vibeTransferPresetDelete')}

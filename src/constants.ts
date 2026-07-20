@@ -343,12 +343,18 @@ export const VIBE_TRANSFER = {
   MIN: 0,
   MAX: 1,
   STEP: 0.05,
-  MAX_REFERENCES: 16,
+  MAX_ACTIVE_REFERENCES: 16,
+  MAX_IMPORT_ITEMS: 256,
+  MAX_IMPORT_FILE_SIZE_BYTES: 32 * 1024 * 1024,
+  MAX_GROUP_NAME_LENGTH: 80,
   MAX_ENCODED_CACHE_PER_REFERENCE: 8,
   MAX_PRESETS: 30,
   MAX_SOURCE_IMAGE_SIZE: 768,
   SOURCE_IMAGE_MIME_TYPE: 'image/jpeg',
   SOURCE_IMAGE_QUALITY: 0.86,
+  THUMBNAIL_MAX_SIZE: 256,
+  THUMBNAIL_MIME_TYPE: 'image/jpeg',
+  THUMBNAIL_QUALITY: 0.7,
   ADVANCED_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/generate-image',
   STATUS_ROUTE: SERVER_PLUGIN.STATUS_ROUTE,
 } as const;
@@ -448,6 +454,7 @@ export const DEFAULT_SETTINGS = {
   randomizeVibeCombinationPerGeneration: false,
   vibeCombinationPoolWhitelist: [] as string[],
   vibeTransferEnabled: VIBE_TRANSFER.DEFAULT_ENABLED,
+  vibeTransferExportIncludeSourceImages: false,
   vibeTransferLibraryItems: [] as VibeLibraryItem[],
   vibeTransferCombinations: [] as VibeTransferCombination[],
   currentVibeTransferCombinationId: '',
@@ -723,8 +730,12 @@ export const UI_ELEMENT_IDS = {
     'auto_illustrator_conso_vibe_transfer_bundle_import_input',
   VIBE_TRANSFER_BUNDLE_EXPORT:
     'auto_illustrator_conso_vibe_transfer_bundle_export',
+  VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES:
+    'auto_illustrator_conso_vibe_transfer_export_include_source_images',
   VIBE_TRANSFER_PRESET_OVERWRITE:
     'auto_illustrator_conso_vibe_transfer_preset_overwrite',
+  VIBE_TRANSFER_PRESET_RENAME:
+    'auto_illustrator_conso_vibe_transfer_preset_rename',
   VIBE_TRANSFER_REFERENCE_LIST:
     'auto_illustrator_conso_vibe_transfer_reference_list',
   VIBE_TRANSFER_REFERENCE_SEARCH:

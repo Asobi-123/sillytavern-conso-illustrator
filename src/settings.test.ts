@@ -28,6 +28,11 @@ describe('settings', () => {
       expect(html).toContain(UI_ELEMENT_IDS.IMAGE_SUBFOLDER_LABEL);
       expect(html).toContain(UI_ELEMENT_IDS.GENERATION_STYLE_PRESET_SELECT);
       expect(html).toContain(UI_ELEMENT_IDS.GENERATION_STYLE_PRESET_SAVE);
+      expect(html).toContain(UI_ELEMENT_IDS.VIBE_TRANSFER_PRESET_RENAME);
+      expect(html).toContain(
+        UI_ELEMENT_IDS.VIBE_TRANSFER_EXPORT_INCLUDE_SOURCE_IMAGES
+      );
+      expect(html).toContain('.naiv4vibe.json');
       expect(html).toContain('settings.vibeTransferHelpTitle');
       expect(html).toContain('settings.vibeTransferDeleteSelected');
     });
@@ -47,6 +52,7 @@ describe('settings', () => {
       expect(defaults.showProgressWidget).toBe(true);
       expect(defaults.showStreamingPreviewWidget).toBe(false);
       expect(defaults.promptGenerationMode).toBe('shared-api');
+      expect(defaults.vibeTransferExportIncludeSourceImages).toBe(false);
       expect(defaults.maxPromptsPerMessage).toBe(5);
       expect(defaults.standalonePromptCount).toBe(3);
       expect(defaults.llmFrequencyGuidelines).toBeTruthy();
@@ -385,6 +391,7 @@ describe('settings', () => {
           [EXTENSION_NAME]: {
             ...getDefaultSettings(),
             vibeTransferEnabled: 'yes',
+            vibeTransferExportIncludeSourceImages: 'yes',
             vibeTransferReferenceImages: [
               {
                 id: 'ref1',
@@ -423,6 +430,7 @@ describe('settings', () => {
       const loaded = loadSettings(mockContext);
 
       expect(loaded.vibeTransferEnabled).toBe(false);
+      expect(loaded.vibeTransferExportIncludeSourceImages).toBe(false);
       expect(loaded.vibeTransferReferenceImages).toHaveLength(1);
       expect(loaded.vibeTransferReferenceImages[0].enabled).toBe(true);
       expect(loaded.vibeTransferReferenceImages[0].tags).toEqual([
@@ -645,6 +653,24 @@ describe('settings', () => {
       });
     });
 
+    it('should round-trip the Vibe source image export setting', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            vibeTransferExportIncludeSourceImages: true,
+          },
+        },
+        saveSettingsDebounced: vi.fn(),
+      });
+
+      const loaded = loadSettings(mockContext);
+      expect(loaded.vibeTransferExportIncludeSourceImages).toBe(true);
+
+      saveSettings(loaded, mockContext);
+      const reloaded = loadSettings(mockContext);
+      expect(reloaded.vibeTransferExportIncludeSourceImages).toBe(true);
+    });
+
     it('should migrate missing per-vibe parameters from legacy global values', () => {
       const mockContext = createMockContext({
         extensionSettings: {
@@ -680,18 +706,20 @@ describe('settings', () => {
       });
     });
 
-    it('should cap persisted Vibe Transfer references on load', () => {
+    it('should preserve the Vibe library while limiting enabled items on load', () => {
+      const itemCount = VIBE_TRANSFER.MAX_ACTIVE_REFERENCES + 3;
       const mockContext = createMockContext({
         extensionSettings: {
           [EXTENSION_NAME]: {
             ...getDefaultSettings(),
             vibeTransferReferenceImages: Array.from(
-              {length: VIBE_TRANSFER.MAX_REFERENCES + 3},
+              {length: itemCount},
               (_value, index) => ({
                 id: `ref${index}`,
                 name: `ref${index}.png`,
                 dataUrl: 'data:image/png;base64,AAAA',
                 tags: [],
+                enabled: true,
                 addedAt: index,
               })
             ),
@@ -700,12 +728,62 @@ describe('settings', () => {
       });
       const loaded = loadSettings(mockContext);
 
-      expect(loaded.vibeTransferReferenceImages).toHaveLength(
-        VIBE_TRANSFER.MAX_REFERENCES
-      );
-      expect(loaded.vibeTransferLibraryItems).toHaveLength(
-        VIBE_TRANSFER.MAX_REFERENCES
-      );
+      expect(loaded.vibeTransferReferenceImages).toHaveLength(itemCount);
+      expect(loaded.vibeTransferLibraryItems).toHaveLength(itemCount);
+      expect(
+        loaded.vibeTransferLibraryItems.filter(item => item.enabled !== false)
+      ).toHaveLength(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES);
+      expect(
+        loaded.vibeTransferReferenceImages.filter(
+          reference => reference.enabled !== false
+        )
+      ).toHaveLength(VIBE_TRANSFER.MAX_ACTIVE_REFERENCES);
+    });
+
+    it('should preserve encoded-only preset item ids after reload', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            ...getDefaultSettings(),
+            vibeTransferLibraryItems: [
+              {
+                id: 'encoded-only',
+                name: 'Encoded only',
+                enabled: true,
+                tags: [],
+                createdAt: 1,
+                updatedAt: 1,
+                encodings: {
+                  'v4-5full': {
+                    unknown: {
+                      encoding: 'ENCODED',
+                      params: {information_extracted: 0.7},
+                    },
+                  },
+                },
+              },
+            ],
+            vibeTransferPresets: [
+              {
+                id: 'encoded-preset',
+                name: 'Encoded preset',
+                referenceIds: ['encoded-only'],
+                createdAt: 1,
+                updatedAt: 1,
+              },
+            ],
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.vibeTransferPresets[0].referenceIds).toEqual([
+        'encoded-only',
+      ]);
+      expect(loaded.vibeTransferCombinations[0].itemIds).toEqual([
+        'encoded-only',
+      ]);
     });
   });
 

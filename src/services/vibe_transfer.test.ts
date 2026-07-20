@@ -11,6 +11,7 @@ import {
 } from './vibe_transfer';
 import {clearCsrfTokenCache} from '../utils/api';
 import type {VibeLibraryItem, VibeTransferReferenceImage} from '../types';
+import {VIBE_TRANSFER} from '../constants';
 
 vi.mock('../logger', () => ({
   createLogger: () => ({
@@ -201,6 +202,37 @@ describe('vibe_transfer service', () => {
     expect(payload.reference_image_ids).toEqual(['ref1']);
     expect(payload.reference_image_multiple).toEqual(['QUJDRA==']);
     expect(payload.reference_encoded_vibe_multiple).toEqual(['ENCODED']);
+  });
+
+  it('limits generation config to the first 16 enabled library items', () => {
+    const config = buildVibeTransferConfigFromSettings(
+      createSettings({
+        vibeTransferEnabled: true,
+        vibeTransferLibraryItems: Array.from(
+          {length: VIBE_TRANSFER.MAX_ACTIVE_REFERENCES + 3},
+          (_value, index) =>
+            createLibraryItem({
+              id: `item-${index}`,
+              name: `Item ${index}`,
+              encodings: {
+                'v4-5full': {
+                  unknown: {
+                    encoding: `ENCODED-${index}`,
+                    params: {information_extracted: 0.7},
+                  },
+                },
+              },
+            })
+        ),
+        vibeTransferReferenceStrength: 0.75,
+        vibeTransferInformationExtracted: 0.35,
+      })
+    );
+
+    expect(config.libraryItems).toHaveLength(
+      VIBE_TRANSFER.MAX_ACTIVE_REFERENCES
+    );
+    expect(config.libraryItems.at(-1)?.id).toBe('item-15');
   });
 
   it('sends source hashes for migrated image-backed library items', () => {

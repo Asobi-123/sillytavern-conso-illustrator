@@ -3928,6 +3928,12 @@ img[data-failed-placeholder='true']:hover {
   flex: 0 0 auto;
 }
 
+.auto-illustrator-vibe-export-source-toggle {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
 .auto-illustrator-vibe-manager .auto-illustrator-action-btn {
   min-width: 0 !important;
   min-height: 2.05rem !important;
@@ -4130,13 +4136,27 @@ img[data-failed-placeholder='true']:hover {
   .auto-illustrator-vibe-transfer-actions button,
   .auto-illustrator-vibe-transfer-preset-row select,
   .auto-illustrator-vibe-transfer-preset-row button {
+    box-sizing: border-box;
     width: 100%;
     min-width: 0;
+  }
+
+  .auto-illustrator-vibe-manager
+    .auto-illustrator-vibe-manager-actions
+    button {
+    min-width: 0 !important;
+    min-height: 3rem !important;
+    line-height: 1.2;
+    white-space: normal;
   }
 
   .auto-illustrator-vibe-manager-toolbar input,
   .auto-illustrator-vibe-transfer-actions input,
   .auto-illustrator-vibe-transfer-preset-row select {
+    grid-column: 1 / -1;
+  }
+
+  .auto-illustrator-vibe-export-source-toggle {
     grid-column: 1 / -1;
   }
 

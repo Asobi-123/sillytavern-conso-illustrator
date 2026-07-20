@@ -211,7 +211,7 @@ export function buildVibeTransferConfigFromSettings(
         typeof entry.dataUrl === 'string' &&
         entry.enabled !== false
     )
-    .slice(0, VIBE_TRANSFER.MAX_REFERENCES);
+    .slice(0, VIBE_TRANSFER.MAX_ACTIVE_REFERENCES);
   const rawLibraryItems = Array.isArray(settings.vibeTransferLibraryItems)
     ? settings.vibeTransferLibraryItems
     : [];
@@ -226,7 +226,7 @@ export function buildVibeTransferConfigFromSettings(
               typeof entry.name === 'string' &&
               entry.enabled !== false
           )
-          .slice(0, VIBE_TRANSFER.MAX_REFERENCES)
+          .slice(0, VIBE_TRANSFER.MAX_ACTIVE_REFERENCES)
       : referenceImages.map(referenceToLibraryItem);
 
   return {
@@ -325,7 +325,7 @@ export function pickRandomVibeCombinationConfig(
     config: {
       ...baseConfig,
       enabled: true,
-      libraryItems: selectedItems.slice(0, VIBE_TRANSFER.MAX_REFERENCES),
+      libraryItems: selectedItems.slice(0, VIBE_TRANSFER.MAX_ACTIVE_REFERENCES),
       referenceImages: [],
     },
   };

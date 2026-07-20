@@ -37,6 +37,8 @@ export declare function checkVibeSources(hashes: string[]): Promise<Set<string>>
  * Builds the URL a browser `<img>` can load to render a stored source image.
  */
 export declare function getVibeSourceUrl(hash: string): string;
+/** Loads a stored source back into a data URL for standards-compatible export. */
+export declare function fetchVibeSourceDataUrl(hash: string): Promise<string>;
 /**
  * Deletes backend sources not present in `keepHashes`. Best-effort: never
  * throws, returns the number removed (0 when unavailable or on error).

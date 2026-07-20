@@ -75,7 +75,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **内置正则过滤** | 保留正文里的插画元数据，只从发送给模型的 prompt 中过滤插画标签 |
 | **预设适配** | 上传 JSON / 文本或输入需求，生成 Conso 原生共享 API 元提示或独立 API 指南草稿 |
 | **生图 SD Style 和 Vibe 组合** | 可选择关闭、固定或每次生图随机抽取 SD Style / Vibe 组合，并可保存常用搭配 |
-| **NovelAI Vibe Transfer** | 可选参考图和编码 Vibe 生图增强；支持文生图和独立生图、Vibe 管理、`.naiv4vibebundle.json` 导入/导出、V4/V4.5 编码缓存 |
+| **NovelAI Vibe Transfer** | 可选参考图和编码 Vibe 生图增强；支持文生图和独立生图、Vibe 管理、编码/带图 `.naiv4vibe`、bundle 导入与分组 JSON 导入导出、V4/V4.5 编码缓存 |
 | **NovelAI 局部重绘** | 在已有图片上绘制遮罩，预览重绘结果后再选择追加或替换原图；支持缩放画布、边缘羽化、遮罩外扩和边界保护 |
 | **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
 | **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
@@ -151,7 +151,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 后端插件路径：`server-plugin/auto-illustrator-nai-advanced`。安装后端、启用 `enableServerPlugins`、重启 SillyTavern 后才能使用。只有面板提示后端插件版本过旧，或更新说明明确提到后端插件有变更时，才需要手动覆盖 SillyTavern `plugins/` 里的同名后端插件文件夹。
 
-- **Vibe Transfer**：给 NovelAI 生图加入参考图或已编码 Vibe 条件，支持聊天生图、独立生图、bundle 导入/导出。
+- **Vibe Transfer**：给 NovelAI 生图加入参考图或已编码 Vibe 条件，支持聊天生图、独立生图、bundle 导入和分组 JSON 导入/导出。
 - **局部重绘**：在已有图片上绘制遮罩，预览编辑结果后再追加或替换。
 
 完整安装和使用见：[NovelAI 高级后端功能](docs/QUICKSTART_CN.md#novelai-高级后端功能可选进阶)。
@@ -166,7 +166,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 |------|----------|
 | **主控台** | 启用自动插画、切换提示词生成模式、修改当前聊天图片文件夹标签、切主题 |
 | **提示词设置** | 配置共享 API / 独立 API 模式下的提示词生成规则 |
-| **Vibe 管理** | 管理 Vibe 库、导入/导出 `.naiv4vibebundle.json`、保存和应用 Vibe 组合 |
+| **Vibe 管理** | 管理不限 16 条的 Vibe 库、导入编码或带图单条、bundle 与分组文件、按 16 条自动拆分组合、重命名/应用组合；单次生成最多启用 16 条 |
 | **画廊** | 在面板里查看当前聊天生成过的图片 |
 | **独立生图** | 直接输入场景描述或 Prompt，不发聊天消息也能测试出图 |
 | **提示词仓库** | 上传 NovelAI PNG → 提取正面/负面/角色提示词 → 搜索、编辑、复制、分类 |

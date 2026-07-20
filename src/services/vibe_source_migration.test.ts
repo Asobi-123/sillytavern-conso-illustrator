@@ -1,5 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {
+  migrateVibeLibraryItemsToBackend,
   migrateVibeSourcesToBackend,
   needsVibeSourceMigration,
 } from './vibe_source_migration';
@@ -198,5 +199,55 @@ describe('migrateVibeSourcesToBackend', () => {
     const result = await migrateVibeSourcesToBackend(settings, createContext());
     expect(result).toEqual({migrated: 0, skipped: false});
     expect(storeVibeSources).not.toHaveBeenCalled();
+  });
+});
+
+describe('migrateVibeLibraryItemsToBackend', () => {
+  it('stores an imported source before save and preserves a distinct thumbnail', async () => {
+    storeVibeSources.mockResolvedValueOnce(['source-hash']);
+    const items = [
+      {
+        id: 'image-vibe',
+        name: 'Image Vibe',
+        enabled: true,
+        tags: [],
+        createdAt: 1,
+        updatedAt: 1,
+        source: {dataUrl: INLINE_A, fingerprint: 'source-fingerprint'},
+        previewImage: INLINE_B,
+        encodings: {},
+      },
+    ];
+
+    const result = await migrateVibeLibraryItemsToBackend(items);
+
+    expect(storeVibeSources).toHaveBeenCalledWith([INLINE_A]);
+    expect(result).toMatchObject({migrated: 1, skipped: false});
+    expect(result.items[0]).toMatchObject({
+      source: {hash: 'source-hash', fingerprint: 'source-fingerprint'},
+      previewImage: INLINE_B,
+    });
+    expect(result.items[0].source?.dataUrl).toBeUndefined();
+  });
+
+  it('keeps imported inline source data when storage fails', async () => {
+    storeVibeSources.mockRejectedValueOnce(new Error('offline'));
+    const items = [
+      {
+        id: 'image-vibe',
+        name: 'Image Vibe',
+        enabled: true,
+        tags: [],
+        createdAt: 1,
+        updatedAt: 1,
+        source: {dataUrl: INLINE_A},
+        encodings: {},
+      },
+    ];
+
+    const result = await migrateVibeLibraryItemsToBackend(items);
+
+    expect(result).toMatchObject({migrated: 0, skipped: true});
+    expect(result.items[0].source?.dataUrl).toBe(INLINE_A);
   });
 });

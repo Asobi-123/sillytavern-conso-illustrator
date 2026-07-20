@@ -1,6 +1,9 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {VIBE_TRANSFER} from '../constants';
-import {createVibeSourceDataUrl} from './vibe_source_image';
+import {
+  createVibeSourceDataUrl,
+  createVibeThumbnailDataUrl,
+} from './vibe_source_image';
 
 describe('vibe_source_image', () => {
   const originalImage = globalThis.Image;
@@ -75,6 +78,54 @@ describe('vibe_source_image', () => {
     expect(toDataURL).toHaveBeenCalledWith(
       VIBE_TRANSFER.SOURCE_IMAGE_MIME_TYPE,
       VIBE_TRANSFER.SOURCE_IMAGE_QUALITY
+    );
+  });
+
+  it('creates a bounded JPEG thumbnail from an exported source image', async () => {
+    const sourceDataUrl = 'data:image/jpeg;base64,SOURCE';
+    const thumbnailDataUrl = 'data:image/jpeg;base64,THUMBNAIL';
+    const drawImage = vi.fn();
+    const toDataURL = vi.fn(() => thumbnailDataUrl);
+
+    class MockImage {
+      naturalWidth = 1200;
+      naturalHeight = 900;
+      width = 1200;
+      height = 900;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+
+      set src(_value: string) {
+        this.onload?.();
+      }
+    }
+
+    globalThis.Image = MockImage as unknown as typeof globalThis.Image;
+    vi.spyOn(document, 'createElement').mockImplementation(tagName => {
+      if (tagName === 'canvas') {
+        return {
+          width: 0,
+          height: 0,
+          getContext: vi.fn(() => ({drawImage})),
+          toDataURL,
+        } as unknown as HTMLCanvasElement;
+      }
+      return originalCreateElement(tagName);
+    });
+
+    await expect(createVibeThumbnailDataUrl(sourceDataUrl)).resolves.toBe(
+      thumbnailDataUrl
+    );
+    expect(drawImage).toHaveBeenCalledWith(
+      expect.any(MockImage),
+      0,
+      0,
+      VIBE_TRANSFER.THUMBNAIL_MAX_SIZE,
+      Math.round((900 * VIBE_TRANSFER.THUMBNAIL_MAX_SIZE) / 1200)
+    );
+    expect(toDataURL).toHaveBeenCalledWith(
+      VIBE_TRANSFER.THUMBNAIL_MIME_TYPE,
+      VIBE_TRANSFER.THUMBNAIL_QUALITY
     );
   });
 });

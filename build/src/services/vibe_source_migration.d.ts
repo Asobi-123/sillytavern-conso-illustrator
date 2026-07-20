@@ -16,8 +16,19 @@
  * `source.fingerprint` used for encode-cache matching is preserved untouched, so
  * moving the bytes never invalidates an existing encoded vibe.
  */
+import type { VibeLibraryItem } from '../types';
 /** Whether any entry still carries inline base64 that could be migrated. */
 export declare function needsVibeSourceMigration(settings: AutoIllustratorSettings): boolean;
+/**
+ * Moves newly imported library-item sources to the backend before settings are
+ * saved. On failure, returns the original inline items so source data is never
+ * discarded merely because the companion plugin is absent or unavailable.
+ */
+export declare function migrateVibeLibraryItemsToBackend(items: VibeLibraryItem[]): Promise<{
+    items: VibeLibraryItem[];
+    migrated: number;
+    skipped: boolean;
+}>;
 /**
  * Runs the migration. Non-blocking-friendly: callers should not await this on
  * the critical startup path. Returns a summary for logging/telemetry.

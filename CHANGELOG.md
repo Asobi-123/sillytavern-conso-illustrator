@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-07-21
+
+### Added
+
+- **Vibe format interoperability** - Added encoded and image-backed `.naiv4vibe` import/export, external Vibe Group JSON import/export with group strengths, one selected-export action that writes a standard single item or Group JSON based on the enabled Vibe count, automatic saved-set splitting for groups larger than 16 items, and saved Vibe set renaming.
+
+### Changed
+
+- **Vibe library capacity** - Removed the incorrect 16-item library cap while retaining the 16-enabled-Vibes limit for each generation.
+
+### Fixed
+
+- **Vibe import persistence and export IDs** - Encoded-only imported set memberships now survive settings reloads, and bundle export guarantees unique item IDs even when imported items share an external ID.
+- **Image-backed Vibe persistence** - Imported source images now use the backend content-addressed Vibe source store without bloating extension settings. Selected export defaults to encoding-only JSON; enabling **Include source images** restores standard image-backed cache export when the source is available, generates missing Group JSON thumbnails, and avoids external importers reusing stale thumbnail-less cache records.
+
 ## [1.14.0] - 2026-07-09
 
 ### Changed

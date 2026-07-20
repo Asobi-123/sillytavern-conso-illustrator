@@ -110,6 +110,33 @@ export function getVibeSourceUrl(hash: string): string {
   return `${VIBE_SOURCE_ROUTES.FETCH_BASE}/${encodeURIComponent(hash)}`;
 }
 
+function bytesToBase64(bytes: Uint8Array): string {
+  const chunkSize = 0x8000;
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(
+      ...bytes.subarray(offset, offset + chunkSize)
+    );
+  }
+  return btoa(binary);
+}
+
+/** Loads a stored source back into a data URL for standards-compatible export. */
+export async function fetchVibeSourceDataUrl(hash: string): Promise<string> {
+  const response = await fetch(getVibeSourceUrl(hash), {
+    headers: await getInternalRequestHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error(`Vibe source fetch failed: ${response.status}`);
+  }
+  const mimeType = response.headers.get('Content-Type') || 'image/jpeg';
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.length === 0) {
+    throw new Error('Vibe source fetch returned an empty image');
+  }
+  return `data:${mimeType};base64,${bytesToBase64(bytes)}`;
+}
+
 /**
  * Deletes backend sources not present in `keepHashes`. Best-effort: never
  * throws, returns the number removed (0 when unavailable or on error).

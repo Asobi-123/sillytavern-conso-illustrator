@@ -248,6 +248,8 @@ declare global {
     vibeCombinationPoolWhitelist: string[];
     /** Whether NovelAI Vibe Transfer is used for image generation */
     vibeTransferEnabled: boolean;
+    /** Whether Vibe JSON export should include stored source images */
+    vibeTransferExportIncludeSourceImages: boolean;
     /** Bundle-compatible Vibe library items */
     vibeTransferLibraryItems: import('./src/types').VibeLibraryItem[];
     /** Named Vibe item combinations */

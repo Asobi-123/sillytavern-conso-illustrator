@@ -683,7 +683,7 @@ Result: Operations run concurrently, no conflicts (different messages)
 | Vibe Combination Pool Whitelist | string[] | combination IDs | [] | Empty = all eligible; non-empty = restrict to listed Vibe combinations |
 | Generation Style Presets | Preset[] | named presets | [] | Saved pairings of SD Style and Vibe combination for fixed generation |
 | NovelAI Vibe Transfer | Boolean | true/false | false | Use NovelAI reference-image conditioning through the companion advanced backend route |
-| Vibe Library Items | Vibe[] | max 16 enabled per generation | [] | Source-image or encoded-only Vibe items managed by Vibe Manager |
+| Vibe Library Items | Vibe[] | library is not capped at 16; max 16 enabled per generation | [] | Source-image or encoded-only Vibe items managed by Vibe Manager |
 | Vibe Combinations | Combination[] | saved sets | [] | Saved enabled Vibe item IDs and per-card Strength / Information values |
 | Vibe Reference Images | Image[] | legacy migrated field | [] | Legacy reference image storage migrated into Vibe Library Items |
 | Log Level | Choice | trace/debug/info/warn/error/silent | info | Console verbosity |
@@ -877,6 +877,24 @@ Users should be able to edit an existing generated image by painting a mask, the
 **VIBE-018**: Vibe Manager cards MUST expose encoding-cache visibility: current model cache status and the number of cached encodings, with expandable model / Information Extracted / creation-time details when known.
 
 **VIBE-019**: When a generation creates or updates V4/V4.5 Vibe encoding cache data, the Vibe Manager MUST refresh its pending-encoding and cache-detail views immediately without requiring users to switch Vibe groups or reload the page.
+
+**VIBE-020**: The Vibe library MUST retain more than 16 items. The limit of 16 applies only to Vibes enabled for one generation. Enabling a seventeenth Vibe MUST be rejected with visible feedback rather than silently dropping an already enabled item.
+
+**VIBE-021**: Vibe import MUST accept standard single `.naiv4vibe` / `.naiv4vibe.json` items, standard `.naiv4vibebundle.json` bundles, and external Vibe group JSON containing `groups` plus `vibeData`. A single item creates its own saved Vibe set named from the imported file. External group names and per-member Strength values MUST be preserved.
+
+**VIBE-022**: Importing a bundle with more than 16 valid Vibes MUST retain every valid item in the library and split the imported selection into saved sets of at most 16 items. Only the first created set is enabled immediately.
+
+**VIBE-023**: Imported saved-set names MUST be unique. Re-importing a file with the same display name MUST create a numbered name instead of overwriting an existing set.
+
+**VIBE-024**: Users MUST be able to rename a saved Vibe set without changing its ID or breaking fixed/random generation-style references. Empty, overlong, and duplicate names MUST be rejected. Built-in views such as Pending encoding cannot be renamed.
+
+**VIBE-025**: Multi-Vibe Group export MUST emit a unique ID for every exported item even when multiple local items retain the same external ID. A Group JSON exported by Conso MUST be importable again without losing encoded items because of duplicate IDs.
+
+**VIBE-026**: Vibe Manager MUST provide one unified export action for the currently enabled Vibes. One enabled Vibe exports as a standard `novelai-vibe-transfer` item without a wrapper. Multiple enabled Vibes export as Vibe Group JSON with `groups`, `vibeData`, `vibePresets`, and `presetImages`. Separate per-card export controls MUST NOT be required.
+
+**VIBE-027**: A standard Vibe item with `type: image` MUST import its `image`, `thumbnail`, and encoding caches. The source image MUST move to the companion backend content-addressed source store before settings are saved when that backend is available; settings retain the source hash, MIME type, fingerprint, thumbnail, and encodings. If source storage fails, the inline image MUST remain available instead of being discarded.
+
+**VIBE-028**: Unified export MUST default to encoding-only JSON, including for source-backed Vibes. Vibe Manager MUST provide a persisted **Include source images** checkbox, disabled by default. When enabled, export MUST retrieve hash-backed source bytes from the companion backend without writing them back into settings, emit source-backed Vibes as `type: image` with the source `image`, preserve an available `thumbnail`, and generate a bounded JPEG export thumbnail when one is missing. Generated export thumbnails MUST NOT be written back into settings. Encoded-only Vibes stay `type: encoding`; mixed image-backed and encoded-only items MUST remain valid inside one Group JSON, and imported image-backed items MUST remain re-encodable when model or Information Extracted changes.
 
 **Anti-pattern**: do not add a NovelAI token field to Auto Illustrator settings. The companion route reuses the NovelAI key already stored in SillyTavern secrets.
 
@@ -1560,6 +1578,7 @@ Result: Widget state correctly tied to current chat
 | 1.4 | 2026-06-06 | Added prompt personalization suite requirements for Tag Catalog, Preset Adapter, Character Fixed Tags injection modes, and related UI constraints |
 | 1.5 | 2026-07-03 | Added Vibe Manager, encoded bundle import/export, per-card Vibe parameters, fixed/random SD Style + Vibe combination selection, and backend plugin version policy requirements |
 | 1.6 | 2026-07-09 | Added backend Vibe source-image storage by hash and immediate Vibe cache status refresh requirements |
+| 1.7 | 2026-07-20 | Clarified unlimited Vibe library capacity; added encoded and image-backed single-item import/export, external group JSON import, automatic group splitting, saved-set rename, backend source persistence, and unique export ID requirements |
 
 ---
 

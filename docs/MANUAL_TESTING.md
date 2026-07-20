@@ -330,31 +330,59 @@ Before starting manual testing:
 1. Open the floating panel and go to **Vibe Manager**
 2. Upload one reference image
 3. **Verify**: the library switches to the built-in Pending encoding group and shows the source-image item with preview, name, tags, enable switch, and encoding status; the new item is not enabled automatically
-4. Import a `.naiv4vibebundle.json` file
-5. **Verify**: encoded-only items are added without overwriting existing items
-6. Search by Vibe name and tag
-7. **Verify**: filtering and empty-state messaging work
-8. Switch between Display mode and Edit mode in Vibe Manager
-9. **Verify**: Display mode shows each card's saved Strength / Information values read-only, while Edit mode exposes per-card sliders without changing the selected Vibe set
-10. **Verify**: encoded-only items show imported information extraction without offering false re-encoding controls
-11. Save the current enabled set with **Save As**
-12. **Verify**: a new set is created; existing sets are not overwritten
-13. Select a saved set and use **Overwrite set**
-14. **Verify**: overwrite requires confirmation and updates only the selected set
-15. Generate with one source-image Vibe and one encoded-only Vibe enabled
-16. **Verify**: the advanced backend route accepts the mixed payload
-17. Generate with one enabled pending source-image Vibe
-18. **Verify**: after generation stores the encoding cache, the Pending encoding view and cache details refresh without switching Vibe groups
-19. Export a bundle
-20. **Verify**: the exported `.naiv4vibebundle.json` contains encoded Vibes only and does not include local source/preview images or local search tags
-21. Use a narrow viewport or mobile browser
-22. **Verify**: Vibe cards use a single-column readable layout, action buttons wrap horizontally, slider rows stay full-width, and the list scrolls inside the panel
+4. Import a single encoded-only `.naiv4vibe.json` file
+5. **Verify**: one encoded-only item and one independently named saved set are created from the file name
+6. Import a `.naiv4vibebundle.json` file while the library already contains at least 16 items
+7. **Verify**: every valid imported item is retained; the library is not capped at 16
+8. Import a bundle containing 40 valid Vibes
+9. **Verify**: three saved sets are created with 16, 16, and 8 items; only the first set is enabled
+10. Import the same file again
+11. **Verify**: new numbered set names are created without overwriting the previous sets
+12. Try to enable a seventeenth Vibe manually
+13. **Verify**: the seventeenth item remains disabled and a visible 16-item generation-limit message appears
+14. Rename a normal saved set, then try an empty name and a duplicate name
+15. **Verify**: the valid rename updates the selector without changing the selected set; empty and duplicate names are rejected; Pending encoding cannot be renamed
+16. Reload the page
+17. **Verify**: all imported items, encoded-only saved-set memberships, and renamed set names remain intact
+18. Search by Vibe name and tag
+19. **Verify**: filtering and empty-state messaging work
+20. Switch between Display mode and Edit mode in Vibe Manager
+21. **Verify**: Display mode shows each card's saved Strength / Information values read-only, while Edit mode exposes per-card sliders without changing the selected Vibe set
+22. **Verify**: encoded-only items show imported information extraction without offering false re-encoding controls
+23. Save the current enabled set with **Save As**
+24. **Verify**: a new set is created; existing sets are not overwritten
+25. Select a saved set and use **Overwrite set**
+26. **Verify**: overwrite requires confirmation and updates only the selected set
+27. Generate with one source-image Vibe and one encoded-only Vibe enabled
+28. **Verify**: the advanced backend route accepts the mixed payload
+29. Generate with one enabled pending source-image Vibe
+30. **Verify**: after generation stores the encoding cache, the Pending encoding view and cache details refresh without switching Vibe groups
+31. Enable exactly one encoded Vibe and use **Export selected Vibe JSON**
+32. **Verify**: a `.naiv4vibe.json` file is downloaded with `novelai-vibe-transfer` at the root and no `vibes` wrapper
+33. Enable multiple encoded Vibes, including items that originated from duplicate external IDs, and use the same export button
+34. **Verify**: a `vibe-group-<name>-<timestamp>.json` is downloaded with `groups`, `vibeData`, `vibePresets`, and `presetImages`; every exported ID is unique and all exported items can be imported again
+35. Import an image-backed `.naiv4vibe` whose root has `type: image`, `image`, `thumbnail`, and `encodings`
+36. **Verify**: the item has a preview and cache, its full source is stored in the companion backend Vibe source directory, and settings retain a source hash rather than the full source base64
+37. Import an external Vibe group JSON containing `groups`, `vibeData`, `vibePresets`, and `presetImages`
+38. **Verify**: valid Vibes are imported, internal group names and per-member Strength values are retained, and a missing `vibeData.image` can fall back to the linked `presetImages` source
+39. Enable **Include source images**, then export one image-backed Vibe and export it together with one encoded-only Vibe using the same button
+40. **Verify**: the single item and its Group `vibeData` entry use `type: image` with source bytes and available thumbnail; the encoded-only Group entry remains `type: encoding`; `vibePresets` and `presetImages` link available source images; re-import preserves both
+41. Disable **Include source images** and export the same single and mixed selections again
+42. **Verify**: image-backed items now use `type: encoding` and contain no `image` or `thumbnail`; the same button retains single/Group output according to selection count
+43. Change Information Extracted on the re-imported image-backed Vibe and generate
+44. **Verify**: the backend reads the stored source by hash and can create a new encoding cache
+45. Use a narrow viewport or mobile browser
+46. **Verify**: Vibe cards use a single-column readable layout, action buttons wrap horizontally, slider rows stay full-width, and the list scrolls inside the panel
 
 **Expected Behavior**:
-- Imported bundle items work without source images
+- Encoded-only single/bundle imports and image-backed single/group imports work
+- The library can retain more than 16 items while one generation enables at most 16
+- Large bundles are split into saved sets without dropping library items
 - Existing source-image Vibes keep working and can be mixed with encoded-only items
 - Import creates new local items instead of overwriting existing library entries
-- Export is interoperable encoded data, not a Conso-private backup of local previews
+- Saved-set renaming preserves the set identity and rejects invalid names
+- The same selected-export action produces standard single or Vibe Group JSON according to the number of enabled encoded Vibes
+- Export defaults to encoding-only JSON; when **Include source images** is enabled, available source data is preserved without Conso-only labels
 - Mobile layout does not overlap content or create vertical button text
 - Cache status updates immediately after a source-image Vibe is encoded
 
