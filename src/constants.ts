@@ -28,7 +28,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.14.0';
+export const EXTENSION_VERSION = '1.15.1';
 
 /**
  * GitHub repository for update checks
