@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.1] - 2026-08-05
+
 ### Fixed
 
 - **Release version metadata** - Kept the runtime update checker, package metadata, extension manifest, and shipped bundle on the same version so an installed current release does not report itself as outdated.

@@ -42,6 +42,18 @@
 
 6. **Test in SillyTavern**: Clone repo into the active SillyTavern extension directory for live testing
 
+### Release Version Checklist
+
+The runtime version is part of the shipped behavior. Before merging or preparing a release, keep these surfaces aligned:
+
+- `src/constants.ts` - `EXTENSION_VERSION`, used by the in-panel update checker
+- `package.json` and `package-lock.json` - package version metadata
+- `manifest.json` - SillyTavern extension version metadata
+- `dist/index.js` and `build/` - regenerated outputs from `npm run build`
+- `CHANGELOG.md` - the matching release entry and user-visible changes
+
+Run `npm test` after the version change. `src/release_metadata.test.ts` fails when the runtime, package, manifest, or built bundle version diverges. Do not edit `dist/` or `build/` by hand; regenerate them with `npm run build`.
+
 ### Project Structure
 
 ```
