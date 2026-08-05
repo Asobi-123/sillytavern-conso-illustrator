@@ -446,6 +446,7 @@ describe('vibe_bundle service', () => {
     const exported = exportVibeSelection(imported.items);
 
     expect(exported.format).toBe('single');
+    if (exported.format !== 'single') return;
     expect(exported.data).toMatchObject({
       identifier: 'novelai-vibe-transfer',
       version: 1,
@@ -470,6 +471,7 @@ describe('vibe_bundle service', () => {
     });
 
     expect(exported.format).toBe('single');
+    if (exported.format !== 'single') return;
     expect(exported.data).toMatchObject({
       identifier: 'novelai-vibe-transfer',
       version: 1,
@@ -500,6 +502,7 @@ describe('vibe_bundle service', () => {
       includeSourceImages: true,
     });
     expect(reexported.format).toBe('single');
+    if (reexported.format !== 'single') return;
     expect(reexported.data.encodings).toEqual(exported.data.encodings);
   });
 
@@ -519,6 +522,7 @@ describe('vibe_bundle service', () => {
     });
     expect(exported.data).not.toHaveProperty('image');
     expect(exported.data).not.toHaveProperty('thumbnail');
+    if (exported.format !== 'single') return;
     expect(exported.data.encodings).toEqual(imported.items[0].encodings);
   });
 
@@ -543,6 +547,7 @@ describe('vibe_bundle service', () => {
     });
 
     expect(exported.format).toBe('single');
+    if (exported.format !== 'single') return;
     expect(exported.data.encodings['v4-5full'].unknown.createdAt).toBe(1234);
   });
 
