@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Release version metadata** - Kept the runtime update checker, package metadata, extension manifest, and shipped bundle on the same version so an installed current release does not report itself as outdated.
 
+### Changed
+
+- **Tag Catalog data** - Merged the Tag Catalog refresh from PR #2, including the updated offline catalog, bridge report, and Chinese trigger bridge data.
+
 ## [1.15.0] - 2026-07-21
 
 ### Added
