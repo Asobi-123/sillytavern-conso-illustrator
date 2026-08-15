@@ -3,8 +3,11 @@
  */
 
 import {describe, it, expect, vi} from 'vitest';
-import {applyCharacterFixedTags} from './character_fixed_tags_service';
-import type {CharacterFixedTagEntry} from '../types';
+import {
+  applyCharacterFixedTags,
+  resolveActiveCharacterFixedTags,
+} from './character_fixed_tags_service';
+import type {CharacterFixedTagEntry, CharacterFixedTagScopes} from '../types';
 
 // Mock logger
 vi.mock('../logger', () => ({
@@ -70,6 +73,19 @@ describe('applyCharacterFixedTags', () => {
       tags
     );
     expect(result).toBe('{elysia, girl, silver hair}, 1girl, garden');
+  });
+
+  it('should require token boundaries for Latin aliases', () => {
+    const tags: Record<string, CharacterFixedTagEntry> = {
+      Ann: makeEntry(['Ann'], 'ann, girl, short hair'),
+    };
+
+    expect(applyCharacterFixedTags('1girl, garden', 'annual event', tags)).toBe(
+      '1girl, garden'
+    );
+    expect(
+      applyCharacterFixedTags('1girl, garden', 'Ann entered the garden.', tags)
+    ).toBe('{ann, girl, short hair}, 1girl, garden');
   });
 
   it('should match Chinese alias', () => {
@@ -305,5 +321,118 @@ describe('applyCharacterFixedTags', () => {
       tags
     );
     expect(result).toBe('{elysia, girl, silver hair}, 1girl, garden');
+  });
+});
+
+describe('resolveActiveCharacterFixedTags', () => {
+  const makeEntry = (
+    names: string[],
+    tags: string,
+    enabled = true
+  ): CharacterFixedTagEntry => ({
+    names,
+    tags,
+    enabled,
+  });
+
+  const makeScopes = (): CharacterFixedTagScopes => ({
+    schemaVersion: 2,
+    characters: {
+      'card-a.png': makeEntry(['Alice'], 'alice, girl'),
+      'card-b.png': makeEntry(['Bob'], 'bob, boy'),
+    },
+    personas: {
+      'persona-a.png': makeEntry(['User A'], 'user a, girl'),
+      'persona-b.png': makeEntry(['User B'], 'user b, boy'),
+    },
+    legacy: {
+      legacy: makeEntry(['Legacy'], 'legacy, person'),
+    },
+  });
+
+  it('should return only the active card, persona, and current chat records', () => {
+    const context = {
+      characterId: 0,
+      characters: [{avatar: 'card-a.png', name: 'Alice'}],
+      chatMetadata: {
+        persona: 'persona-a.png',
+        auto_illustrator: {
+          manualCharacterTags: {
+            Npc: makeEntry(['Npc'], 'npc, person'),
+          },
+        },
+      },
+      eventSource: {on: vi.fn()},
+      eventTypes: {PERSONA_CHANGED: 'PERSONA_CHANGED'},
+    } as unknown as SillyTavernContext;
+
+    const resolved = resolveActiveCharacterFixedTags(makeScopes(), context);
+
+    expect(resolved.characterKey).toBe('card-a.png');
+    expect(resolved.personaKey).toBe('persona-a.png');
+    expect(Object.keys(resolved.entries)).toEqual([
+      'character:card-a.png',
+      'persona:persona-a.png',
+      'chat:Npc',
+    ]);
+    expect(resolved.entries['character:card-b.png']).toBeUndefined();
+    expect(resolved.entries['persona:persona-b.png']).toBeUndefined();
+    expect(resolved.entries['legacy:legacy']).toBeUndefined();
+  });
+
+  it('should follow PERSONA_CHANGED when the chat has no persona lock', () => {
+    const eventHandlers: Record<string, (avatar?: string) => void> = {};
+    const context = {
+      characterId: 0,
+      characters: [{avatar: 'card-a.png', name: 'Alice'}],
+      chatMetadata: {},
+      eventSource: {
+        on: vi.fn((event: string, callback: (avatar?: string) => void) => {
+          eventHandlers[event] = callback;
+        }),
+      },
+      eventTypes: {
+        PERSONA_CHANGED: 'PERSONA_CHANGED',
+        CHAT_CHANGED: 'CHAT_CHANGED',
+      },
+    } as unknown as SillyTavernContext;
+
+    const initial = resolveActiveCharacterFixedTags(makeScopes(), context);
+    expect(initial.personaKey).toBeUndefined();
+
+    eventHandlers.PERSONA_CHANGED?.('persona-b.png');
+    const switched = resolveActiveCharacterFixedTags(makeScopes(), context);
+    expect(switched.personaKey).toBe('persona-b.png');
+    expect(switched.entries['persona:persona-b.png']).toBeDefined();
+    expect(switched.entries['persona:persona-a.png']).toBeUndefined();
+
+    eventHandlers.CHAT_CHANGED?.();
+    expect(
+      resolveActiveCharacterFixedTags(makeScopes(), context).personaKey
+    ).toBe(undefined);
+  });
+
+  it('should isolate injection after a character switch', () => {
+    const context = {
+      characterId: 1,
+      characters: [
+        {avatar: 'card-a.png', name: 'Alice'},
+        {avatar: 'card-b.png', name: 'Bob'},
+      ],
+      chatMetadata: {persona: 'persona-a.png'},
+      eventSource: {on: vi.fn()},
+      eventTypes: {PERSONA_CHANGED: 'PERSONA_CHANGED'},
+    } as unknown as SillyTavernContext;
+
+    const resolved = resolveActiveCharacterFixedTags(makeScopes(), context);
+    const result = applyCharacterFixedTags(
+      '1boy, hallway',
+      'Alice and Bob met with User A in the hallway.',
+      resolved.entries
+    );
+
+    expect(result).toContain('{bob, boy}');
+    expect(result).toContain('{user a, girl}');
+    expect(result).not.toContain('{alice, girl}');
   });
 });

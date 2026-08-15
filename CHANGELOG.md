@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.15.2] - 2026-08-15
+
+### Fixed
+
+- **Character Fixed Tag scope isolation** - Fixed tags now follow the active character card, persona, and current chat NPC scope instead of remaining globally active across cards. Legacy records are preserved as unassigned until explicitly assigned, and Latin aliases use token-boundary matching to avoid false positives such as `Ann` matching `annual`.
+
+### Changed
+
+- **Context injection compatibility** - Independent API and standalone LLM generation retain their existing character description, persona, scenario, and world-info context behavior; scope isolation only changes image-prompt fixed-tag selection.
 
 ## [1.15.1] - 2026-08-05
 

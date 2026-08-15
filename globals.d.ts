@@ -222,6 +222,8 @@ declare global {
       string,
       import('./src/types').CharacterFixedTagEntry
     >;
+    /** Fixed tags scoped to card, persona, or legacy assignment state. */
+    characterFixedTagScopes: import('./src/types').CharacterFixedTagScopes;
     /** How character fixed tags are inserted into generated prompts */
     characterFixedTagInjectionMode: import('./src/types').CharacterFixedTagInjectionMode;
     /** Default prompt count for standalone generation */

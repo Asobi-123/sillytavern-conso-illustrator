@@ -13,7 +13,166 @@ import {parseCommonTags} from './prompt_tags';
 import type {
   CharacterFixedTagEntry,
   CharacterFixedTagInjectionMode,
+  CharacterFixedTagScopes,
 } from '../types';
+
+export interface ActiveCharacterFixedTagScope {
+  /** Stable SillyTavern character-card avatar filename, when available. */
+  characterKey?: string;
+  /** Stable SillyTavern persona avatar filename, when available. */
+  personaKey?: string;
+  /** Current chat's manually assigned NPC records. */
+  chatTags: Record<string, CharacterFixedTagEntry>;
+  /** Combined active records ready for prompt injection. */
+  entries: Record<string, CharacterFixedTagEntry>;
+}
+
+let personaEventSource: SillyTavernContext['eventSource'] | null = null;
+let observedPersonaKey: string | undefined;
+
+function getRuntimeContext(): SillyTavernContext | null {
+  try {
+    return SillyTavern.getContext?.() || null;
+  } catch {
+    return null;
+  }
+}
+
+function ensurePersonaEventListener(context: SillyTavernContext): void {
+  if (!context.eventSource || personaEventSource === context.eventSource) {
+    return;
+  }
+
+  const eventName = context.eventTypes?.PERSONA_CHANGED;
+  if (!eventName) return;
+
+  context.eventSource.on(eventName, (...args: unknown[]) => {
+    const nextKey = args[0];
+    if (typeof nextKey === 'string' && nextKey.trim()) {
+      observedPersonaKey = nextKey.trim();
+    }
+  });
+  const chatChangedEvent = context.eventTypes?.CHAT_CHANGED;
+  if (chatChangedEvent) {
+    context.eventSource.on(chatChangedEvent, () => {
+      observedPersonaKey = undefined;
+    });
+  }
+  personaEventSource = context.eventSource;
+}
+
+function getCharacterScopeKey(context: SillyTavernContext): string | undefined {
+  const character = context.characters?.[context.characterId];
+  return typeof character?.avatar === 'string' && character.avatar.trim()
+    ? character.avatar.trim()
+    : undefined;
+}
+
+function getPersonaScopeKey(context: SillyTavernContext): string | undefined {
+  ensurePersonaEventListener(context);
+
+  if (observedPersonaKey) return observedPersonaKey;
+
+  const chatPersona = context.chatMetadata?.persona;
+  if (typeof chatPersona === 'string' && chatPersona.trim()) {
+    return chatPersona.trim();
+  }
+
+  if (typeof document !== 'undefined') {
+    const selected = document.querySelector(
+      '#user_avatar_block .avatar-container.selected'
+    );
+    const selectedKey = selected?.getAttribute('data-avatar-id');
+    if (selectedKey?.trim()) return selectedKey.trim();
+  }
+
+  return undefined;
+}
+
+function normalizeRuntimeEntry(value: unknown): CharacterFixedTagEntry | null {
+  if (!value || typeof value !== 'object') return null;
+  const candidate = value as Partial<CharacterFixedTagEntry>;
+  const names = Array.isArray(candidate.names)
+    ? candidate.names
+        .filter((name): name is string => typeof name === 'string')
+        .map(name => name.trim())
+        .filter(Boolean)
+    : [];
+  return {
+    names: [...new Set(names)],
+    tags: typeof candidate.tags === 'string' ? candidate.tags : '',
+    enabled: candidate.enabled === true,
+  };
+}
+
+function addActiveEntry(
+  target: Record<string, CharacterFixedTagEntry>,
+  owner: string,
+  key: string,
+  value: unknown
+): void {
+  const entry = normalizeRuntimeEntry(value);
+  if (entry) {
+    target[`${owner}:${key}`] = entry;
+  }
+}
+
+/**
+ * Resolves the records eligible for the current runtime scope.
+ * Legacy/global records are intentionally ignored until explicitly assigned.
+ */
+export function resolveActiveCharacterFixedTags(
+  scopes: CharacterFixedTagScopes | undefined,
+  context: SillyTavernContext | null = getRuntimeContext()
+): ActiveCharacterFixedTagScope {
+  const entries: Record<string, CharacterFixedTagEntry> = {};
+  const chatTags: Record<string, CharacterFixedTagEntry> = {};
+
+  if (!context) {
+    return {chatTags, entries};
+  }
+
+  const activeScopes = scopes ?? {
+    schemaVersion: 2 as const,
+    characters: {},
+    personas: {},
+    legacy: {},
+  };
+
+  const characterKey = getCharacterScopeKey(context);
+  const personaKey = getPersonaScopeKey(context);
+
+  if (characterKey) {
+    addActiveEntry(
+      entries,
+      'character',
+      characterKey,
+      activeScopes.characters?.[characterKey]
+    );
+  }
+
+  if (personaKey) {
+    addActiveEntry(
+      entries,
+      'persona',
+      personaKey,
+      activeScopes.personas?.[personaKey]
+    );
+  }
+
+  const metadata = context.chatMetadata?.auto_illustrator;
+  const manualTags = metadata?.manualCharacterTags;
+  if (manualTags && typeof manualTags === 'object') {
+    for (const [key, value] of Object.entries(manualTags)) {
+      const entry = normalizeRuntimeEntry(value);
+      if (!entry) continue;
+      chatTags[key] = entry;
+      addActiveEntry(entries, 'chat', key, entry);
+    }
+  }
+
+  return {characterKey, personaKey, chatTags, entries};
+}
 
 /**
  * Person-indicator tags that signal a prompt depicts a character.
@@ -65,7 +224,33 @@ const NO_PERSON_INDICATORS = [
  */
 function isCharacterInText(names: string[], text: string): boolean {
   const lowerText = text.toLowerCase();
-  return names.some(name => lowerText.includes(name.toLowerCase()));
+  return names.some(name => {
+    const alias = name.trim();
+    if (!alias) return false;
+
+    const lowerAlias = alias.toLowerCase();
+    if (!/[a-z]/.test(lowerAlias)) {
+      return lowerText.includes(lowerAlias);
+    }
+
+    let offset = 0;
+    while (offset <= lowerText.length - lowerAlias.length) {
+      const index = lowerText.indexOf(lowerAlias, offset);
+      if (index < 0) return false;
+
+      const previous = lowerText[index - 1];
+      const next = lowerText[index + lowerAlias.length];
+      const isLatinWordCharacter = (value: string | undefined): boolean =>
+        !!value && /[a-z0-9_]/i.test(value);
+      if (!isLatinWordCharacter(previous) && !isLatinWordCharacter(next)) {
+        return true;
+      }
+
+      offset = index + Math.max(lowerAlias.length, 1);
+    }
+
+    return false;
+  });
 }
 
 /**
@@ -137,6 +322,7 @@ function applyLegacyCharacterFixedTags(
   }
 
   const characterGroups: string[] = [];
+  const seenGroups = new Set<string>();
 
   for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
     if (!entry.enabled) continue;
@@ -148,6 +334,10 @@ function applyLegacyCharacterFixedTags(
 
     const group = groupForEntry(entry);
     if (!group || groupAlreadyPresent(prompt, group)) continue;
+
+    const groupKey = group.toLowerCase();
+    if (seenGroups.has(groupKey)) continue;
+    seenGroups.add(groupKey);
 
     characterGroups.push(group);
   }
@@ -173,6 +363,7 @@ function applyPipeAwareCharacterFixedTags(
   let changed = false;
   const nextSegments = segments.map(segment => {
     let nextSegment = segment;
+    const seenGroups = new Set<string>();
     for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
       if (!entry.enabled || !entry.tags?.trim()) continue;
       const allNames = entry.names.length > 0 ? entry.names : [primaryName];
@@ -181,6 +372,9 @@ function applyPipeAwareCharacterFixedTags(
 
       const group = groupForEntry(entry);
       if (!group || groupAlreadyPresent(nextSegment, group)) continue;
+      const groupKey = group.toLowerCase();
+      if (seenGroups.has(groupKey)) continue;
+      seenGroups.add(groupKey);
       nextSegment = `${group}, ${nextSegment}`;
       changed = true;
     }
@@ -210,6 +404,7 @@ function applySectionAwareCharacterFixedTags(
   const nextLines = lines.map(line => {
     if (!/Character\s+\d+\s+Prompt:/i.test(line)) return line;
     let nextLine = line;
+    const seenGroups = new Set<string>();
 
     for (const [primaryName, entry] of Object.entries(characterFixedTags)) {
       if (!entry.enabled || !entry.tags?.trim()) continue;
@@ -219,6 +414,9 @@ function applySectionAwareCharacterFixedTags(
 
       const group = groupForEntry(entry);
       if (!group || groupAlreadyPresent(nextLine, group)) continue;
+      const groupKey = group.toLowerCase();
+      if (seenGroups.has(groupKey)) continue;
+      seenGroups.add(groupKey);
       nextLine = nextLine.replace(/Prompt:\s*/i, match => `${match}${group}, `);
       changed = true;
     }

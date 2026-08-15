@@ -71,6 +71,18 @@ describe('settings', () => {
       expect(defaultsA.characterFixedTags).not.toBe(
         defaultsB.characterFixedTags
       );
+      expect(defaultsA.characterFixedTagScopes).not.toBe(
+        defaultsB.characterFixedTagScopes
+      );
+      expect(defaultsA.characterFixedTagScopes.characters).not.toBe(
+        defaultsB.characterFixedTagScopes.characters
+      );
+      expect(defaultsA.characterFixedTagScopes.personas).not.toBe(
+        defaultsB.characterFixedTagScopes.personas
+      );
+      expect(defaultsA.characterFixedTagScopes.legacy).not.toBe(
+        defaultsB.characterFixedTagScopes.legacy
+      );
       expect(defaultsA.promptDetectionPatterns).not.toBe(
         defaultsB.promptDetectionPatterns
       );
@@ -187,6 +199,121 @@ describe('settings', () => {
 
       expect(loaded.enabled).toBe(false);
       expect(loaded.metaPrompt).toBeTruthy(); // Should use default
+    });
+
+    it('should migrate legacy character tags into unassigned storage without activation', () => {
+      const legacyEntry = {
+        names: [' Ann ', 'Ann', 42],
+        tags: 'blue eyes',
+        enabled: true,
+      };
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            characterFixedTags: {
+              ann: legacyEntry,
+            },
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.characterFixedTagScopes).toEqual({
+        schemaVersion: 2,
+        characters: {},
+        personas: {},
+        legacy: {
+          ann: {
+            names: ['Ann'],
+            tags: 'blue eyes',
+            enabled: true,
+          },
+        },
+      });
+      expect(loaded.characterFixedTags.ann).toEqual(legacyEntry);
+    });
+
+    it('should normalize scoped records and preserve explicitly assigned profiles', () => {
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            characterFixedTags: {
+              old: {names: ['Old'], tags: 'old', enabled: true},
+            },
+            characterFixedTagScopes: {
+              schemaVersion: 1,
+              characters: {
+                ' card-a ': {
+                  names: [' Alice ', '', 'Alice', 7],
+                  tags: 'portrait',
+                  enabled: true,
+                },
+                invalid: null,
+              },
+              personas: {
+                personaA: {
+                  names: ['User'],
+                  tags: 123,
+                  enabled: 'yes',
+                },
+              },
+              legacy: {
+                old: {names: ['Scoped Old'], tags: 'scoped', enabled: false},
+              },
+            },
+          },
+        },
+      });
+
+      const loaded = loadSettings(mockContext);
+
+      expect(loaded.characterFixedTagScopes).toEqual({
+        schemaVersion: 2,
+        characters: {
+          'card-a': {
+            names: ['Alice'],
+            tags: 'portrait',
+            enabled: true,
+          },
+        },
+        personas: {
+          personaA: {
+            names: ['User'],
+            tags: '',
+            enabled: false,
+          },
+        },
+        legacy: {
+          old: {names: ['Scoped Old'], tags: 'scoped', enabled: false},
+        },
+      });
+    });
+
+    it('should keep legacy migration idempotent across save and reload', () => {
+      const mockSaveDebounced = vi.fn();
+      const mockContext = createMockContext({
+        extensionSettings: {
+          [EXTENSION_NAME]: {
+            characterFixedTags: {
+              ann: {names: ['Ann'], tags: 'blue eyes', enabled: true},
+            },
+          },
+        },
+        saveSettingsDebounced: mockSaveDebounced,
+      });
+
+      const firstLoad = loadSettings(mockContext);
+      saveSettings(firstLoad, mockContext);
+      const secondLoad = loadSettings(mockContext);
+
+      expect(secondLoad.characterFixedTagScopes.legacy).toEqual(
+        firstLoad.characterFixedTagScopes.legacy
+      );
+      expect(Object.keys(secondLoad.characterFixedTagScopes.legacy)).toEqual([
+        'ann',
+      ]);
+      expect(mockSaveDebounced).toHaveBeenCalledTimes(1);
     });
 
     it('should clamp persisted numeric settings to safe ranges on load', () => {

@@ -6,7 +6,10 @@
 import {ImageGenerationQueue} from './streaming_image_queue';
 import {generateImageWithMetadata} from './image_generator';
 import {createPlaceholderUrl} from './placeholder';
-import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {
+  applyCharacterFixedTags,
+  resolveActiveCharacterFixedTags,
+} from './services/character_fixed_tags_service';
 import {normalizePromptTagsWithCatalog} from './services/tag_catalog_prompt';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
@@ -180,7 +183,10 @@ export class QueueProcessor {
       const injectedPrompt = applyCharacterFixedTags(
         normalizedPrompt,
         messageText,
-        this.settings.characterFixedTags,
+        resolveActiveCharacterFixedTags(
+          this.settings.characterFixedTagScopes,
+          context
+        ).entries,
         this.settings.characterFixedTagInjectionMode
       );
 

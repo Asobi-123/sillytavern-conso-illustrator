@@ -7,8 +7,11 @@
  */
 
 import promptWritingGuidelinesSfw from './presets/prompt_writing_guidelines.md';
-import type {CharacterFixedTagEntry} from './types';
-import type {CharacterFixedTagInjectionMode} from './types';
+import type {
+  CharacterFixedTagEntry,
+  CharacterFixedTagInjectionMode,
+  CharacterFixedTagScopes,
+} from './types';
 import type {StyleTagPosition} from './types';
 import type {
   GenerationStylePreset,
@@ -28,7 +31,7 @@ export const EXTENSION_NAME = 'auto_illustrator_conso';
 /**
  * Extension version (single source of truth)
  */
-export const EXTENSION_VERSION = '1.15.1';
+export const EXTENSION_VERSION = '1.15.2';
 
 /**
  * GitHub repository for update checks
@@ -435,6 +438,12 @@ export const DEFAULT_SETTINGS = {
   apiProfiles: [] as ApiProfile[],
   currentApiProfileId: '',
   characterFixedTags: {} as Record<string, CharacterFixedTagEntry>,
+  characterFixedTagScopes: {
+    schemaVersion: 2,
+    characters: {},
+    personas: {},
+    legacy: {},
+  } as CharacterFixedTagScopes,
   characterFixedTagInjectionMode: 'legacy' as CharacterFixedTagInjectionMode,
   standalonePromptCount: STANDALONE_PROMPT_COUNT.DEFAULT,
   promptLibraryEntries: [] as PromptLibraryEntry[],

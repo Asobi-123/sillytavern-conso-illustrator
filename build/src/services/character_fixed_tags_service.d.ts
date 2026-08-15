@@ -8,7 +8,22 @@
  * - Each character's tags are wrapped in {} to prevent multi-character confusion
  *   e.g. {lu zhiwei, girl, orange long hair}, {shen geye, boy, yellow short hair}
  */
-import type { CharacterFixedTagEntry, CharacterFixedTagInjectionMode } from '../types';
+import type { CharacterFixedTagEntry, CharacterFixedTagInjectionMode, CharacterFixedTagScopes } from '../types';
+export interface ActiveCharacterFixedTagScope {
+    /** Stable SillyTavern character-card avatar filename, when available. */
+    characterKey?: string;
+    /** Stable SillyTavern persona avatar filename, when available. */
+    personaKey?: string;
+    /** Current chat's manually assigned NPC records. */
+    chatTags: Record<string, CharacterFixedTagEntry>;
+    /** Combined active records ready for prompt injection. */
+    entries: Record<string, CharacterFixedTagEntry>;
+}
+/**
+ * Resolves the records eligible for the current runtime scope.
+ * Legacy/global records are intentionally ignored until explicitly assigned.
+ */
+export declare function resolveActiveCharacterFixedTags(scopes: CharacterFixedTagScopes | undefined, context?: SillyTavernContext | null): ActiveCharacterFixedTagScope;
 /**
  * Applies character fixed tags to a prompt based on which characters appear in the message.
  *

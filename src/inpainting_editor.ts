@@ -1,7 +1,10 @@
 import {NAI_IMAGE_EDIT} from './constants';
 import {t} from './i18n';
 import {createLogger} from './logger';
-import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {
+  applyCharacterFixedTags,
+  resolveActiveCharacterFixedTags,
+} from './services/character_fixed_tags_service';
 import {generateNovelAiInpaintBase64} from './services/inpainting';
 import {
   normalizeBase64Image,
@@ -710,12 +713,14 @@ function createCheckboxField(
 function enhancePromptForInpaint(
   promptText: string,
   messageText: string,
-  settings: AutoIllustratorSettings
+  settings: AutoIllustratorSettings,
+  context: SillyTavernContext
 ): string {
   const characterPrompt = applyCharacterFixedTags(
     promptText,
     messageText,
-    settings.characterFixedTags,
+    resolveActiveCharacterFixedTags(settings.characterFixedTagScopes, context)
+      .entries,
     settings.characterFixedTagInjectionMode
   );
   return applyCommonTags(
@@ -1226,7 +1231,8 @@ export async function openInpaintingEditor(
             prompt: enhancePromptForInpaint(
               promptText,
               options.messageText,
-              options.settings
+              options.settings,
+              options.context
             ),
             negativePrompt: negativeTextarea.value.trim() || undefined,
             baseImageDataUrl: rawRequestBaseDataUrl,

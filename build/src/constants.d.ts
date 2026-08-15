@@ -5,8 +5,7 @@
  * This module provides a single source of truth for all settings-related
  * constants to avoid magic numbers scattered throughout the codebase.
  */
-import type { CharacterFixedTagEntry } from './types';
-import type { CharacterFixedTagInjectionMode } from './types';
+import type { CharacterFixedTagEntry, CharacterFixedTagInjectionMode, CharacterFixedTagScopes } from './types';
 import type { StyleTagPosition } from './types';
 import type { GenerationStylePreset, PromptLibraryEntry, TagCatalogEntry, VibeLibraryItem, VibeTransferCombination, VibeTransferPreset, VibeTransferReferenceImage } from './types';
 /**
@@ -16,7 +15,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.15.1";
+export declare const EXTENSION_VERSION = "1.15.2";
 /**
  * GitHub repository for update checks
  */
@@ -357,6 +356,7 @@ export declare const DEFAULT_SETTINGS: {
     apiProfiles: ApiProfile[];
     currentApiProfileId: string;
     characterFixedTags: Record<string, CharacterFixedTagEntry>;
+    characterFixedTagScopes: CharacterFixedTagScopes;
     characterFixedTagInjectionMode: CharacterFixedTagInjectionMode;
     standalonePromptCount: 3;
     promptLibraryEntries: PromptLibraryEntry[];

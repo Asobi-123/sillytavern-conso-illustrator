@@ -99,6 +99,8 @@ export interface AutoIllustratorChatMetadata {
     worldInfoConfig?: PluginWorldInfoConfig;
     /** Manually added character tag keys for this chat (per-chat) */
     manualCharacterTagKeys?: string[];
+    /** Manually added NPC tag profiles, scoped to this chat. */
+    manualCharacterTags?: Record<string, CharacterFixedTagEntry>;
 }
 /**
  * Gallery widget state stored in chat metadata
@@ -175,6 +177,16 @@ export interface CharacterFixedTagEntry {
     tags: string;
     /** Whether this entry is enabled */
     enabled: boolean;
+}
+/** Versioned fixed-tag profiles, partitioned by their owning runtime entity. */
+export interface CharacterFixedTagScopes {
+    schemaVersion: 2;
+    /** Profiles keyed by the SillyTavern character card avatar filename. */
+    characters: Record<string, CharacterFixedTagEntry>;
+    /** Profiles keyed by the SillyTavern persona avatar filename. */
+    personas: Record<string, CharacterFixedTagEntry>;
+    /** Legacy global records awaiting explicit owner assignment. Never inject. */
+    legacy: Record<string, CharacterFixedTagEntry>;
 }
 export type CharacterFixedTagInjectionMode = 'legacy' | 'structure-aware' | 'skip-unmatched-multichar';
 export interface TagCatalogEntry {

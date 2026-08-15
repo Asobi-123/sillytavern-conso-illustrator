@@ -10,6 +10,8 @@ import {createPromptLibraryContent} from './prompt_library_ui';
 import {createTagCatalogContent} from './tag_catalog_ui';
 import {createPresetImportContent} from './preset_import_ui';
 import type {
+  CharacterFixedTagEntry,
+  CharacterFixedTagScopes,
   GenerationStylePreset,
   TagCatalogEntry,
   VibeLibraryGenerationSettings,
@@ -55,6 +57,74 @@ const logger = createLogger('Settings');
 export {EXTENSION_NAME};
 
 const TAG_CATALOG_CATEGORY_SET = new Set<string>(TAG_CATALOG_CATEGORIES);
+
+function normalizeCharacterFixedTagEntry(
+  value: unknown
+): CharacterFixedTagEntry | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const candidate = value as Partial<CharacterFixedTagEntry>;
+  const names = Array.isArray(candidate.names)
+    ? candidate.names
+        .filter((name: unknown): name is string => typeof name === 'string')
+        .map(name => name.trim())
+        .filter(Boolean)
+    : [];
+
+  return {
+    names: [...new Set(names)],
+    tags: typeof candidate.tags === 'string' ? candidate.tags : '',
+    enabled: candidate.enabled === true,
+  };
+}
+
+function normalizeCharacterFixedTagRecords(
+  value: unknown
+): Record<string, CharacterFixedTagEntry> {
+  const source =
+    value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
+  const records: Record<string, CharacterFixedTagEntry> = {};
+
+  for (const [rawKey, rawEntry] of Object.entries(source)) {
+    const key = rawKey.trim();
+    const entry = normalizeCharacterFixedTagEntry(rawEntry);
+    if (key && entry) {
+      records[key] = entry;
+    }
+  }
+
+  return records;
+}
+
+function normalizeCharacterFixedTagScopes(
+  value: unknown,
+  legacyValue: unknown
+): CharacterFixedTagScopes {
+  const source =
+    value && typeof value === 'object'
+      ? (value as Partial<CharacterFixedTagScopes>)
+      : {};
+  const legacy = normalizeCharacterFixedTagRecords(source.legacy);
+
+  // Old records have no owner information. Preserve them for explicit assignment,
+  // but never make them candidates for automatic injection.
+  for (const [key, entry] of Object.entries(
+    normalizeCharacterFixedTagRecords(legacyValue)
+  )) {
+    if (!legacy[key]) {
+      legacy[key] = entry;
+    }
+  }
+
+  return {
+    schemaVersion: 2,
+    characters: normalizeCharacterFixedTagRecords(source.characters),
+    personas: normalizeCharacterFixedTagRecords(source.personas),
+    legacy,
+  };
+}
 
 function normalizeVibeGenerationSettings(
   value: unknown,
@@ -533,6 +603,12 @@ export function getDefaultSettings(): AutoIllustratorSettings {
     customIndependentLlmPresets: [],
     apiProfiles: [],
     characterFixedTags: {},
+    characterFixedTagScopes: {
+      schemaVersion: 2,
+      characters: {...DEFAULT_SETTINGS.characterFixedTagScopes.characters},
+      personas: {...DEFAULT_SETTINGS.characterFixedTagScopes.personas},
+      legacy: {...DEFAULT_SETTINGS.characterFixedTagScopes.legacy},
+    },
     customTagCatalogEntries: [],
     customTagBridgeTriggers: {},
     tagCatalogCandidateLimits: {
@@ -569,6 +645,11 @@ export function loadSettings(
     ...defaults,
     ...saved,
   };
+
+  merged.characterFixedTagScopes = normalizeCharacterFixedTagScopes(
+    merged.characterFixedTagScopes,
+    saved.characterFixedTags
+  );
 
   logger.debug('Merged settings:', {
     mergedMetaPromptDepth: merged.metaPromptDepth,

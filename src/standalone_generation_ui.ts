@@ -11,7 +11,10 @@ import {
   generateImageWithMetadata,
   setImageSubfolderLabel,
 } from './image_generator';
-import {applyCharacterFixedTags} from './services/character_fixed_tags_service';
+import {
+  applyCharacterFixedTags,
+  resolveActiveCharacterFixedTags,
+} from './services/character_fixed_tags_service';
 import {normalizePromptTagsWithCatalog} from './services/tag_catalog_prompt';
 import {buildSdStyleConfigFromSettings} from './services/sd_style_randomizer';
 import {
@@ -410,7 +413,8 @@ async function generateForCard(
   const prompt = applyCharacterFixedTags(
     normalizedPrompt,
     sceneDescription,
-    settings.characterFixedTags,
+    resolveActiveCharacterFixedTags(settings.characterFixedTagScopes, context)
+      .entries,
     settings.characterFixedTagInjectionMode
   );
 
@@ -742,7 +746,8 @@ export function initializeStandaloneGeneration(
     const prompt = applyCharacterFixedTags(
       normalizedPrompt,
       rawPrompt,
-      settings.characterFixedTags,
+      resolveActiveCharacterFixedTags(settings.characterFixedTagScopes, context)
+        .entries,
       settings.characterFixedTagInjectionMode
     );
 

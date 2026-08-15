@@ -1108,6 +1108,14 @@ Result: Extension doesn't interfere with custom API calls
 
 **CHAR-TAGS-005**: Fixed tags are most appropriate for stable character identity and appearance. Current clothing, pose, expression, and scene facts still belong to the active prompt generation context unless the user intentionally locks them as fixed tags.
 
+**CHAR-TAGS-006**: Fixed-tag profiles MUST be scoped to the active character-card avatar, active persona avatar, or current chat metadata. A profile owned by another card, persona, or chat MUST NOT be eligible for injection.
+
+**CHAR-TAGS-007**: Legacy flat profiles MUST migrate losslessly into an unassigned collection. They MUST remain visible for explicit assignment or deletion but MUST NOT inject automatically.
+
+**CHAR-TAGS-008**: Scope isolation MUST affect only fixed-tag selection for image prompts. Independent API and standalone LLM context construction MUST continue to honor character description, persona, scenario, and world-info settings.
+
+**CHAR-TAGS-009**: Latin aliases MUST use token boundaries; CJK aliases MUST retain literal matching. Empty aliases MUST be ignored.
+
 ### 10.5 UI Requirements
 
 **PPS-UI-001**: Tag Catalog and Preset Adapter are low-frequency tools and SHOULD open as separate floating-panel overlays rather than occupying the prompt settings content flow.
@@ -1579,6 +1587,7 @@ Result: Widget state correctly tied to current chat
 | 1.5 | 2026-07-03 | Added Vibe Manager, encoded bundle import/export, per-card Vibe parameters, fixed/random SD Style + Vibe combination selection, and backend plugin version policy requirements |
 | 1.6 | 2026-07-09 | Added backend Vibe source-image storage by hash and immediate Vibe cache status refresh requirements |
 | 1.7 | 2026-07-20 | Clarified unlimited Vibe library capacity; added encoded and image-backed single-item import/export, external group JSON import, automatic group splitting, saved-set rename, backend source persistence, and unique export ID requirements |
+| 1.15.2 | 2026-08-15 | Added owner-scoped Character Fixed Tags, lossless legacy migration, alias boundary matching, and Independent API context invariants |
 
 ---
 

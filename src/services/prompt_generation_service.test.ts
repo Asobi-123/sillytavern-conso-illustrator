@@ -6,12 +6,17 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 vi.mock('./worldinfo_service', () => ({
   fetchWorldBookEntries: vi.fn(),
 }));
+vi.mock('./independent_llm', () => ({
+  callIndependentLlmApi: vi.fn(),
+}));
 import {
   generatePromptsForMessage,
   generateStandalonePrompts,
   buildWorldInfoSection,
+  buildCharacterInfoSection,
 } from './prompt_generation_service';
 import {fetchWorldBookEntries} from './worldinfo_service';
+import {callIndependentLlmApi} from './independent_llm';
 
 describe('prompt_generation_service', () => {
   let mockContext: SillyTavernContext;
@@ -28,6 +33,84 @@ describe('prompt_generation_service', () => {
       maxPromptsPerMessage: 5,
       promptGenerationMode: 'llm-post',
     } as AutoIllustratorSettings;
+    vi.mocked(callIndependentLlmApi).mockReset();
+  });
+
+  it('should preserve active character and persona context fields', () => {
+    const context = {
+      characterId: 0,
+      name1: 'User A',
+      name2: 'Alice',
+      characters: [{name: 'Alice', avatar: 'alice.png'}],
+      getCharacterCardFields: vi.fn(() => ({
+        description: 'Alice description',
+        personality: 'Alice personality',
+        persona: 'User persona',
+        scenario: 'A shared scenario',
+      })),
+    } as unknown as SillyTavernContext;
+    vi.stubGlobal('SillyTavern', {getContext: () => context});
+
+    const result = buildCharacterInfoSection(context, {
+      injectCharacterDescription: true,
+      injectUserPersona: true,
+      injectScenario: true,
+    } as AutoIllustratorSettings);
+
+    expect(result).toContain('Character Name: Alice');
+    expect(result).toContain('Character Description: Alice description');
+    expect(result).toContain('User Name: User A');
+    expect(result).toContain('User Persona: User persona');
+    expect(result).toContain('Scenario: A shared scenario');
+  });
+
+  it('should retain character and persona context in independent API mode', async () => {
+    const context = {
+      characterId: 0,
+      name1: 'User A',
+      name2: 'Alice',
+      characters: [{name: 'Alice', avatar: 'alice.png'}],
+      chat: [],
+      getCharacterCardFields: () => ({
+        description: 'Alice description',
+        personality: '',
+        persona: 'User persona',
+        scenario: 'A shared scenario',
+      }),
+    } as unknown as SillyTavernContext;
+    vi.stubGlobal('SillyTavern', {getContext: () => context});
+    vi.mocked(callIndependentLlmApi).mockResolvedValue(
+      `---PROMPT---
+TEXT: 1girl, garden
+INSERT_AFTER: Alice
+INSERT_BEFORE: garden
+---END---`
+    );
+
+    const result = await generatePromptsForMessage(
+      'Alice entered the garden.',
+      context,
+      {
+        maxPromptsPerMessage: 5,
+        promptGenerationMode: 'independent-api',
+        useIndependentLlmApi: true,
+        injectCharacterDescription: true,
+        injectUserPersona: true,
+        injectScenario: true,
+      } as AutoIllustratorSettings
+    );
+
+    expect(result).toHaveLength(1);
+    expect(callIndependentLlmApi).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('Character Description: Alice description'),
+      expect.anything()
+    );
+    expect(callIndependentLlmApi).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('User Persona: User persona'),
+      expect.anything()
+    );
   });
 
   describe('generatePromptsForMessage', () => {
@@ -595,6 +678,55 @@ REASONING: Test
   });
 
   describe('generateStandalonePrompts', () => {
+    it('should retain character and persona context for standalone independent API generation', async () => {
+      const context = {
+        characterId: 0,
+        name1: 'User A',
+        name2: 'Alice',
+        characters: [{name: 'Alice', avatar: 'alice.png'}],
+        getCharacterCardFields: () => ({
+          description: 'Alice description',
+          personality: '',
+          persona: 'User persona',
+          scenario: 'A shared scenario',
+        }),
+      } as unknown as SillyTavernContext;
+      vi.stubGlobal('SillyTavern', {getContext: () => context});
+      vi.mocked(callIndependentLlmApi).mockResolvedValue(
+        `---PROMPT---
+TEXT: 1girl, garden
+REASONING: context preserved
+---END---`
+      );
+
+      const result = await generateStandalonePrompts(
+        'Alice in a garden',
+        1,
+        true,
+        false,
+        context,
+        {
+          promptGenerationMode: 'independent-api',
+          useIndependentLlmApi: true,
+          injectCharacterDescription: true,
+          injectUserPersona: true,
+          injectScenario: true,
+        } as AutoIllustratorSettings
+      );
+
+      expect(result).toHaveLength(1);
+      expect(callIndependentLlmApi).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('Character Name: Alice'),
+        expect.anything()
+      );
+      expect(callIndependentLlmApi).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('User Persona: User persona'),
+        expect.anything()
+      );
+    });
+
     it('should throw categorized error when standalone LLM returns empty response', async () => {
       vi.mocked(mockContext.generateRaw).mockResolvedValue('   ');
       mockSettings.promptGenerationMode = 'shared-api';
