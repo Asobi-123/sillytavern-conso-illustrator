@@ -778,9 +778,25 @@ Result:
 
 **Anti-pattern**: never copy or replicate `extension_settings.sd.styles` into the extension's own settings. Styles remain a SillyTavern stable-diffusion extension artifact; this feature only randomizes the choice, never owns the data.
 
-### 8.7 NovelAI Vibe Transfer
+### 8.7 NovelAI Diffusion V5 Compatibility
 
-### 8.8 NovelAI Inpaint
+**NAI5-001**: When the active image source is NovelAI and SillyTavern's native `#sd_model` list lacks V5, the extension must add V5 Curated (`nai-diffusion-5-curated`) and V5 Full (`nai-diffusion-5-full`) without bypassing the native `/sd` command.
+
+**NAI5-002**: The compatibility layer must preserve a selected V5 model across native selector refreshes, must not duplicate or relabel V5 options supplied by a newer SillyTavern, and must not alter selectors for other image sources.
+
+**NAI5-003**: Existing users must not be migrated to V5 automatically. The default meta-prompt preset and saved selections remain unchanged; `NAI V5` is an additional predefined preset.
+
+**NAI5-004**: V5 text-to-image defaults are 832x1216, 23 steps, CFG 7, `k_euler_ancestral`, `karras`, and parameter schema version 4. Documentation must keep these separate from V4/V4.5 recommendations.
+
+**NAI5-005**: V5 Vibe Transfer is unsupported at launch. A V5 generation with active Vibe references must fail locally with an actionable localized message before an advanced NovelAI request. It must not silently discard Vibe or change the selected text-to-image model.
+
+**NAI5-006**: V5 Full inpainting uses `nai-diffusion-5-full-inpainting`. V5 Curated inpainting temporarily uses `nai-diffusion-4-5-curated-inpainting` to match the launch behavior of NovelAI's frontend.
+
+**Anti-pattern**: do not modify SillyTavern core, add a second NovelAI credential, claim V5 Vibe support, or route ordinary V5 text-to-image around `/sd`.
+
+### 8.8 NovelAI Vibe Transfer
+
+### 8.9 NovelAI Inpaint
 
 **Desired Behavior**
 
@@ -1588,6 +1604,7 @@ Result: Widget state correctly tied to current chat
 | 1.6 | 2026-07-09 | Added backend Vibe source-image storage by hash and immediate Vibe cache status refresh requirements |
 | 1.7 | 2026-07-20 | Clarified unlimited Vibe library capacity; added encoded and image-backed single-item import/export, external group JSON import, automatic group splitting, saved-set rename, backend source persistence, and unique export ID requirements |
 | 1.15.2 | 2026-08-15 | Added owner-scoped Character Fixed Tags, lossless legacy migration, alias boundary matching, and Independent API context invariants |
+| 1.16 | 2026-08-21 | Added NovelAI Diffusion V5 model compatibility, launch capability boundaries, request mapping, and NAI V5 prompt guidance |
 
 ---
 

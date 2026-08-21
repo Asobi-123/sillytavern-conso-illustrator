@@ -14,14 +14,15 @@ describe('meta_prompt_presets', () => {
     it('should return array of predefined presets', () => {
       const presets = getPredefinedPresets();
       expect(Array.isArray(presets)).toBe(true);
-      expect(presets.length).toBe(2);
+      expect(presets.length).toBe(3);
     });
 
-    it('should include default and NAI 4.5 Full presets', () => {
+    it('should include default, NAI 4.5 Full, and NAI V5 presets', () => {
       const presets = getPredefinedPresets();
       const ids = presets.map(p => p.id);
       expect(ids).toContain('default');
       expect(ids).toContain('nai-4.5-full');
+      expect(ids).toContain('nai-v5');
     });
 
     it('should have all required fields for each preset', () => {
@@ -54,6 +55,13 @@ describe('meta_prompt_presets', () => {
       expect(preset).toBeDefined();
       expect(preset?.id).toBe('nai-4.5-full');
       expect(preset?.name).toBe('NAI 4.5 Full');
+      expect(preset?.predefined).toBe(true);
+    });
+
+    it('should return NAI V5 preset by ID', () => {
+      const preset = getPredefinedPresetById('nai-v5');
+      expect(preset).toBeDefined();
+      expect(preset?.name).toBe('NAI V5');
       expect(preset?.predefined).toBe(true);
     });
 
@@ -114,6 +122,10 @@ describe('meta_prompt_presets', () => {
 
     it('should return true for NAI 4.5 Full preset ID', () => {
       expect(isPresetPredefined('nai-4.5-full')).toBe(true);
+    });
+
+    it('should return true for NAI V5 preset ID', () => {
+      expect(isPresetPredefined('nai-v5')).toBe(true);
     });
 
     it('should return false for custom preset ID', () => {
@@ -190,6 +202,18 @@ describe('meta_prompt_presets', () => {
       expect(preset?.template).toContain('Example Prompts');
       expect(preset?.template).toContain('<!--img-prompt=');
     });
+
+    it('NAI V5 preset should use V5 guidance and official quality suffix', () => {
+      const preset = getPredefinedPresetById('nai-v5');
+      expect(preset?.template).toContain('NovelAI Diffusion V5');
+      expect(preset?.template).toContain(
+        'very aesthetic, masterpiece, no text'
+      );
+      expect(preset?.template).toContain('base scene | first character');
+      expect(preset?.template).toContain(
+        'Do not automatically append older V4.5 suffixes'
+      );
+    });
   });
 
   describe('PRESET_IDS constants', () => {
@@ -199,6 +223,10 @@ describe('meta_prompt_presets', () => {
 
     it('should export NAI_45_FULL preset ID', () => {
       expect(PRESET_IDS.NAI_45_FULL).toBe('nai-4.5-full');
+    });
+
+    it('should export NAI_V5 preset ID', () => {
+      expect(PRESET_IDS.NAI_V5).toBe('nai-v5');
     });
   });
 });

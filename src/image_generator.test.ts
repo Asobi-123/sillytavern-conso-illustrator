@@ -151,6 +151,26 @@ describe('Image Generator V2', () => {
       expect(sd.prompt_prefix).toBe('orig-p');
       expect(sd.negative_prompt).toBe('orig-n');
     });
+
+    it('normalizes an unsupported NovelAI upscale ratio before /sd runs', async () => {
+      initializeConcurrencyLimiter(1);
+      const sdCallback = vi.fn().mockImplementation(async () => {
+        expect(ctx.extensionSettings.sd.hr_scale).toBe(1);
+        return 'http://ok/img.png';
+      });
+      const ctx = {
+        SlashCommandParser: {commands: {sd: {callback: sdCallback}}},
+        extensionSettings: {
+          sd: {source: 'novel', model: 'nai-diffusion-5-full', hr_scale: 1.1},
+        },
+        saveSettingsDebounced: vi.fn(),
+      } as unknown as SillyTavernContext;
+
+      await expect(generateImage('a cat', ctx)).resolves.toBe(
+        'http://ok/img.png'
+      );
+      expect(sdCallback).toHaveBeenCalledOnce();
+    });
   });
 
   describe('insertDeferredImages', () => {

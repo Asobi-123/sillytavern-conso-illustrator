@@ -45,6 +45,14 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 
+### NovelAI V5 Configuration
+
+- Model: `nai-diffusion-5-full` or `nai-diffusion-5-curated`
+- Recommended settings: 832x1216, 23 steps, CFG 7, `k_euler_ancestral`, `karras`
+- Opus Anlas Guard range: no more than 1024x1024 total pixels and no more than 28 steps
+- V5 does not support Vibe Transfer at launch; use V4/V4.5 when Vibe is required
+- V5 Full inpainting uses its V5 model; V5 Curated currently uses V4.5 Curated inpainting
+
 ---
 
 ## Features
@@ -75,10 +83,11 @@ Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 | **Built-in Regex Filtering** | Keeps illustration metadata in chat text and filters illustration tags only from prompts sent to the model |
 | **Preset Adapter** | Upload JSON/text or write requirements to draft Conso-native Shared API meta prompts or Independent API guidelines |
 | **Generation SD Style and Vibe Combination** | Choose off, fixed, or per-generation random SD Style / Vibe combination picks, and save reusable pairings |
-| **NovelAI Vibe Transfer** | Optional reference-image and encoded-Vibe conditioning for chat and standalone generation, with Vibe Manager, encoded or image-backed `.naiv4vibe`, bundle import, group JSON import/export, and V4/V4.5 encoding cache |
+| **NovelAI V5 Compatibility** | Adds V5 Curated / Full to older SillyTavern model selectors while preserving native `/sd`; deduplicates automatically when SillyTavern adds them |
+| **NovelAI Vibe Transfer** | Optional reference-image and encoded-Vibe conditioning for chat and standalone generation, with Vibe Manager, encoded or image-backed `.naiv4vibe`, bundle import, group JSON import/export, and V4/V4.5 encoding cache; V5 is not supported at launch |
 | **NovelAI Inpaint** | Paint a mask on an existing image, preview the edit, then append or replace the original; supports canvas zoom, edge feather, mask padding, and edge guard |
 | **Message Content Filter** | Strip HTML tags and CSS noise before sending to LLM |
-| **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full) + custom preset management |
+| **Meta Prompt Presets** | Built-in presets (Default, NAI 4.5 Full, NAI V5) + custom preset management |
 
 ### Configuration & Management
 
@@ -151,8 +160,8 @@ Some NovelAI advanced features require the companion server plugin: Vibe Transfe
 
 Backend folder: `server-plugin/auto-illustrator-nai-advanced`. Install it, enable `enableServerPlugins`, and restart SillyTavern before using advanced features. Replace the folder under SillyTavern `plugins/` only when the panel reports an outdated backend plugin or release notes explicitly mention backend changes.
 
-- **Vibe Transfer**: adds NovelAI reference-image or encoded-Vibe conditioning for chat generation, standalone generation, bundle import, and Group JSON import/export.
-- **Inpaint**: paint a mask on an existing image, preview the edit, then append or replace.
+- **Vibe Transfer**: adds reference-image or encoded-Vibe conditioning for NovelAI V4/V4.5. NovelAI V5 does not support Vibe Transfer at launch.
+- **Inpaint**: paint a mask on an existing image, preview the edit, then append or replace. V5 Full uses V5 inpainting; V5 Curated currently falls back to V4.5 Curated inpainting.
 
 Full installation and usage: [NovelAI advanced backend tutorial](docs/QUICKSTART_CN.md#novelai-高级后端功能可选进阶).
 
@@ -188,7 +197,7 @@ Long text editors support fullscreen viewing/editing. The original image action 
 | Chinese text does not match the wanted catalog tag | Open **Tag Catalog**, inspect gaps with the “No zh triggers” filter, and add local triggers for the tag when needed |
 | You want to know which candidate tags were sent | Open **Tag Catalog → Last AI candidates** to inspect the source text and exact candidate tags |
 | External preset format is hard to convert | Use **Preset Adapter** to upload JSON/text or write requirements, then review the generated draft before saving |
-| Prompts are inaccurate | Try **Independent API mode** with **NAI 4.5 Full** preset |
+| Prompts are inaccurate | Use **NAI V5** for V5 generation, or **NAI 4.5 Full** when using Vibe Transfer |
 | Too many console logs | Adjust **Log Level** in settings (default: INFO) |
 
 For detailed troubleshooting, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).

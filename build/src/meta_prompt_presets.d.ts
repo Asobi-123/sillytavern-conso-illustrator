@@ -17,6 +17,7 @@ export interface MetaPromptPreset {
 export declare const PRESET_IDS: {
     readonly DEFAULT: "default";
     readonly NAI_45_FULL: "nai-4.5-full";
+    readonly NAI_V5: "nai-v5";
 };
 /**
  * Gets all predefined presets

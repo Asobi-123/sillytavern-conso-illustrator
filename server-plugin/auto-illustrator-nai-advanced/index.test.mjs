@@ -2,6 +2,12 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
 
 import {validateRequestBody} from './request_validation.mjs';
+import {
+  buildNovelAiInpaintRequestBody,
+  buildNovelAiRequestBody,
+  calculateSkipCfgAboveSigma,
+  resolveInpaintingModel,
+} from './novelai_request.mjs';
 
 function createValidBody(overrides = {}) {
   return {
@@ -16,6 +22,14 @@ function createValidBody(overrides = {}) {
 }
 
 describe('auto-illustrator advanced backend validation', () => {
+  it('rejects V5 Vibe requests', () => {
+    const error = validateRequestBody(
+      createValidBody({model: 'nai-diffusion-5-full'})
+    );
+
+    assert.equal(error, 'NovelAI V5 does not support Vibe Transfer');
+  });
+
   it('accepts migrated source-hash-only Vibe references', () => {
     const error = validateRequestBody(
       createValidBody({
@@ -52,6 +66,73 @@ describe('auto-illustrator advanced backend validation', () => {
     assert.equal(
       error,
       'at least one reference image, source hash, or encoded vibe is required'
+    );
+  });
+});
+
+describe('auto-illustrator NovelAI V5 request mapping', () => {
+  it('uses parameter schema 4 and the V5 CFG-delay baseline', () => {
+    const body = buildNovelAiRequestBody(
+      {
+        prompt: '1girl',
+        model: 'nai-diffusion-5-full',
+        width: 832,
+        height: 1216,
+        variety_boost: true,
+      },
+      []
+    );
+
+    assert.equal(body.parameters.params_version, 4);
+    assert.equal(
+      body.parameters.skip_cfg_above_sigma,
+      calculateSkipCfgAboveSigma(832, 1216, 'nai-diffusion-5-full')
+    );
+    assert.equal(body.parameters.skip_cfg_above_sigma, 58);
+  });
+
+  it('keeps V4.5 on parameter schema 3 with the same CFG-delay baseline', () => {
+    const body = buildNovelAiRequestBody(
+      {
+        prompt: '1girl',
+        model: 'nai-diffusion-4-5-full',
+        width: 832,
+        height: 1216,
+        variety_boost: true,
+      },
+      []
+    );
+
+    assert.equal(body.parameters.params_version, 3);
+    assert.equal(body.parameters.skip_cfg_above_sigma, 58);
+  });
+
+  it('maps V5 inpainting models to the launch-supported endpoints', () => {
+    assert.equal(
+      resolveInpaintingModel('nai-diffusion-5-curated'),
+      'nai-diffusion-4-5-curated-inpainting'
+    );
+    assert.equal(
+      resolveInpaintingModel('nai-diffusion-5-full'),
+      'nai-diffusion-5-full-inpainting'
+    );
+    assert.equal(
+      buildNovelAiInpaintRequestBody({
+        prompt: '1girl',
+        model: 'nai-diffusion-5-full',
+      }).parameters.params_version,
+      4
+    );
+  });
+
+  it('preserves existing V4 and V4.5 inpainting mappings', () => {
+    assert.equal(
+      resolveInpaintingModel('nai-diffusion-4-5-curated'),
+      'nai-diffusion-4-5-curated-inpainting'
+    );
+    assert.equal(
+      resolveInpaintingModel('nai-diffusion-4-curated-preview'),
+      'nai-diffusion-4-curated-inpainting'
     );
   });
 });

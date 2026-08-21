@@ -14,15 +14,18 @@ import {
   storeVibeSource,
 } from './vibe_source_store.mjs';
 import {validateRequestBody} from './request_validation.mjs';
+import {
+  buildNovelAiInpaintRequestBody,
+  buildNovelAiRequestBody,
+  isV4Model,
+  normalizeBase64Image,
+} from './novelai_request.mjs';
 
 const IMAGE_NOVELAI = 'https://image.novelai.net';
 const API_NOVELAI = 'https://api.novelai.net';
-const REFERENCE_PIXEL_COUNT = 1011712;
-const SIGMA_MAGIC_NUMBER = 19;
-const SIGMA_MAGIC_NUMBER_V4_5 = 58;
 const MAX_ENCODED_CACHE_PER_REFERENCE = 8;
 const INPAINT_TIMEOUT_MS = 120000;
-const SERVER_PLUGIN_VERSION = '2026-07-08-vibe-source-store-v2';
+const SERVER_PLUGIN_VERSION = '2026-08-21-nai-v5-v1';
 
 export const info = {
   id: 'auto-illustrator-nai-advanced',
@@ -44,44 +47,6 @@ async function loadSillyTavernInternals() {
     SECRET_KEYS: secrets.SECRET_KEYS,
     extractFileFromZipBuffer: util.extractFileFromZipBuffer,
   };
-}
-
-function calculateSkipCfgAboveSigma(width, height, modelName) {
-  const magicConstant = modelName?.includes('nai-diffusion-4-5')
-    ? SIGMA_MAGIC_NUMBER_V4_5
-    : SIGMA_MAGIC_NUMBER;
-  const pixelCount = width * height;
-  const ratio = pixelCount / REFERENCE_PIXEL_COUNT;
-  return Math.pow(ratio, 0.5) * magicConstant;
-}
-
-function isV4Model(modelName) {
-  return String(modelName ?? '').includes('nai-diffusion-4');
-}
-
-function resolveInpaintingModel(modelName) {
-  const model = String(modelName ?? 'nai-diffusion');
-  if (model.includes('inpainting')) {
-    return model;
-  }
-  if (model === 'nai-diffusion') {
-    return 'nai-diffusion-inpainting';
-  }
-  return `${model.replace('-preview', '')}-inpainting`;
-}
-
-function normalizeBase64Image(image) {
-  if (typeof image !== 'string') {
-    return '';
-  }
-
-  const trimmed = image.trim();
-  const commaIndex = trimmed.indexOf(',');
-  const payload =
-    trimmed.startsWith('data:') && commaIndex >= 0
-      ? trimmed.slice(commaIndex + 1)
-      : trimmed;
-  return payload.replace(/\s+/g, '');
 }
 
 function createRequestId(prefix) {
@@ -113,156 +78,6 @@ function summarizeInpaintRequest(body, routeRequestId) {
 async function readNovelAiKey(request) {
   const {readSecret, SECRET_KEYS} = await loadSillyTavernInternals();
   return readSecret(request.user.directories, SECRET_KEYS.NOVEL) || '';
-}
-
-function buildNovelAiRequestBody(requestBody, references) {
-  const prompt = requestBody.prompt ?? '';
-  const model = requestBody.model ?? 'nai-diffusion';
-  const width = requestBody.width ?? 512;
-  const height = requestBody.height ?? 512;
-  const negativePrompt = requestBody.negative_prompt ?? '';
-  const parameters = {
-    params_version: 3,
-    prefer_brownian: true,
-    negative_prompt: negativePrompt,
-    height,
-    width,
-    scale: requestBody.scale ?? 9,
-    seed:
-      requestBody.seed >= 0
-        ? requestBody.seed
-        : Math.floor(Math.random() * 9999999999),
-    sampler: requestBody.sampler ?? 'k_dpmpp_2m',
-    noise_schedule: requestBody.scheduler ?? 'karras',
-    steps: requestBody.steps ?? 28,
-    n_samples: 1,
-    ucPreset: 0,
-    qualityToggle: false,
-    add_original_image: false,
-    controlnet_strength: 1,
-    deliberate_euler_ancestral_bug: false,
-    dynamic_thresholding: requestBody.decrisper ?? false,
-    legacy: false,
-    legacy_v3_extend: false,
-    sm: requestBody.sm ?? false,
-    sm_dyn: requestBody.sm_dyn ?? false,
-    uncond_scale: 1,
-    skip_cfg_above_sigma: requestBody.variety_boost
-      ? calculateSkipCfgAboveSigma(width, height, model)
-      : null,
-    use_coords: false,
-    characterPrompts: [],
-    reference_image_multiple: references,
-    reference_strength_multiple: requestBody.reference_strength_multiple ?? [],
-    v4_negative_prompt: {
-      caption: {
-        base_caption: negativePrompt,
-        char_captions: [],
-      },
-    },
-    v4_prompt: {
-      caption: {
-        base_caption: prompt,
-        char_captions: [],
-      },
-      use_coords: false,
-      use_order: true,
-    },
-  };
-
-  if (!isV4Model(model)) {
-    parameters.reference_information_extracted_multiple =
-      requestBody.reference_information_extracted_multiple ?? [];
-  }
-
-  return {
-    action: 'generate',
-    input: prompt,
-    model,
-    parameters,
-  };
-}
-
-function buildNovelAiInpaintRequestBody(requestBody) {
-  const prompt = requestBody.prompt ?? '';
-  const model = resolveInpaintingModel(requestBody.model);
-  const width = requestBody.width ?? 512;
-  const height = requestBody.height ?? 512;
-  const negativePrompt = requestBody.negative_prompt ?? '';
-  const seed =
-    requestBody.seed >= 0
-      ? requestBody.seed
-      : Math.floor(Math.random() * 9999999999);
-  const extraNoiseSeed =
-    requestBody.extra_noise_seed >= 0
-      ? requestBody.extra_noise_seed
-      : seed;
-  const strength = requestBody.strength ?? 0.6;
-  const noise = requestBody.noise ?? 0;
-  const parameters = {
-    params_version: 3,
-    prefer_brownian: true,
-    negative_prompt: negativePrompt,
-    height,
-    width,
-    scale: requestBody.scale ?? 9,
-    seed,
-    sampler: requestBody.sampler ?? 'k_dpmpp_2m',
-    noise_schedule: requestBody.scheduler ?? 'karras',
-    steps: requestBody.steps ?? 28,
-    n_samples: 1,
-    ucPreset: 0,
-    qualityToggle: false,
-    add_original_image: true,
-    controlnet_strength: 1,
-    deliberate_euler_ancestral_bug: false,
-    dynamic_thresholding: requestBody.decrisper ?? false,
-    legacy: false,
-    legacy_v3_extend: false,
-    sm: requestBody.sm ?? false,
-    sm_dyn: requestBody.sm_dyn ?? false,
-    uncond_scale: 1,
-    skip_cfg_above_sigma: requestBody.variety_boost
-      ? calculateSkipCfgAboveSigma(width, height, model)
-      : null,
-    use_coords: false,
-    characterPrompts: [],
-    reference_image_multiple: [],
-    reference_information_extracted_multiple: [],
-    reference_strength_multiple: [],
-    image: normalizeBase64Image(requestBody.image),
-    mask: normalizeBase64Image(requestBody.mask),
-    strength,
-    noise,
-    extra_noise_seed: extraNoiseSeed,
-    img2img: {
-      strength,
-      noise,
-      extra_noise_seed: extraNoiseSeed,
-      color_correct: requestBody.color_correct ?? false,
-    },
-    v4_negative_prompt: {
-      caption: {
-        base_caption: negativePrompt,
-        char_captions: [],
-      },
-    },
-    v4_prompt: {
-      caption: {
-        base_caption: prompt,
-        char_captions: [],
-      },
-      use_coords: false,
-      use_order: true,
-    },
-  };
-
-  return {
-    action: 'infill',
-    input: prompt,
-    model,
-    parameters,
-  };
 }
 
 function validateInpaintRequestBody(body) {
@@ -376,11 +191,7 @@ async function encodeVibeReferences(requestBody, key, directories) {
     return {
       references: references
         .map((image, index) =>
-          resolveReferenceSourceImage(
-            directories,
-            image,
-            sourceHashes[index]
-          )
+          resolveReferenceSourceImage(directories, image, sourceHashes[index])
         )
         .filter(image => image.length > 0),
       encodedRecords: [],
@@ -446,7 +257,11 @@ async function encodeVibeReferences(requestBody, key, directories) {
 
 async function generateBase64Image(requestBody, key, directories) {
   const {extractFileFromZipBuffer} = await loadSillyTavernInternals();
-  const encodedResult = await encodeVibeReferences(requestBody, key, directories);
+  const encodedResult = await encodeVibeReferences(
+    requestBody,
+    key,
+    directories
+  );
   const generateResult = await fetch(`${IMAGE_NOVELAI}/ai/generate-image`, {
     method: 'POST',
     headers: {
@@ -579,7 +394,9 @@ async function upscaleBase64Image(requestBody, base64Image, key) {
 
   const archiveBuffer = await upscaleResult.arrayBuffer();
   const imageBuffer = await extractFileFromZipBuffer(archiveBuffer, '.png');
-  return imageBuffer ? Buffer.from(imageBuffer).toString('base64') : base64Image;
+  return imageBuffer
+    ? Buffer.from(imageBuffer).toString('base64')
+    : base64Image;
 }
 
 async function callNovelAi(request, response) {
@@ -709,7 +526,10 @@ export async function init(router) {
         return;
       }
       response.setHeader('Content-Type', source.mimeType);
-      response.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+      response.setHeader(
+        'Cache-Control',
+        'private, max-age=31536000, immutable'
+      );
       response.send(source.buffer);
     } catch (error) {
       response.status(500).json({

@@ -23,6 +23,7 @@ import {
   normalizeBase64Image,
   saveBase64AsFile,
 } from './novelai_common';
+import {isNovelAiV5Model} from './novelai_models';
 import {
   findVibeEncodingForModel,
   findVibeEncodingForModelAndInformation,
@@ -542,6 +543,14 @@ export async function generateNovelAiVibeTransferImage(
   onReferencesUpdated?: (references: VibeTransferReferenceImage[]) => void,
   signal?: AbortSignal
 ): Promise<string> {
+  const model = context.extensionSettings?.sd?.model;
+  if (isNovelAiV5Model(model)) {
+    throw new AutoIllustratorError(
+      'image-vibe-model-unsupported',
+      'NovelAI V5 does not support Vibe Transfer'
+    );
+  }
+
   const payload = buildNovelAiAdvancedPayload(prompt, context, config);
 
   const hasUsableReference =

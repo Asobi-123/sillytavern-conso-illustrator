@@ -15,7 +15,7 @@ export declare const EXTENSION_NAME = "auto_illustrator_conso";
 /**
  * Extension version (single source of truth)
  */
-export declare const EXTENSION_VERSION = "1.15.2";
+export declare const EXTENSION_VERSION = "1.16.0";
 /**
  * GitHub repository for update checks
  */
@@ -65,6 +65,7 @@ export declare const DEFAULT_LOG_LEVEL: "info";
 export declare const PRESET_IDS: {
     readonly DEFAULT: "default";
     readonly NAI_45_FULL: "nai-4.5-full";
+    readonly NAI_V5: "nai-v5";
 };
 /**
  * Manual generation mode configuration
@@ -239,7 +240,7 @@ export declare const TAG_CATALOG_PAGE_SIZE: {
  */
 export declare const SERVER_PLUGIN: {
     readonly ID: "auto-illustrator-nai-advanced";
-    readonly VERSION: "2026-07-08-vibe-source-store-v2";
+    readonly VERSION: "2026-08-21-nai-v5-v1";
     readonly STATUS_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/status";
 };
 /**

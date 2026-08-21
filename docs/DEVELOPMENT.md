@@ -54,6 +54,21 @@ The runtime version is part of the shipped behavior. Before merging or preparing
 
 Run `npm test` after the version change. `src/release_metadata.test.ts` fails when the runtime, package, manifest, or built bundle version diverges. Do not edit `dist/` or `build/` by hand; regenerate them with `npm run build`.
 
+### NovelAI Model Compatibility
+
+- `src/services/novelai_models.ts` is the frontend registry for NovelAI model IDs, capabilities, inpainting mappings, and recommended parameters that SillyTavern does not expose yet.
+- Compatibility options are inserted only for the NovelAI source. A native SillyTavern option with the same model ID always wins, so the layer retires itself without relabeling or duplicating native entries.
+- Ordinary image generation must continue through SillyTavern's `/sd` slash command. The compatibility layer exists to satisfy the native model selector and must not fork upload, gallery, queue, style, or storage behavior.
+- Before generation, `normalizeNovelAiGenerationSettings` keeps NovelAI upscale values within the accepted set: Off (`1`), `2`, or `4`. It synchronizes the native SD input and persisted setting, but does not rewrite dimensions, steps, CFG, sampler, scheduler, or the selected model.
+- V5 does not support Vibe Transfer at launch. Reject it before encoding or generation requests. V5 Full inpainting maps to its native V5 inpainting model; V5 Curated maps to V4.5 Curated inpainting until NovelAI provides a V5 Curated endpoint.
+
+### Companion Backend Version Contract
+
+- `src/constants.ts` and `server-plugin/auto-illustrator-nai-advanced/index.mjs` must carry the same backend fingerprint whenever the companion plugin protocol or NovelAI request behavior changes.
+- The information panel compares the backend `/status` response with `SERVER_PLUGIN.VERSION`. A mismatch must remain visible and actionable, including installed and required fingerprints and the need to restart SillyTavern after replacing the plugin folder.
+- A backend mismatch affects Vibe Transfer, inpainting, and other companion routes. It must not imply that ordinary NovelAI `/sd` generation requires the companion backend.
+- Backend changes require syntax checks and the server-plugin Vitest suite in addition to the frontend release gates.
+
 ### Project Structure
 
 ```

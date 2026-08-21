@@ -782,6 +782,33 @@ describe('vibe_transfer service', () => {
     expect(fetchMock.mock.calls[2][0]).toBe('/api/images/upload');
   });
 
+  it('rejects V5 Vibe Transfer before any network request', async () => {
+    const context = createContext();
+    context.extensionSettings.sd.model = 'nai-diffusion-5-full';
+    const config = buildVibeTransferConfigFromSettings(
+      createSettings({
+        vibeTransferEnabled: true,
+        vibeTransferReferenceImages: [
+          createReferenceImage({
+            id: 'ref1',
+            name: 'ref.png',
+            dataUrl: 'data:image/png;base64,QUJDRA==',
+            addedAt: 1,
+          }),
+        ],
+        vibeTransferReferenceStrength: 0.6,
+        vibeTransferInformationExtracted: 1,
+      })
+    );
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      generateNovelAiVibeTransferImage('1girl', context, config)
+    ).rejects.toMatchObject({code: 'image-vibe-model-unsupported'});
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('accepts migrated source-hash-only Vibe references during generation', async () => {
     const context = createContext();
     const sourceHash =

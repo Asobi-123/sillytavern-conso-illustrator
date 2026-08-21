@@ -5,6 +5,10 @@ export function validateRequestBody(body) {
   const information = body.reference_information_extracted_multiple;
   const strengths = body.reference_strength_multiple;
 
+  if (String(body.model ?? '').startsWith('nai-diffusion-5-')) {
+    return 'NovelAI V5 does not support Vibe Transfer';
+  }
+
   if (typeof body.prompt !== 'string' || body.prompt.trim() === '') {
     return 'prompt is required';
   }
@@ -28,7 +32,8 @@ export function validateRequestBody(body) {
   if (
     references.length !== information.length ||
     references.length !== strengths.length ||
-    (Array.isArray(encodedVibes) && references.length !== encodedVibes.length) ||
+    (Array.isArray(encodedVibes) &&
+      references.length !== encodedVibes.length) ||
     (Array.isArray(sourceHashes) && references.length !== sourceHashes.length)
   ) {
     return 'reference parameter arrays must have the same length';

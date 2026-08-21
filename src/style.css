@@ -2667,6 +2667,29 @@ dialog.ai-inpaint-dialog .ai-inpaint-mode-group label {
   gap: 0.5rem;
 }
 
+.auto-illustrator-nai-note {
+  border-top: 1px solid var(--ai-panel-border);
+  padding-top: 0.65rem;
+  color: var(--ai-panel-text-2);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.auto-illustrator-nai-note summary {
+  color: var(--ai-panel-text);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.auto-illustrator-nai-note ul {
+  margin: 0.55rem 0 0;
+  padding-inline-start: 1.2rem;
+}
+
+.auto-illustrator-nai-note li + li {
+  margin-top: 0.25rem;
+}
+
 .auto-illustrator-server-plugin-status {
   width: 100%;
   box-sizing: border-box;
