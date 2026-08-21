@@ -1051,6 +1051,7 @@ export function createSettingsUI(): string {
           <optgroup label="${t('settings.predefinedPresets')}">
             <option value="default">Default</option>
             <option value="nai-4.5-full">NAI 4.5 Full</option>
+            <option value="nai-v5">NAI V5</option>
           </optgroup>
           <optgroup label="${t('settings.customPresets')}" id="custom_presets_group">
           </optgroup>
@@ -1758,6 +1759,15 @@ export function createSettingsUI(): string {
             <div class="auto-illustrator-status-stack">
               <div id="${UI_ELEMENT_IDS.SERVER_PLUGIN_STATUS}" class="auto-illustrator-server-plugin-status is-checking">${t('serverPlugin.checking')}</div>
             </div>
+            <details class="auto-illustrator-nai-note">
+              <summary>${t('settings.novelAiV5NoteTitle')}</summary>
+              <ul>
+                <li>${t('settings.novelAiV5NoteRecommended')}</li>
+                <li>${t('settings.novelAiV5NoteUpscale')}</li>
+                <li>${t('settings.novelAiV5NoteVibe')}</li>
+                <li>${t('settings.novelAiV5NoteInpaint')}</li>
+              </ul>
+            </details>
             <details id="${UI_ELEMENT_IDS.UPDATE_NOTICE}" class="auto-illustrator-update-notice" hidden>
               <summary id="${UI_ELEMENT_IDS.UPDATE_NOTICE_TITLE}" class="auto-illustrator-update-title"></summary>
               <div class="auto-illustrator-update-body">

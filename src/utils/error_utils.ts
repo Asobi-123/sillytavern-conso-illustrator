@@ -9,6 +9,7 @@ export type AutoIllustratorErrorCode =
   | 'prompt-insertion-failed'
   | 'image-command-unavailable'
   | 'image-advanced-backend-unavailable'
+  | 'image-vibe-model-unsupported'
   | 'image-empty-response'
   | 'image-request-failed'
   | 'unknown';
@@ -116,6 +117,11 @@ export function getUserFacingErrorReason(error: unknown): string {
       case 'image-advanced-backend-unavailable':
         return appendDetail(
           t('errorReason.imageAdvancedBackendUnavailable'),
+          error.detail
+        );
+      case 'image-vibe-model-unsupported':
+        return appendDetail(
+          t('errorReason.imageVibeModelUnsupported'),
           error.detail
         );
       case 'image-empty-response':

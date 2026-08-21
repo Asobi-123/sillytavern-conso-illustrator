@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] - 2026-08-21
+
+### Added
+
+- **NovelAI Diffusion V5 compatibility** - Added V5 Curated and V5 Full to SillyTavern's NovelAI model selector until native support arrives. Native options take over automatically without duplicates when SillyTavern adds them.
+- **NAI V5 prompt preset** - Added a V5-oriented meta-prompt preset while retaining the existing default and NAI 4.5 presets.
+- **In-panel V5 guidance** - Added recommended V5 settings and launch capability notes to the plugin information panel.
+
+### Changed
+
+- **V5 advanced backend contract** - Updated the companion backend request schema and CFG-delay handling for V5. V5 Full uses native V5 inpainting; V5 Curated currently falls back to V4.5 Curated inpainting.
+- **Backend update status** - The panel now displays installed and required backend fingerprints when they differ, explains the affected V5 feature, and reminds users to restart SillyTavern after replacement.
+
+### Fixed
+
+- **NovelAI upscale compatibility** - Unsupported saved upscale ratios such as `1.1x` are reset to Off (`1x`) before generation. Supported `2x` and `4x` values remain unchanged.
+- **V5 feature boundaries** - V5 Vibe Transfer is rejected before any network request instead of sending an unsupported NovelAI operation.
+
+### Upgrade Note
+
+- Replace `SillyTavern/plugins/auto-illustrator-nai-advanced` with the backend folder shipped in this release and restart SillyTavern before using V5 inpainting. Normal V5 `/sd` generation only needs the frontend extension.
+
 ## [1.15.2] - 2026-08-15
 
 ### Fixed

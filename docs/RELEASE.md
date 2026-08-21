@@ -71,6 +71,16 @@ export const EXTENSION_VERSION = '1.3.0';
 
 **Note:** These files should already be updated. Verify they match the release version.
 
+### Companion Backend Compatibility
+
+When files under `server-plugin/auto-illustrator-nai-advanced/` change:
+
+- Update the fingerprint in both `src/constants.ts` and the backend plugin entry point.
+- Confirm the information panel reports a mismatch against the previous backend and names both installed and required fingerprints.
+- State which advanced features require the new backend in `CHANGELOG.md`. Do not imply that normal `/sd` generation requires it.
+- Run the backend syntax checks and backend tests, then rebuild the frontend so the expected fingerprint ships in `dist/index.js`.
+- Replace the backend folder in the test SillyTavern instance and restart SillyTavern; a browser refresh alone does not reload server plugins.
+
 ### 2. Consolidate CHANGELOG.md
 
 The most important step! Create user-facing release notes.

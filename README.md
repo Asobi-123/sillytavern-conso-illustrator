@@ -45,6 +45,14 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 完整配置流程见：[从零开始配置教程](docs/QUICKSTART_CN.md)。
 
+### NovelAI V5 配置
+
+- 模型：`nai-diffusion-5-full` 或 `nai-diffusion-5-curated`
+- 推荐参数：832x1216、23 步、CFG 7、`k_euler_ancestral`、`karras`
+- Opus 的“避免花费 Anlas”范围：像素总量不超过 1024x1024，且不超过 28 步
+- V5 发布时暂不支持 Vibe Transfer；需要 Vibe 时使用 V4/V4.5
+- V5 Full 局部重绘使用 V5 Full inpainting；V5 Curated 当前临时使用 V4.5 Curated inpainting
+
 ---
 
 ## 功能一览
@@ -75,10 +83,11 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 | **内置正则过滤** | 保留正文里的插画元数据，只从发送给模型的 prompt 中过滤插画标签 |
 | **预设适配** | 上传 JSON / 文本或输入需求，生成 Conso 原生共享 API 元提示或独立 API 指南草稿 |
 | **生图 SD Style 和 Vibe 组合** | 可选择关闭、固定或每次生图随机抽取 SD Style / Vibe 组合，并可保存常用搭配 |
-| **NovelAI Vibe Transfer** | 可选参考图和编码 Vibe 生图增强；支持文生图和独立生图、Vibe 管理、编码/带图 `.naiv4vibe`、bundle 导入与分组 JSON 导入导出、V4/V4.5 编码缓存 |
+| **NovelAI V5 兼容** | 酒馆原生列表未更新时补入 V5 Curated / Full，继续使用原生 `/sd`，新版酒馆已提供时自动去重 |
+| **NovelAI Vibe Transfer** | 可选参考图和编码 Vibe 生图增强；支持文生图和独立生图、Vibe 管理、编码/带图 `.naiv4vibe`、bundle 导入与分组 JSON 导入导出、V4/V4.5 编码缓存；V5 发布时暂不支持 |
 | **NovelAI 局部重绘** | 在已有图片上绘制遮罩，预览重绘结果后再选择追加或替换原图；支持缩放画布、边缘羽化、遮罩外扩和边界保护 |
 | **消息内容过滤** | 移除 HTML 标签和 CSS 噪音，减少无效 token |
-| **元提示预设** | 内置预设（Default、NAI 4.5 Full）+ 自定义预设管理 |
+| **元提示预设** | 内置预设（Default、NAI 4.5 Full、NAI V5）+ 自定义预设管理 |
 
 ### 配置与管理
 
@@ -151,8 +160,8 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 后端插件路径：`server-plugin/auto-illustrator-nai-advanced`。安装后端、启用 `enableServerPlugins`、重启 SillyTavern 后才能使用。只有面板提示后端插件版本过旧，或更新说明明确提到后端插件有变更时，才需要手动覆盖 SillyTavern `plugins/` 里的同名后端插件文件夹。
 
-- **Vibe Transfer**：给 NovelAI 生图加入参考图或已编码 Vibe 条件，支持聊天生图、独立生图、bundle 导入和分组 JSON 导入/导出。
-- **局部重绘**：在已有图片上绘制遮罩，预览编辑结果后再追加或替换。
+- **Vibe Transfer**：给 NovelAI V4/V4.5 生图加入参考图或已编码 Vibe 条件。NovelAI V5 发布时暂不支持 Vibe Transfer。
+- **局部重绘**：在已有图片上绘制遮罩，预览编辑结果后再追加或替换。V5 Full 使用 V5 inpainting；V5 Curated 当前临时使用 V4.5 Curated inpainting。
 
 完整安装和使用见：[NovelAI 高级后端功能](docs/QUICKSTART_CN.md#novelai-高级后端功能可选进阶)。
 

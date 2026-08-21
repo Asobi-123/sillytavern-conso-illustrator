@@ -49,7 +49,7 @@ API 连好后，需要配置图片生成的具体参数。
 
 ### 新手推荐配置
 
-以下是经过验证的新手友好配置，可以直接照抄：
+以下配置适用于 NovelAI Diffusion V5 文生图：
 
 **勾选项：**
 - ✅ 生成之前编辑提示词
@@ -62,14 +62,16 @@ API 连好后，需要配置图片生成的具体参数。
 
 | 参数 | 推荐值 |
 |------|--------|
-| 模型 | NAI Diffusion Anime V4.5 (Full) |
+| 模型 | NAI Diffusion Anime V5 (Full) 或 V5 (Curated) |
 | 采样方法 | k_euler_ancestral |
 | 调度器 | karras |
-| 分辨率 | 1216x832 (19:13, SDXL) |
-| 采样步数 | 25 |
+| 分辨率 | 832x1216（竖图；横图交换宽高） |
+| 采样步数 | 23 |
 | CFG 缩放 | 7.0 |
 
-> 这些参数适合绝大多数场景，后续可以根据需要自行调整。
+> 如果当前 SillyTavern 的原生模型列表还没有 V5，Conso 会在来源为 NovelAI 时补入 V5 Curated 和 V5 Full，普通生图仍使用原生 `/sd` 流程。新版 SillyTavern 已提供 V5 时不会重复添加。
+
+> Opus 用户启用“避免花费 Anlas”时，应把单张图片控制在不超过 1024x1024 的像素总量并保持不超过 28 步。832x1216、23 步在这个范围内。
 
 ### 风格配置
 
@@ -79,7 +81,7 @@ API 连好后，需要配置图片生成的具体参数。
 
 **常见提示词前缀：**
 ```
-best quality, absurdres, aesthetic,
+very aesthetic, masterpiece, no text,
 ```
 
 **常见负面提示词前缀：**
@@ -133,7 +135,8 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 1. 点击 **拼图图标** → 向下滚动找到 **Auto Illustrator** 区域并展开
 2. 勾选 **启用自动插画**
 3. 在 **元提示与显示** 中，选择元提示预设：
-   - 推荐选择 **NAI 4.5 Full**（专为 NovelAI 优化的提示词生成规则）
+   - 使用 V5 时选择 **NAI V5**
+   - 需要 Vibe Transfer 时改用 **NAI 4.5 Full**，并在图像生成设置中选择 V4/V4.5 模型
 4. 打开一个角色卡聊天，随便发一条消息
 5. 观察发生了什么：
    - 如果开启了流式预览组件，会显示 AI 回复过程
@@ -279,6 +282,7 @@ Vibe Transfer 可以让 NovelAI 在原有提示词之外参考某种画风、构
 
 使用时需要注意：
 
+- **NovelAI V5 发布时尚不支持 Vibe Transfer。** V5 与已启用的 Vibe 一起使用时，Conso 会在联网前停止并提示；需要 Vibe 时请选择 V4 或 V4.5。
 - 正面提示词、负面提示词、通用样式 Tag、角色固定 Tag、SD Style 仍然生效。Vibe Transfer 只是额外加入参考约束。
 - V4/V4.5 第一次启用某张源图并生成时，可能会调用 `encode-vibe` 并消耗 Anlas；后续同一张图、同一模型、同一信息提取量会复用缓存。
 - 修改模型、信息提取量或替换参考图后，可能会重新生成缓存。
@@ -303,6 +307,8 @@ Vibe 组合用于保存“启用了哪些 Vibe 和它们的参数”。默认按
 #### 局部重绘使用说明
 
 局部重绘用于修改已有图片的一小块或一片区域。它从已有图片的操作入口进入，不会影响普通自动生图队列。
+
+V5 Full 局部重绘使用 V5 Full inpainting。V5 Curated 在当前发布阶段按 NovelAI 官方前端行为临时使用 V4.5 Curated inpainting，不会伪装调用尚未开放的 V5 Curated 重绘能力。
 
 使用流程：
 

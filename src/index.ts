@@ -130,6 +130,7 @@ import {
 import {VIBE_CACHE_UPDATED_EVENT} from './services/vibe_cache_events';
 import {htmlEncode} from './utils/dom_utils';
 import {clamp01, readSdSettings, readString} from './services/novelai_common';
+import {initializeNovelAiV5ModelCompatibility} from './services/novelai_models';
 import {
   initializeFloatingPanel,
   openFloatingPanel,
@@ -5233,7 +5234,10 @@ async function checkServerPluginStatus(): Promise<void> {
       setServerPluginStatus(
         statusEl,
         'warning',
-        t('serverPlugin.updateRequired')
+        t('serverPlugin.updateRequired', {
+          installed: data.version || t('serverPlugin.versionUnknown'),
+          required: SERVER_PLUGIN.VERSION,
+        })
       );
       return;
     }
@@ -5564,6 +5568,9 @@ function initialize(): void {
   // Initialize i18n
   initializeI18n(context);
   logger.info('Initialized i18n');
+
+  initializeNovelAiV5ModelCompatibility(context);
+  logger.info('Initialized NovelAI V5 model compatibility');
 
   // Initialize CHAT_CHANGED handler (single centralized handler)
   initializeChatChangedHandler();

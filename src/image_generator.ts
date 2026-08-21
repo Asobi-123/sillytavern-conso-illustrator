@@ -36,6 +36,7 @@ import {
 } from './services/vibe_transfer';
 import type {VibeTransferGenerationConfig} from './types';
 import {applyCommonTags} from './services/prompt_tags';
+import {normalizeNovelAiGenerationSettings} from './services/novelai_models';
 
 export {
   applyCommonTags,
@@ -348,6 +349,7 @@ export async function generateImageWithMetadata(
       }
       const effectiveVibeTransferConfig =
         pickedVibeCombination?.config ?? vibeTransferConfig;
+      normalizeNovelAiGenerationSettings(context);
       const imageUrl = shouldUseVibeTransfer(effectiveVibeTransferConfig)
         ? await withRandomSdStyle(
             context,
