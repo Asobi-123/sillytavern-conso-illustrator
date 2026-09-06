@@ -1,4 +1,27 @@
+export function validatePresetMetadata(body) {
+  const qualityPresetId = body.quality_preset_id;
+  const ucPresetId = body.uc_preset_id;
+  if (
+    qualityPresetId !== undefined &&
+    !['none', 'standard', 'expressive'].includes(qualityPresetId)
+  ) {
+    return 'quality_preset_id is invalid';
+  }
+  if (
+    ucPresetId !== undefined &&
+    !['none', 'light', 'heavy', 'furry-focus', 'human-focus'].includes(
+      ucPresetId
+    )
+  ) {
+    return 'uc_preset_id is invalid';
+  }
+  return null;
+}
+
 export function validateRequestBody(body) {
+  const presetError = validatePresetMetadata(body);
+  if (presetError) return presetError;
+
   const references = body.reference_image_multiple;
   const encodedVibes = body.reference_encoded_vibe_multiple;
   const sourceHashes = body.reference_source_hash_multiple;

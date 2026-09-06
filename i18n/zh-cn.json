@@ -789,5 +789,16 @@
   "tagCatalog.lastCandidatesEmpty": "还没有候选记录。触发一次独立 API prompt 生成或独立生图后，这里会显示最近一次发送给 AI 的候选 tag。",
   "tagCatalog.lastCandidatesNoTags": "最近一次没有生成候选 tag。",
   "tagCatalog.lastCandidatesMeta": "{time}，共 {total} 个候选 tag",
-  "tagCatalog.refreshLastCandidates": "刷新最近候选"
+  "tagCatalog.refreshLastCandidates": "刷新最近候选",
+  "settings.novelAiPresets": "NovelAI 生图增强",
+  "settings.novelAiQualityPreset": "Quality Tags",
+  "settings.novelAiQualityPresetDesc": "把已验证的 NovelAI 质量标签追加到正向 prompt。",
+  "settings.novelAiUcPreset": "UC 预设",
+  "settings.novelAiUcPresetDesc": "把选中的 Undesired Content 预设追加到负向 prompt。",
+  "settings.novelAiPresetStatus": "当前模型系列：{model}。全局追加：Quality {quality} / UC {uc}。",
+  "settings.novelAiGlobalDesc": "全局默认：所有 NovelAI 生图都会追加到正向和负向 prompt；独立生图默认跟随这里。",
+  "standalone.novelAiFollowGlobal": "使用全局设置（推荐）",
+  "standalone.novelAiFollowGlobalShort": "全局",
+  "standalone.novelAiOverrideShort": "本次覆盖",
+  "standalone.novelAiEffective": "实际生效：{model} · {mode} · Quality {quality} / UC {uc}"
 }

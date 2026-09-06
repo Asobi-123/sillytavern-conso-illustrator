@@ -1,6 +1,7 @@
-import {VIBE_TRANSFER} from '../constants';
+import {EXTENSION_NAME, VIBE_TRANSFER} from '../constants';
 import {AutoIllustratorError} from '../utils/error_utils';
 import {getInternalRequestHeaders} from '../utils/api';
+import {composeNovelAiPrompts} from './novelai_presets';
 
 export type SdSettings = Record<string, unknown>;
 
@@ -19,6 +20,8 @@ export interface NovelAiBasePayload {
   sm: boolean;
   sm_dyn: boolean;
   variety_boost: boolean;
+  quality_preset_id?: string;
+  uc_preset_id?: string;
   seed?: number;
 }
 
@@ -204,8 +207,21 @@ export function buildNovelAiBasePayload(
     context
   );
 
+  const settings = context.extensionSettings?.[EXTENSION_NAME] as
+    | AutoIllustratorSettings
+    | undefined;
+  const composed = composeNovelAiPrompts(
+    prefixedPrompt,
+    negativePrompt,
+    readString(sd, 'model'),
+    {
+      qualityPresetId: settings?.novelAiQualityPresetId,
+      ucPresetId: settings?.novelAiUcPresetId,
+    }
+  );
+
   return {
-    prompt: prefixedPrompt,
+    prompt: composed.prompt,
     model: readString(sd, 'model'),
     sampler: readString(sd, 'sampler'),
     scheduler: readString(sd, 'scheduler', 'karras'),
@@ -213,7 +229,7 @@ export function buildNovelAiBasePayload(
     scale: readNumber(sd, 'scale', 7),
     width,
     height,
-    negative_prompt: negativePrompt,
+    negative_prompt: composed.negativePrompt,
     upscale_ratio: readNumber(sd, 'hr_scale', 1),
     decrisper: readBoolean(sd, 'novel_decrisper', false),
     sm: sdParams.sm,
@@ -223,6 +239,8 @@ export function buildNovelAiBasePayload(
       readBoolean(sd, 'novel_variety_boost', false) ||
       readBoolean(sd, 'variety_boost', false) ||
       readBoolean(sd, 'variety', false),
+    quality_preset_id: composed.qualityPresetId,
+    uc_preset_id: composed.ucPresetId,
     seed:
       readNumber(sd, 'seed', -1) >= 0
         ? Math.round(readNumber(sd, 'seed', -1))

@@ -18,6 +18,10 @@ declare global {
     customTagBridgeTriggers?: Record<string, string[]>;
     /** Per-category max candidate counts sent to the LLM catalog aid */
     tagCatalogCandidateLimits?: Record<string, number>;
+    /** Built-in NovelAI quality tag preset selected for image generation. */
+    novelAiQualityPresetId?: import('./services/novelai_presets').NovelAiQualityPresetId;
+    /** Built-in NovelAI undesired-content preset selected for image generation. */
+    novelAiUcPresetId?: import('./services/novelai_presets').NovelAiUcPresetId;
   }
 }
 

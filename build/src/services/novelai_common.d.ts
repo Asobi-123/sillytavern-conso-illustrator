@@ -14,6 +14,8 @@ export interface NovelAiBasePayload {
     sm: boolean;
     sm_dyn: boolean;
     variety_boost: boolean;
+    quality_preset_id?: string;
+    uc_preset_id?: string;
     seed?: number;
 }
 export interface NovelAiImageRouteResponse {

@@ -7,6 +7,7 @@ import type { AutoIllustratorChatMetadata } from './types';
  * Creates the HTML content for the standalone generation drawer.
  */
 export declare function createStandaloneGenerationContent(): string;
+export declare function syncStandaloneNovelAiPresetControls(settings: AutoIllustratorSettings, model?: unknown): void;
 /**
  * Initializes all event listeners for the standalone generation panel.
  */

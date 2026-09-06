@@ -53,6 +53,12 @@ Full setup walkthrough: [Beginner Tutorial (Chinese)](docs/QUICKSTART_CN.md).
 - V5 does not support Vibe Transfer at launch; use V4/V4.5 when Vibe is required
 - V5 Full inpainting uses its V5 model; V5 Curated currently uses V4.5 Curated inpainting
 
+### NovelAI Quality Tags and UC
+
+Open the floating panel's Main tab and expand **NovelAI generation enhancements** below Regex. Quality Tags and UC Presets are append-only: Quality Tags are added to the positive prompt and UC is added to the negative prompt. Existing prompt text is never replaced; choose `None` to append nothing.
+
+The Standalone tab also has a quick selector that follows the main setting by default. Turn that off for a one-off standalone generation without changing the global default. Normal `/sd` generation does not need the companion server plugin; Vibe Transfer and Inpaint require the synchronized advanced plugin.
+
 ---
 
 ## Features

@@ -240,7 +240,7 @@ export declare const TAG_CATALOG_PAGE_SIZE: {
  */
 export declare const SERVER_PLUGIN: {
     readonly ID: "auto-illustrator-nai-advanced";
-    readonly VERSION: "2026-08-21-nai-v5-v1";
+    readonly VERSION: "2026-09-06-nai-presets-v1";
     readonly STATUS_ROUTE: "/api/plugins/auto-illustrator-nai-advanced/status";
 };
 /**
@@ -368,6 +368,8 @@ export declare const DEFAULT_SETTINGS: {
     tagCatalogCandidateLimits: {
         [x: string]: number;
     };
+    novelAiQualityPresetId: "standard";
+    novelAiUcPresetId: "none";
     generationStyleMode: "off" | "fixed" | "random";
     generationStylePresets: GenerationStylePreset[];
     currentGenerationStylePresetId: string;
@@ -546,6 +548,13 @@ export declare const UI_ELEMENT_IDS: {
     readonly REGEX_IMG_TAG: "auto_illustrator_conso_regex_img_tag";
     readonly REGEX_SYNC: "auto_illustrator_conso_regex_sync";
     readonly REGEX_STATUS: "auto_illustrator_conso_regex_status";
+    readonly NOVELAI_QUALITY_PRESET: "auto_illustrator_conso_novelai_quality_preset";
+    readonly NOVELAI_UC_PRESET: "auto_illustrator_conso_novelai_uc_preset";
+    readonly NOVELAI_PRESET_STATUS: "auto_illustrator_conso_novelai_preset_status";
+    readonly STANDALONE_NOVELAI_QUALITY_PRESET: "auto_illustrator_conso_standalone_novelai_quality_preset";
+    readonly STANDALONE_NOVELAI_UC_PRESET: "auto_illustrator_conso_standalone_novelai_uc_preset";
+    readonly STANDALONE_NOVELAI_FOLLOW_GLOBAL: "auto_illustrator_conso_standalone_novelai_follow_global";
+    readonly STANDALONE_NOVELAI_EFFECTIVE_STATUS: "auto_illustrator_conso_standalone_novelai_effective_status";
     readonly PRESET_IMPORT_JSON: "auto_illustrator_conso_preset_import_json";
     readonly PRESET_IMPORT_FILE: "auto_illustrator_conso_preset_import_file";
     readonly PRESET_IMPORT_REQUIREMENT: "auto_illustrator_conso_preset_import_requirement";
@@ -613,6 +622,7 @@ export declare const UI_SECTION_IDS: {
     readonly MAIN_IMAGE_SUBFOLDER: "auto_illustrator_conso_panel_main_image_subfolder";
     readonly MAIN_INFO: "auto_illustrator_conso_panel_main_info";
     readonly MAIN_REGEX: "auto_illustrator_conso_panel_main_regex";
+    readonly MAIN_NOVELAI_PRESETS: "auto_illustrator_conso_panel_main_novelai_presets";
     readonly PROMPT_MODE_SELECTOR: "auto_illustrator_conso_panel_prompt_mode_selector";
     readonly SHARED_META_DISPLAY: "auto_illustrator_conso_panel_shared_meta_display";
     readonly INDEPENDENT_BASE: "auto_illustrator_conso_panel_independent_base";

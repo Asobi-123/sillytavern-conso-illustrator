@@ -117,6 +117,38 @@ describe('Image Generator V2', () => {
   });
 
   describe('generateImage with random SD style', () => {
+    it('appends NovelAI presets for /sd and restores the native negative prefix', async () => {
+      initializeConcurrencyLimiter(1);
+      const sd = {
+        source: 'novel',
+        model: 'nai-diffusion-5-full',
+        prompt_prefix: 'orig-prefix',
+        negative_prompt: 'existing-uc',
+      };
+      const sdCallback = vi.fn().mockImplementation(async (_args, prompt) => {
+        expect(prompt).toContain('very aesthetic, masterpiece, no text');
+        expect(sd.negative_prompt).toContain('existing-uc');
+        expect(sd.negative_prompt).toContain('film grain');
+        return 'http://ok/img.png';
+      });
+      const ctx = {
+        SlashCommandParser: {commands: {sd: {callback: sdCallback}}},
+        extensionSettings: {
+          sd,
+          auto_illustrator_conso: {
+            novelAiQualityPresetId: 'standard',
+            novelAiUcPresetId: 'heavy',
+          },
+        },
+      } as unknown as SillyTavernContext;
+
+      await expect(generateImage('a cat', ctx)).resolves.toBe(
+        'http://ok/img.png'
+      );
+      expect(sd.prompt_prefix).toBe('orig-prefix');
+      expect(sd.negative_prompt).toBe('existing-uc');
+    });
+
     it('does not touch extension_settings.sd when sdStyleConfig is undefined or disabled', async () => {
       initializeConcurrencyLimiter(1);
       const sd = {

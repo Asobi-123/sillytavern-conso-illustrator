@@ -108,7 +108,10 @@ import {
   registerWorldInfoEventListeners,
 } from './worldinfo_ui';
 import {initializeCharacterTagsPanel} from './character_tags_ui';
-import {initializeStandaloneGeneration} from './standalone_generation_ui';
+import {
+  initializeStandaloneGeneration,
+  syncStandaloneNovelAiPresetControls,
+} from './standalone_generation_ui';
 import {initializePromptLibrary} from './prompt_library_ui';
 import {initializeTagCatalog} from './tag_catalog_ui';
 import {initializePresetImport} from './preset_import_ui';
@@ -132,6 +135,11 @@ import {htmlEncode} from './utils/dom_utils';
 import {clamp01, readSdSettings, readString} from './services/novelai_common';
 import {initializeNovelAiV5ModelCompatibility} from './services/novelai_models';
 import {
+  listNovelAiQualityPresets,
+  listNovelAiUcPresets,
+  resolveNovelAiPresets,
+} from './services/novelai_presets';
+import {
   initializeFloatingPanel,
   openFloatingPanel,
   setFloatingPanelLauncherVisible,
@@ -148,6 +156,7 @@ let streamingPreviewWidget: StreamingPreviewWidget | null = null; // Streaming p
 let imageWidthUpdateTimer: ReturnType<typeof setTimeout> | null = null; // Debounce timer for image width updates
 let previousImageDisplayWidth: number | null = null; // Track previous width to detect actual changes
 let extensionInitialized = false;
+let novelAiModelChangeListenerBound = false;
 
 type RegisteredEventHandlers = {
   streamTokenReceived: () => void;
@@ -2519,6 +2528,85 @@ function renameSelectedVibeTransferPreset(): void {
   );
 }
 
+function refreshNovelAiPresetControls(): void {
+  const model = readString(readSdSettings(context), 'model');
+  const qualitySelect = document.getElementById(
+    UI_ELEMENT_IDS.NOVELAI_QUALITY_PRESET
+  ) as HTMLSelectElement | null;
+  const ucSelect = document.getElementById(
+    UI_ELEMENT_IDS.NOVELAI_UC_PRESET
+  ) as HTMLSelectElement | null;
+  syncStandaloneNovelAiPresetControls(settings, model);
+  if (!qualitySelect || !ucSelect) return;
+
+  const fill = (
+    select: HTMLSelectElement,
+    presets: readonly {id: string; label: string}[],
+    selected: string | undefined
+  ) => {
+    select.replaceChildren();
+    presets.forEach(preset => {
+      const option = document.createElement('option');
+      option.value = preset.id;
+      option.textContent = preset.label;
+      select.append(option);
+    });
+    select.value =
+      selected && presets.some(preset => preset.id === selected)
+        ? selected
+        : presets[0]?.id ?? '';
+  };
+  fill(
+    qualitySelect,
+    listNovelAiQualityPresets(),
+    settings.novelAiQualityPresetId
+  );
+  fill(ucSelect, listNovelAiUcPresets(), settings.novelAiUcPresetId);
+
+  const resolved = resolveNovelAiPresets(model, {
+    qualityPresetId:
+      qualitySelect.value as AutoIllustratorSettings['novelAiQualityPresetId'],
+    ucPresetId: ucSelect.value as AutoIllustratorSettings['novelAiUcPresetId'],
+  });
+  const status = document.getElementById(UI_ELEMENT_IDS.NOVELAI_PRESET_STATUS);
+  if (status) {
+    status.textContent = t('settings.novelAiPresetStatus', {
+      model: resolved.modelFamily,
+      quality: resolved.quality.label,
+      uc: resolved.uc.label,
+    });
+  }
+}
+
+function bindNovelAiModelRefresh(): void {
+  if (novelAiModelChangeListenerBound) return;
+  novelAiModelChangeListenerBound = true;
+  document.addEventListener('change', event => {
+    const target = event.target as HTMLElement | null;
+    if (target?.id !== 'sd_model' && target?.id !== 'sd_source') return;
+    window.setTimeout(() => refreshNovelAiPresetControls(), 0);
+  });
+}
+
+function handleNovelAiPresetChange(): void {
+  const qualitySelect = document.getElementById(
+    UI_ELEMENT_IDS.NOVELAI_QUALITY_PRESET
+  ) as HTMLSelectElement | null;
+  const ucSelect = document.getElementById(
+    UI_ELEMENT_IDS.NOVELAI_UC_PRESET
+  ) as HTMLSelectElement | null;
+  if (qualitySelect) {
+    settings.novelAiQualityPresetId =
+      qualitySelect.value as AutoIllustratorSettings['novelAiQualityPresetId'];
+  }
+  if (ucSelect) {
+    settings.novelAiUcPresetId =
+      ucSelect.value as AutoIllustratorSettings['novelAiUcPresetId'];
+  }
+  saveSettings(settings, context);
+  refreshNovelAiPresetControls();
+}
+
 function updateUI(): void {
   const enabledCheckbox = document.getElementById(
     UI_ELEMENT_IDS.ENABLED
@@ -2625,6 +2713,7 @@ function updateUI(): void {
     commonStyleTagsTextarea.value = settings.commonStyleTags;
   if (commonStyleTagsPositionSelect)
     commonStyleTagsPositionSelect.value = settings.commonStyleTagsPosition;
+  refreshNovelAiPresetControls();
   if (characterTagInjectionModeSelect) {
     characterTagInjectionModeSelect.value =
       settings.characterFixedTagInjectionMode || 'legacy';
@@ -5785,6 +5874,13 @@ function initialize(): void {
       'change',
       handleSettingsChange
     );
+    document
+      .getElementById(UI_ELEMENT_IDS.NOVELAI_QUALITY_PRESET)
+      ?.addEventListener('change', handleNovelAiPresetChange);
+    document
+      .getElementById(UI_ELEMENT_IDS.NOVELAI_UC_PRESET)
+      ?.addEventListener('change', handleNovelAiPresetChange);
+    bindNovelAiModelRefresh();
     document
       .getElementById(UI_ELEMENT_IDS.CHARACTER_TAG_INJECTION_MODE)
       ?.addEventListener('change', handleSettingsChange);

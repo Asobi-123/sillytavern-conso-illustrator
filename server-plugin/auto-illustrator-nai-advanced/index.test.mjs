@@ -44,6 +44,27 @@ describe('auto-illustrator advanced backend validation', () => {
     assert.equal(error, null);
   });
 
+  it('accepts frontend-resolved quality and UC preset metadata', () => {
+    const error = validateRequestBody(
+      createValidBody({
+        quality_preset_id: 'standard',
+        uc_preset_id: 'heavy',
+      })
+    );
+    assert.equal(error, null);
+  });
+
+  it('rejects unknown preset metadata instead of guessing a model preset', () => {
+    assert.equal(
+      validateRequestBody(createValidBody({quality_preset_id: 'unknown'})),
+      'quality_preset_id is invalid'
+    );
+    assert.equal(
+      validateRequestBody(createValidBody({uc_preset_id: 'unknown'})),
+      'uc_preset_id is invalid'
+    );
+  });
+
   it('rejects reference source hash arrays with mismatched length', () => {
     const error = validateRequestBody(
       createValidBody({
@@ -71,6 +92,23 @@ describe('auto-illustrator advanced backend validation', () => {
 });
 
 describe('auto-illustrator NovelAI V5 request mapping', () => {
+  it('preserves frontend-composed prompt and negative prompt text', () => {
+    const body = buildNovelAiRequestBody(
+      {
+        prompt: '1girl, very aesthetic, masterpiece, no text',
+        negative_prompt: 'bad hands, lowres',
+        model: 'nai-diffusion-5-full',
+        quality_preset_id: 'standard',
+        uc_preset_id: 'heavy',
+      },
+      []
+    );
+    assert.equal(body.input, '1girl, very aesthetic, masterpiece, no text');
+    assert.equal(body.parameters.negative_prompt, 'bad hands, lowres');
+    assert.equal(body.parameters.ucPreset, 0);
+    assert.equal(body.parameters.qualityToggle, false);
+  });
+
   it('uses parameter schema 4 and the V5 CFG-delay baseline', () => {
     const body = buildNovelAiRequestBody(
       {

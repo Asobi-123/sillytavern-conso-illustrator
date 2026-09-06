@@ -16,6 +16,7 @@ const SLOT_IDS = {
   mainMode: 'ai-floating-panel-slot-main-mode',
   mainSubfolder: 'ai-floating-panel-slot-main-subfolder',
   mainRegex: 'ai-floating-panel-slot-main-regex',
+  mainNovelAiPresets: 'ai-floating-panel-slot-main-novelai-presets',
   mainRandomSdStyle: 'ai-floating-panel-slot-main-random-sd-style',
   mainVibeTransfer: 'ai-floating-panel-slot-main-vibe-transfer',
   vibeManager: 'ai-floating-panel-slot-vibe-manager',
@@ -520,6 +521,13 @@ function panelHtml(): string {
                 <strong>${t('panel.regex')}</strong>
               </div>
               <div id="${SLOT_IDS.mainRegex}"></div>
+            </section>
+
+            <section class="ai-floating-panel-card">
+              <div class="ai-floating-panel-card-head">
+                <strong>${t('settings.novelAiPresets')}</strong>
+              </div>
+              <div id="${SLOT_IDS.mainNovelAiPresets}"></div>
             </section>
 
             <section class="ai-floating-panel-card">
@@ -1864,6 +1872,10 @@ function mountSourceSections(): void {
   mountSection(UI_SECTION_IDS.PROMPT_MODE_SELECTOR, SLOT_IDS.mainMode);
   mountSection(UI_SECTION_IDS.MAIN_IMAGE_SUBFOLDER, SLOT_IDS.mainSubfolder);
   mountSection(UI_SECTION_IDS.MAIN_REGEX, SLOT_IDS.mainRegex);
+  mountSection(
+    UI_SECTION_IDS.MAIN_NOVELAI_PRESETS,
+    SLOT_IDS.mainNovelAiPresets
+  );
   mountSection(UI_SECTION_IDS.MAIN_RANDOM_SD_STYLE, SLOT_IDS.mainRandomSdStyle);
   mountSection(UI_SECTION_IDS.MAIN_VIBE_TRANSFER, SLOT_IDS.mainVibeTransfer);
   mountSection(UI_SECTION_IDS.VIBE_MANAGER, SLOT_IDS.vibeManager);

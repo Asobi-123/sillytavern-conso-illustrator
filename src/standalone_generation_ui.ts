@@ -26,6 +26,12 @@ import {
 import {htmlEncode} from './utils/dom_utils';
 import {openInpaintingEditor} from './inpainting_editor';
 import {saveSettings} from './settings';
+import {
+  listNovelAiQualityPresets,
+  listNovelAiUcPresets,
+  resolveNovelAiPresets,
+} from './services/novelai_presets';
+import {readSdSettings} from './services/novelai_common';
 import {notifyVibeCacheUpdated} from './services/vibe_cache_events';
 import {
   AutoIllustratorError,
@@ -176,6 +182,23 @@ function renderStandaloneImageResult(
 export function createStandaloneGenerationContent(): string {
   return `
     <div>
+      <div class="standalone-novelai-presets">
+        <div class="standalone-options-row">
+          <label for="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_QUALITY_PRESET}">
+            <span>${t('settings.novelAiQualityPreset')}</span>
+            <select id="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_QUALITY_PRESET}" class="text_pole"></select>
+          </label>
+          <label for="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_UC_PRESET}">
+            <span>${t('settings.novelAiUcPreset')}</span>
+            <select id="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_UC_PRESET}" class="text_pole"></select>
+          </label>
+        </div>
+        <label class="checkbox_label" for="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_FOLLOW_GLOBAL}">
+          <input id="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_FOLLOW_GLOBAL}" type="checkbox" checked />
+          <span>${t('standalone.novelAiFollowGlobal')}</span>
+        </label>
+        <div id="${UI_ELEMENT_IDS.STANDALONE_NOVELAI_EFFECTIVE_STATUS}" class="standalone-novelai-effective-status" aria-live="polite"></div>
+      </div>
       <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
         <label class="checkbox_label" for="${UI_ELEMENT_IDS.STANDALONE_MODE_AI}">
           <input id="${UI_ELEMENT_IDS.STANDALONE_MODE_AI}" type="radio" name="standalone_mode" value="ai" checked />
@@ -252,6 +275,57 @@ export function createStandaloneGenerationContent(): string {
 
 const STANDALONE_FOLDER_PREFIX = 'auto_illustrator_standalone';
 
+export function syncStandaloneNovelAiPresetControls(
+  settings: AutoIllustratorSettings,
+  model: unknown = undefined
+): void {
+  const followGlobal = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_FOLLOW_GLOBAL
+  ) as HTMLInputElement | null;
+  const qualitySelect = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_QUALITY_PRESET
+  ) as HTMLSelectElement | null;
+  const ucSelect = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_UC_PRESET
+  ) as HTMLSelectElement | null;
+  const status = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_EFFECTIVE_STATUS
+  );
+  const followsGlobal = followGlobal?.checked ?? true;
+
+  if (followsGlobal) {
+    if (qualitySelect) {
+      qualitySelect.value = settings.novelAiQualityPresetId ?? 'none';
+      qualitySelect.disabled = true;
+    }
+    if (ucSelect) {
+      ucSelect.value = settings.novelAiUcPresetId ?? 'none';
+      ucSelect.disabled = true;
+    }
+  } else {
+    if (qualitySelect) qualitySelect.disabled = false;
+    if (ucSelect) ucSelect.disabled = false;
+  }
+
+  if (!status) return;
+  const resolved = resolveNovelAiPresets(model, {
+    qualityPresetId: (followsGlobal
+      ? settings.novelAiQualityPresetId
+      : qualitySelect?.value) as AutoIllustratorSettings['novelAiQualityPresetId'],
+    ucPresetId: (followsGlobal
+      ? settings.novelAiUcPresetId
+      : ucSelect?.value) as AutoIllustratorSettings['novelAiUcPresetId'],
+  });
+  status.textContent = t('standalone.novelAiEffective', {
+    mode: followsGlobal
+      ? t('standalone.novelAiFollowGlobalShort')
+      : t('standalone.novelAiOverrideShort'),
+    model: resolved.modelFamily,
+    quality: resolved.quality.label,
+    uc: resolved.uc.label,
+  });
+}
+
 /**
  * Builds the standalone folder name.
  * Format: auto_illustrator_standalone or auto_illustrator_standalone_{label}
@@ -278,6 +352,44 @@ async function generateImageWithStandaloneFolder(
   settings: AutoIllustratorSettings
 ): Promise<ImageGenerationResult> {
   const folderName = getStandaloneFolderName();
+  const followGlobal =
+    (
+      document.getElementById(
+        UI_ELEMENT_IDS.STANDALONE_NOVELAI_FOLLOW_GLOBAL
+      ) as HTMLInputElement | null
+    )?.checked ?? true;
+  const qualitySelect = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_QUALITY_PRESET
+  ) as HTMLSelectElement | null;
+  const ucSelect = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_UC_PRESET
+  ) as HTMLSelectElement | null;
+  const originalQuality = settings.novelAiQualityPresetId;
+  const originalUc = settings.novelAiUcPresetId;
+  const temporaryQuality = qualitySelect?.value as
+    | AutoIllustratorSettings['novelAiQualityPresetId']
+    | undefined;
+  const temporaryUc = ucSelect?.value as
+    | AutoIllustratorSettings['novelAiUcPresetId']
+    | undefined;
+  if (followGlobal) {
+    if (qualitySelect && settings.novelAiQualityPresetId) {
+      qualitySelect.value = settings.novelAiQualityPresetId;
+    }
+    if (ucSelect && settings.novelAiUcPresetId) {
+      ucSelect.value = settings.novelAiUcPresetId;
+    }
+  }
+  if (!followGlobal) {
+    if (qualitySelect?.value) {
+      settings.novelAiQualityPresetId =
+        qualitySelect.value as AutoIllustratorSettings['novelAiQualityPresetId'];
+    }
+    if (ucSelect?.value) {
+      settings.novelAiUcPresetId =
+        ucSelect.value as AutoIllustratorSettings['novelAiUcPresetId'];
+    }
+  }
 
   // Save original label from metadata if available
   let originalLabel: string | null = null;
@@ -311,13 +423,23 @@ async function generateImageWithStandaloneFolder(
           settings.vibeTransferLibraryItems,
           references
         );
+        if (!followGlobal) {
+          settings.novelAiQualityPresetId = originalQuality;
+          settings.novelAiUcPresetId = originalUc;
+        }
         saveSettings(settings, context);
+        if (!followGlobal) {
+          settings.novelAiQualityPresetId = temporaryQuality;
+          settings.novelAiUcPresetId = temporaryUc;
+        }
         notifyVibeCacheUpdated();
       },
       buildVibeCombinationRandomConfigFromSettings(settings),
       settings
     );
   } finally {
+    settings.novelAiQualityPresetId = originalQuality;
+    settings.novelAiUcPresetId = originalUc;
     // Restore original label (normal mode, no full override)
     setImageSubfolderLabel(originalLabel);
   }
@@ -485,6 +607,41 @@ export function initializeStandaloneGeneration(
   const subfolderLabelInput = document.getElementById(
     UI_ELEMENT_IDS.STANDALONE_SUBFOLDER_LABEL
   ) as HTMLInputElement | null;
+
+  const qualitySelect = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_QUALITY_PRESET
+  ) as HTMLSelectElement | null;
+  const ucSelect = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_UC_PRESET
+  ) as HTMLSelectElement | null;
+  if (qualitySelect && ucSelect) {
+    listNovelAiQualityPresets().forEach(preset => {
+      const option = document.createElement('option');
+      option.value = preset.id;
+      option.textContent = preset.label;
+      qualitySelect.append(option);
+    });
+    listNovelAiUcPresets().forEach(preset => {
+      const option = document.createElement('option');
+      option.value = preset.id;
+      option.textContent = preset.label;
+      ucSelect.append(option);
+    });
+    qualitySelect.value = settings.novelAiQualityPresetId ?? 'none';
+    ucSelect.value = settings.novelAiUcPresetId ?? 'none';
+  }
+  const followGlobalInput = document.getElementById(
+    UI_ELEMENT_IDS.STANDALONE_NOVELAI_FOLLOW_GLOBAL
+  ) as HTMLInputElement | null;
+  const syncPresets = () =>
+    syncStandaloneNovelAiPresetControls(
+      settings,
+      readSdSettings(context).model
+    );
+  followGlobalInput?.addEventListener('change', syncPresets);
+  qualitySelect?.addEventListener('change', syncPresets);
+  ucSelect?.addEventListener('change', syncPresets);
+  syncPresets();
 
   if (subfolderLabelInput) {
     try {

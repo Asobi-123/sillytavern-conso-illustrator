@@ -112,6 +112,7 @@ describe('floating_panel_ui', () => {
       'settings.promptGenerationMode',
       'panel.currentChat',
       'panel.regex',
+      'settings.novelAiPresets',
       'settings.randomizePerGeneration',
       'settings.vibeTransfer',
       'panel.theme',

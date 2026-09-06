@@ -13,7 +13,10 @@ import {
   readVibeSourceBase64,
   storeVibeSource,
 } from './vibe_source_store.mjs';
-import {validateRequestBody} from './request_validation.mjs';
+import {
+  validatePresetMetadata,
+  validateRequestBody,
+} from './request_validation.mjs';
 import {
   buildNovelAiInpaintRequestBody,
   buildNovelAiRequestBody,
@@ -25,7 +28,7 @@ const IMAGE_NOVELAI = 'https://image.novelai.net';
 const API_NOVELAI = 'https://api.novelai.net';
 const MAX_ENCODED_CACHE_PER_REFERENCE = 8;
 const INPAINT_TIMEOUT_MS = 120000;
-const SERVER_PLUGIN_VERSION = '2026-08-21-nai-v5-v1';
+const SERVER_PLUGIN_VERSION = '2026-09-06-nai-presets-v1';
 
 export const info = {
   id: 'auto-illustrator-nai-advanced',
@@ -81,6 +84,9 @@ async function readNovelAiKey(request) {
 }
 
 function validateInpaintRequestBody(body) {
+  const presetError = validatePresetMetadata(body);
+  if (presetError) return presetError;
+
   if (typeof body.prompt !== 'string' || body.prompt.trim() === '') {
     return 'prompt is required';
   }

@@ -317,7 +317,7 @@ export const TAG_CATALOG_PAGE_SIZE = {
  */
 export const SERVER_PLUGIN = {
   ID: 'auto-illustrator-nai-advanced',
-  VERSION: '2026-08-21-nai-v5-v1',
+  VERSION: '2026-09-06-nai-presets-v1',
   STATUS_ROUTE: '/api/plugins/auto-illustrator-nai-advanced/status',
 } as const;
 
@@ -453,6 +453,8 @@ export const DEFAULT_SETTINGS = {
   customTagCatalogEntries: [] as TagCatalogEntry[],
   customTagBridgeTriggers: {} as Record<string, string[]>,
   tagCatalogCandidateLimits: {...TAG_CATALOG_DEFAULT_CANDIDATE_LIMITS},
+  novelAiQualityPresetId: 'standard' as const,
+  novelAiUcPresetId: 'none' as const,
   generationStyleMode: 'off' as 'off' | 'fixed' | 'random',
   generationStylePresets: [] as GenerationStylePreset[],
   currentGenerationStylePresetId: '',
@@ -681,6 +683,17 @@ export const UI_ELEMENT_IDS = {
   REGEX_IMG_TAG: 'auto_illustrator_conso_regex_img_tag',
   REGEX_SYNC: 'auto_illustrator_conso_regex_sync',
   REGEX_STATUS: 'auto_illustrator_conso_regex_status',
+  NOVELAI_QUALITY_PRESET: 'auto_illustrator_conso_novelai_quality_preset',
+  NOVELAI_UC_PRESET: 'auto_illustrator_conso_novelai_uc_preset',
+  NOVELAI_PRESET_STATUS: 'auto_illustrator_conso_novelai_preset_status',
+  STANDALONE_NOVELAI_QUALITY_PRESET:
+    'auto_illustrator_conso_standalone_novelai_quality_preset',
+  STANDALONE_NOVELAI_UC_PRESET:
+    'auto_illustrator_conso_standalone_novelai_uc_preset',
+  STANDALONE_NOVELAI_FOLLOW_GLOBAL:
+    'auto_illustrator_conso_standalone_novelai_follow_global',
+  STANDALONE_NOVELAI_EFFECTIVE_STATUS:
+    'auto_illustrator_conso_standalone_novelai_effective_status',
   PRESET_IMPORT_JSON: 'auto_illustrator_conso_preset_import_json',
   PRESET_IMPORT_FILE: 'auto_illustrator_conso_preset_import_file',
   PRESET_IMPORT_REQUIREMENT: 'auto_illustrator_conso_preset_import_requirement',
@@ -780,6 +793,7 @@ export const UI_SECTION_IDS = {
   MAIN_IMAGE_SUBFOLDER: 'auto_illustrator_conso_panel_main_image_subfolder',
   MAIN_INFO: 'auto_illustrator_conso_panel_main_info',
   MAIN_REGEX: 'auto_illustrator_conso_panel_main_regex',
+  MAIN_NOVELAI_PRESETS: 'auto_illustrator_conso_panel_main_novelai_presets',
   PROMPT_MODE_SELECTOR: 'auto_illustrator_conso_panel_prompt_mode_selector',
   SHARED_META_DISPLAY: 'auto_illustrator_conso_panel_shared_meta_display',
   INDEPENDENT_BASE: 'auto_illustrator_conso_panel_independent_base',

@@ -53,6 +53,12 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 - V5 发布时暂不支持 Vibe Transfer；需要 Vibe 时使用 V4/V4.5
 - V5 Full 局部重绘使用 V5 Full inpainting；V5 Curated 当前临时使用 V4.5 Curated inpainting
 
+### NovelAI Quality Tags 与 UC
+
+打开悬浮面板主控台，在「正则」下方展开「NovelAI 生图增强」。Quality Tags 和 UC Preset 都是追加项：前者追加到正向 prompt，后者追加到负向 prompt，不会覆盖已有内容。选择 `None` 才表示该侧不追加。
+
+独立生图页面顶部也提供快捷选择器，默认跟随主控台；取消跟随后可临时切换，只影响当前独立生图。普通 `/sd` 不需要 companion server plugin；Vibe Transfer 和局部重绘需要同步安装本项目的高级 server plugin。
+
 ---
 
 ## 功能一览

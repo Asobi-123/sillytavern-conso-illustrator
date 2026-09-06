@@ -48,6 +48,9 @@ export function normalizeBase64Image(image) {
 
 function buildCommonParameters(requestBody, model, width, height) {
   const negativePrompt = requestBody.negative_prompt ?? '';
+  // Quality/UC text is already appended by the frontend composition
+  // contract. Keep upstream toggles disabled so the preset cannot be added a
+  // second time by NovelAI's private defaults.
   return {
     params_version: resolveParamsVersion(model),
     prefer_brownian: true,

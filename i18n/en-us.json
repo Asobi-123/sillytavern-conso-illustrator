@@ -789,5 +789,16 @@
   "tagCatalog.lastCandidatesEmpty": "No candidate snapshot yet. Run independent prompt generation or standalone generation once, then the latest candidate tags sent to the AI will appear here.",
   "tagCatalog.lastCandidatesNoTags": "The last run produced no candidate tags.",
   "tagCatalog.lastCandidatesMeta": "{time}, {total} candidate tag(s)",
-  "tagCatalog.refreshLastCandidates": "Refresh candidates"
+  "tagCatalog.refreshLastCandidates": "Refresh candidates",
+  "settings.novelAiPresets": "NovelAI generation enhancements",
+  "settings.novelAiQualityPreset": "Quality Tags",
+  "settings.novelAiQualityPresetDesc": "Append verified NovelAI quality tags to the positive prompt.",
+  "settings.novelAiUcPreset": "UC Preset",
+  "settings.novelAiUcPresetDesc": "Append the selected Undesired Content preset to the negative prompt.",
+  "settings.novelAiPresetStatus": "Current model family: {model}. Global append: Quality {quality} / UC {uc}.",
+  "settings.novelAiGlobalDesc": "Global defaults: append to every NovelAI positive and negative prompt. Standalone generation follows these by default.",
+  "standalone.novelAiFollowGlobal": "Use global settings (recommended)",
+  "standalone.novelAiFollowGlobalShort": "Global",
+  "standalone.novelAiOverrideShort": "One-time override",
+  "standalone.novelAiEffective": "Effective: {model} · {mode} · Quality {quality} / UC {uc}"
 }

@@ -23,6 +23,48 @@
   padding-left: 0.5rem;
 }
 
+.auto-illustrator-novelai-preset-grid,
+.standalone-novelai-presets .standalone-options-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.auto-illustrator-novelai-preset-status {
+  margin-top: 0.5rem;
+  color: var(--ai-panel-text-2);
+  font-size: 0.85rem;
+}
+
+.auto-illustrator-novelai-global-desc,
+.standalone-novelai-effective-status {
+  display: block;
+  color: var(--ai-panel-text-2);
+}
+
+.standalone-novelai-effective-status {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.standalone-novelai-presets select:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.standalone-novelai-presets {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ai-panel-border);
+}
+
+@media (max-width: 600px) {
+  .auto-illustrator-novelai-preset-grid,
+  .standalone-novelai-presets .standalone-options-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .auto-illustrator-settings
   > .inline-drawer
   > .inline-drawer-content
@@ -4164,9 +4206,7 @@ img[data-failed-placeholder='true']:hover {
     min-width: 0;
   }
 
-  .auto-illustrator-vibe-manager
-    .auto-illustrator-vibe-manager-actions
-    button {
+  .auto-illustrator-vibe-manager .auto-illustrator-vibe-manager-actions button {
     min-width: 0 !important;
     min-height: 3rem !important;
     line-height: 1.2;

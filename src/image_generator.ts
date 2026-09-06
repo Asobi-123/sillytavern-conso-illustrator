@@ -37,6 +37,8 @@ import {
 import type {VibeTransferGenerationConfig} from './types';
 import {applyCommonTags} from './services/prompt_tags';
 import {normalizeNovelAiGenerationSettings} from './services/novelai_models';
+import {composeNovelAiPrompts} from './services/novelai_presets';
+import {EXTENSION_NAME} from './constants';
 
 export {
   applyCommonTags,
@@ -319,7 +321,20 @@ export async function generateImageWithMetadata(
         ? applyCommonTags(prompt, commonTags, tagsPosition)
         : prompt;
 
-    logger.debug('Generating image for prompt:', enhancedPrompt);
+    const model = context.extensionSettings?.sd?.model;
+    const source = context.extensionSettings?.sd?.source;
+    const presetSettings = context.extensionSettings?.[EXTENSION_NAME] as
+      | AutoIllustratorSettings
+      | undefined;
+    const presetPrompt =
+      source === 'novel'
+        ? composeNovelAiPrompts(enhancedPrompt, '', model, {
+            qualityPresetId: presetSettings?.novelAiQualityPresetId,
+            ucPresetId: presetSettings?.novelAiUcPresetId,
+          }).prompt
+        : enhancedPrompt;
+
+    logger.debug('Generating image for prompt:', presetPrompt);
     if (commonTags && enhancedPrompt !== prompt) {
       logger.debug(`Original prompt: "${prompt}"`);
       logger.debug(`Enhanced with common tags: "${enhancedPrompt}"`);
@@ -355,19 +370,21 @@ export async function generateImageWithMetadata(
             context,
             effectiveSdStyleConfig,
             () =>
-              generateNovelAiVibeTransferImage(
-                enhancedPrompt,
-                context,
-                effectiveVibeTransferConfig,
-                onVibeReferencesUpdated,
-                signal
+              withNovelAiUcPrompt(context, () =>
+                generateNovelAiVibeTransferImage(
+                  presetPrompt,
+                  context,
+                  effectiveVibeTransferConfig,
+                  onVibeReferencesUpdated,
+                  signal
+                )
               ),
             styleName => {
               randomization.sdStyleName = styleName;
             }
           )
         : await generateImageViaSdCommand(
-            enhancedPrompt,
+            presetPrompt,
             context,
             effectiveSdStyleConfig,
             styleName => {
@@ -410,6 +427,32 @@ export async function generateImageWithMetadata(
   });
 }
 
+async function withNovelAiUcPrompt<T>(
+  context: SillyTavernContext,
+  operation: () => Promise<T>
+): Promise<T> {
+  const sd = context.extensionSettings?.sd;
+  const settings = context.extensionSettings?.[EXTENSION_NAME] as
+    | AutoIllustratorSettings
+    | undefined;
+  if (!sd || sd.source !== 'novel') return operation();
+
+  const original =
+    typeof sd.negative_prompt === 'string' ? sd.negative_prompt : '';
+  const composed = composeNovelAiPrompts('', original, sd.model, {
+    qualityPresetId: settings?.novelAiQualityPresetId,
+    ucPresetId: settings?.novelAiUcPresetId,
+  }).negativePrompt;
+  sd.negative_prompt = composed;
+  try {
+    return await operation();
+  } finally {
+    if (sd.negative_prompt === composed) {
+      sd.negative_prompt = original;
+    }
+  }
+}
+
 async function generateImageViaSdCommand(
   prompt: string,
   context: SillyTavernContext,
@@ -434,7 +477,8 @@ async function generateImageViaSdCommand(
   return withRandomSdStyle(
     context,
     sdStyleConfig,
-    () => sdCallback({quiet: 'true'}, prompt),
+    () =>
+      withNovelAiUcPrompt(context, () => sdCallback({quiet: 'true'}, prompt)),
     onSdStylePicked
   );
 }

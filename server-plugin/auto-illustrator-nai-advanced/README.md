@@ -18,6 +18,8 @@ The Vibe source routes store source images in the SillyTavern user's files direc
 
 NovelAI V5 does not support Vibe Transfer at launch, so V5 requests to the Vibe route are rejected before upstream access. V5 Full inpainting uses `nai-diffusion-5-full-inpainting`; V5 Curated currently maps to `nai-diffusion-4-5-curated-inpainting` to match NovelAI's launch behavior.
 
+The frontend sends already-composed prompt and negative-prompt text, including the selected Quality/UC append values. The plugin validates optional `quality_preset_id` and `uc_preset_id` metadata for diagnostics, but keeps NovelAI's `qualityToggle` disabled and `ucPreset` at `0` so the upstream service does not append the same content a second time.
+
 ## Install
 
 1. Copy this folder: `server-plugin/auto-illustrator-nai-advanced`.

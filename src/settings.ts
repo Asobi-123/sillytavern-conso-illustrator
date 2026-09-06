@@ -51,6 +51,10 @@ import {
   legacyReferenceToVibeLibraryItem,
   normalizeVibeEncodings,
 } from './services/vibe_bundle';
+import {
+  listNovelAiQualityPresets,
+  listNovelAiUcPresets,
+} from './services/novelai_presets';
 
 const logger = createLogger('Settings');
 
@@ -730,6 +734,20 @@ export function loadSettings(
   merged.customTagBridgeTriggers = normalizeTagBridgeTriggers(
     merged.customTagBridgeTriggers
   );
+  if (
+    !listNovelAiQualityPresets().some(
+      preset => preset.id === merged.novelAiQualityPresetId
+    )
+  ) {
+    merged.novelAiQualityPresetId = DEFAULT_SETTINGS.novelAiQualityPresetId;
+  }
+  if (
+    !listNovelAiUcPresets().some(
+      preset => preset.id === merged.novelAiUcPresetId
+    )
+  ) {
+    merged.novelAiUcPresetId = DEFAULT_SETTINGS.novelAiUcPresetId;
+  }
 
   // Safety: ensure random SD style fields land as the right types regardless
   // of what was previously persisted (e.g., older versions, malformed JSON).
@@ -1539,6 +1557,24 @@ export function createSettingsUI(): string {
           <i class="fa-solid fa-rotate"></i> ${t('regex.sync')}
         </button>
       </div>
+      </div>`;
+
+  const novelAiPresetContent = `
+    <div class="auto-illustrator-novelai-presets">
+      <small class="auto-illustrator-novelai-global-desc">${t('settings.novelAiGlobalDesc')}</small>
+      <div class="auto-illustrator-novelai-preset-grid">
+        <label for="${UI_ELEMENT_IDS.NOVELAI_QUALITY_PRESET}">
+          <span>${t('settings.novelAiQualityPreset')}</span>
+          <small>${t('settings.novelAiQualityPresetDesc')}</small>
+          <select id="${UI_ELEMENT_IDS.NOVELAI_QUALITY_PRESET}" class="text_pole"></select>
+        </label>
+        <label for="${UI_ELEMENT_IDS.NOVELAI_UC_PRESET}">
+          <span>${t('settings.novelAiUcPreset')}</span>
+          <small>${t('settings.novelAiUcPresetDesc')}</small>
+          <select id="${UI_ELEMENT_IDS.NOVELAI_UC_PRESET}" class="text_pole"></select>
+        </label>
+      </div>
+      <div id="${UI_ELEMENT_IDS.NOVELAI_PRESET_STATUS}" class="auto-illustrator-novelai-preset-status" aria-live="polite"></div>
     </div>`;
 
   const vibeTransferContent = `
@@ -1732,6 +1768,10 @@ export function createSettingsUI(): string {
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_REGEX,
           regexSanitizerContent
+        )}
+        ${floatingSourceSection(
+          UI_SECTION_IDS.MAIN_NOVELAI_PRESETS,
+          novelAiPresetContent
         )}
         ${floatingSourceSection(
           UI_SECTION_IDS.MAIN_INFO,
