@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # SillyTavern Auto Illustrator
 
-**Version**: 1.4
-**Last Updated**: 2026-07-03
+**Version**: 1.17.0
+**Last Updated**: 2026-09-06
 **Purpose**: Define desired behaviors for all features to prevent regressions
 
 ---
@@ -673,6 +673,8 @@ Result: Operations run concurrently, no conflicts (different messages)
 | LLM Prompt Writing Guidelines | String | multi-line | (default text) | How to write prompts (independent API mode) |
 | Common Style Tags | String | any | "" | Tags added to all prompts |
 | Style Tags Position | Choice | prefix/suffix | prefix | Where to add common tags |
+| NovelAI Quality Tags Preset | Choice | none/standard/expressive | standard | Append the selected Quality Tags preset to NovelAI positive prompts |
+| NovelAI UC Preset | Choice | none/light/heavy/furry-focus/human-focus | none | Append the selected Undesired Content preset to NovelAI negative prompts |
 | Generation Style Mode | Choice | off/fixed/random | off | Controls whether SD Style and Vibe combination are left alone, fixed, or randomized before each generation |
 | Fixed SD Style | String | style name | "" | Optional saved SD Style to apply in fixed mode |
 | Fixed Vibe Combination | String | combination ID | "" | Optional saved Vibe combination to apply in fixed mode |
@@ -793,6 +795,18 @@ Result:
 **NAI5-006**: V5 Full inpainting uses `nai-diffusion-5-full-inpainting`. V5 Curated inpainting temporarily uses `nai-diffusion-4-5-curated-inpainting` to match the launch behavior of NovelAI's frontend.
 
 **Anti-pattern**: do not modify SillyTavern core, add a second NovelAI credential, claim V5 Vibe support, or route ordinary V5 text-to-image around `/sd`.
+
+### 8.7.1 NovelAI Quality Tags and UC Presets
+
+**NAI-PRESET-001**: Quality Tags and UC Presets are append-only. Quality text is appended to the positive prompt and UC text is appended to the negative prompt; existing prompt text must never be replaced.
+
+**NAI-PRESET-002**: The main settings panel stores the global Quality Tags and UC selections. The effective preset status must refresh when the NovelAI model changes so V4, V4.5, and V5 selections remain understandable.
+
+**NAI-PRESET-003**: Standalone generation follows the global selections by default. Disabling the follow-global control enables a one-off local override and must not mutate the saved global selections.
+
+**NAI-PRESET-004**: Selecting `None` for either side appends no text. Preset composition remains part of the existing `/sd` generation path and does not require the companion server plugin.
+
+**Anti-pattern**: do not treat preset selectors as replacements for user prompts, silently switch the selected model, or send the full preset catalog to an LLM.
 
 ### 8.8 NovelAI Vibe Transfer
 
@@ -1605,6 +1619,7 @@ Result: Widget state correctly tied to current chat
 | 1.7 | 2026-07-20 | Clarified unlimited Vibe library capacity; added encoded and image-backed single-item import/export, external group JSON import, automatic group splitting, saved-set rename, backend source persistence, and unique export ID requirements |
 | 1.15.2 | 2026-08-15 | Added owner-scoped Character Fixed Tags, lossless legacy migration, alias boundary matching, and Independent API context invariants |
 | 1.16 | 2026-08-21 | Added NovelAI Diffusion V5 model compatibility, launch capability boundaries, request mapping, and NAI V5 prompt guidance |
+| 1.17.0 | 2026-09-06 | Added append-only NovelAI Quality Tags and UC Preset controls, model-aware status refresh, standalone follow-global defaults and one-off overrides, plus the September 2026 tag catalog refresh |
 
 ---
 

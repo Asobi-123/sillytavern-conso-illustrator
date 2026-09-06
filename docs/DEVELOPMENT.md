@@ -51,6 +51,7 @@ The runtime version is part of the shipped behavior. Before merging or preparing
 - `manifest.json` - SillyTavern extension version metadata
 - `dist/index.js` and `build/` - regenerated outputs from `npm run build`
 - `CHANGELOG.md` - the matching release entry and user-visible changes
+- `README.md`, `README_EN.md`, and relevant files under `docs/` - user-facing setup, behavior, and release documentation for the same version
 
 Run `npm test` after the version change. `src/release_metadata.test.ts` fails when the runtime, package, manifest, or built bundle version diverges. Do not edit `dist/` or `build/` by hand; regenerate them with `npm run build`.
 
@@ -61,6 +62,15 @@ Run `npm test` after the version change. `src/release_metadata.test.ts` fails wh
 - Ordinary image generation must continue through SillyTavern's `/sd` slash command. The compatibility layer exists to satisfy the native model selector and must not fork upload, gallery, queue, style, or storage behavior.
 - Before generation, `normalizeNovelAiGenerationSettings` keeps NovelAI upscale values within the accepted set: Off (`1`), `2`, or `4`. It synchronizes the native SD input and persisted setting, but does not rewrite dimensions, steps, CFG, sampler, scheduler, or the selected model.
 - V5 does not support Vibe Transfer at launch. Reject it before encoding or generation requests. V5 Full inpainting maps to its native V5 inpainting model; V5 Curated maps to V4.5 Curated inpainting until NovelAI provides a V5 Curated endpoint.
+
+### NovelAI Quality Tags and UC Presets
+
+- `src/services/novelai_presets.ts` is the single registry for built-in Quality Tags and Undesired Content (UC) preset text, IDs, labels, model-family metadata, and append-only composition.
+- `src/constants.ts` stores the persisted global selection IDs. Settings normalization must reject unknown IDs and fall back to the documented defaults.
+- `src/index.ts` renders the main-panel selectors and refreshes their effective status after `sd_model` or `sd_source` changes. Keep the main entry mounted once below the managed Regex section.
+- `src/standalone_generation_ui.ts` provides the shortcut selectors. They follow the global selections by default; disabling follow-global creates a one-off override and restores the global values after generation.
+- Preset composition belongs in the existing NovelAI `/sd` path. Quality text appends to positive prompts and UC text appends to negative prompts; `None` appends nothing. The feature does not require the companion server plugin.
+- When changing preset data or behavior, update related unit tests, README/quickstart guidance, PRD requirements, and `CHANGELOG.md` together.
 
 ### Companion Backend Version Contract
 

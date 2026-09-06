@@ -231,6 +231,17 @@ AI 回复里出现奇怪的标签？        → 切到独立 API 模式
 
 > 这里的样式 Tag 是插件级别的，和酒馆 Image Generation 里的风格不同。两者都会生效。
 
+### NovelAI Quality Tags 与 UC Preset
+
+在悬浮面板的主控台中，展开正则下方的 **NovelAI 生图增强**。这里的两个选择是全局默认：
+
+- **Quality Tags** 会追加到正向 prompt。
+- **UC Preset** 会追加到负向 prompt（Undesired Content）。
+
+它们都是追加项，不会覆盖已有的正向或负向提示词。选择 `None` 表示该侧不追加。切换 V4、V4.5 或 V5 后，预设状态会自动刷新。
+
+独立生图页面顶部提供快捷选择器。默认勾选 **跟随全局设置**，因此使用主控台的选择；取消勾选后可以只为这一次独立生图临时选择两个预设，不会修改全局默认。普通 `/sd` 生图不需要 companion server plugin；Vibe Transfer 和局部重绘才需要配套后端。
+
 ### 生图 SD Style 和 Vibe 组合（可选，进阶）
 
 如果你在酒馆 **Image Generation** 扩展里保存了多套 Style，或在 **Vibe 管理** 里保存了多套 Vibe 组合，可以让 conso 在每次生图前自动决定这次使用哪一套。
@@ -349,7 +360,7 @@ lu zhiwei, girl, orange long hair, blue eyes, school uniform
 
 ### Tag 超市（可选）
 
-Tag 超市是插件内置的离线 tag catalog，不需要运行时联网，也不需要用户自己收集基础 tag。当前内置 catalog 版本是 `2026-07`，共 7928 个 tag。
+Tag 超市是插件内置的离线 tag catalog，不需要运行时联网，也不需要用户自己收集基础 tag。当前内置 catalog 版本是 `2026-09`，共 7931 个 tag。
 
 入口：悬浮面板 → **提示词设置** → **Tag 超市**。
 
