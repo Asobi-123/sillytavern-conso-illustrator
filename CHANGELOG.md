@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0] - 2026-09-06
+
+### Added
+
+- **NovelAI Quality Tags and UC presets** - Added append-only Quality Tags and Undesired Content preset selection for NovelAI generation, with global defaults and one-off standalone overrides.
+- **NovelAI preset state clarity** - Added effective model and preset status text, automatic model-family refresh, and a single non-duplicated main-panel entry.
+
+### Changed
+
+- **Tag catalog refresh** - Updated the bundled offline tag catalog, Chinese tag bridge, bridge report, and shipped bundle to the September 2026 snapshot.
+- **Standalone preset controls** - Standalone generation now follows the global NovelAI preset settings by default and disables local selectors until one-off override mode is selected.
+
 ## [1.16.0] - 2026-08-21
 
 ### Added

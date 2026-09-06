@@ -133,7 +133,7 @@ The Standalone tab also has a quick selector that follows the main setting by de
 
 ## Tag Catalog and AI Candidate Tags
 
-The extension ships with an offline tag catalog. Runtime use does not fetch network resources. The current bundled catalog version is `2026-07` with 7928 tags.
+The extension ships with an offline tag catalog. Runtime use does not fetch network resources. The current bundled catalog version is `2026-09` with 7931 tags.
 
 Key points:
 

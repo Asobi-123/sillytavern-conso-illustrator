@@ -133,7 +133,7 @@ git clone https://github.com/Asobi-123/sillytavern-conso-illustrator.git
 
 ## Tag 超市和候选 Tag
 
-插件内置离线 tag catalog，运行时不联网。当前 catalog 版本为 `2026-07`，共 7928 个 tag。
+插件内置离线 tag catalog，运行时不联网。当前 catalog 版本为 `2026-09`，共 7931 个 tag。
 
 要点：
 
